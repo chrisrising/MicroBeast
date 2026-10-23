@@ -871,18 +871,27 @@ function snakeBuild(st,pose,col){
 }
 function birdBuild(k,st,pose,col){
   const eagle=k==='eagle', L=[],H=[],A={claws:[]};
-  const walk=pose.mode==='walk', sl=pose.mode==='sleep';
+  const walk=pose.mode==='walk', sl=pose.mode==='sleep', fly=pose.mode==='fly';
   const sw=walk?[0,1,0,-1][pose.f]*2.5:0, br=(!walk&&pose.f%2)?.6:0, cr=sl?-8:0;
   const legC=eagle?'#E3A52A':'#4A4752', beakC=eagle?'#F2B630':'#4F4B5C';
   const white=eagle&&st>=2?'#EFEAE0':null, fluff=st===0?'fur':'feather';
-  if(!sl){
+  const wa=fly?[2.0,2.55,3.55,2.75][pose.f]:0;
+  const wing=(sx,sy,a,len,wd,dk)=>{const ux=Math.cos(a),uy=Math.sin(a);return [
+    {shapes:[E(sx+ux*len*.55,sy+uy*len*.55,len*.62,wd,a),E(sx+ux*len*1.15,sy+uy*len*1.15,len*.5,wd*.8,a)],col:shade(col.body,dk),tex:'feather',cap:3},
+    {shapes:[E(sx+ux*len*1.35,sy+uy*len*1.35,len*.32,wd*.55,a)],col:shade(col.body,dk-.18),tex:'feather',edge:false}];};
+  if(fly){
+    wing(2,33,wa-.22,19,5.2,-.38).forEach(l=>L.push(l));
+    L.push({shapes:[Cp(-1,13,1.6,-6,9,1.2),Cp(1,13,1.6,-4,8,1.2)],col:shade(legC,-.15),tex:'smooth'});
+  }
+  if(!sl&&!fly){
     L.push({shapes:[Cp(-1,15,2.1,-2-sw,2,1.5),E(-.5-sw,1.1,3.6,1.2)],col:shade(legC,-.3),tex:'smooth'});
     L.push({shapes:[Cp(1.5,15,2.1,2.5+sw,2,1.5),E(4+sw,1.1,3.8,1.2)],col:legC,tex:'smooth'});
   }
   L.push({shapes:[Cp(-6,14+cr,6,-18,3+cr*.3,3.2)],col:white||shade(col.body,-.2),tex:'feather'});
   L.push({shapes:[E(0,24+cr+br*.3,12,16,-.45)],col:col.body,tex:fluff,cap:7});
   L.push({shapes:[E(4,20+cr,7,10,-.4)],col:col.belly,tex:fluff,edge:false});
-  L.push({shapes:[E(-3.5,25+cr,8.5,14.5,-.5)],col:shade(col.body,-.16),tex:'feather',cap:5});
+  if(fly) wing(-1,30,wa,22,6,-.12).forEach(l=>L.push(l));
+  else L.push({shapes:[E(-3.5,25+cr,8.5,14.5,-.5)],col:shade(col.body,-.16),tex:'feather',cap:5});
   H.push({shapes:[E(7,40+cr,8.5,8)],col:white||col.body,tex:fluff,cap:5});
   if(eagle) H.push({shapes:[E(10,42.5+cr,5.5,2.2,-.2)],col:shade(white||col.body,-.15),tex:'smooth',edge:false});
   H.push({shapes:[eagle?Pg(13,43.5+cr,21.5,42+cr,22,37+cr,19.5,37.5+cr,18.5,39.5+cr,13,38.5+cr):Pg(13,43+cr,24.5,40+cr,13,37.2+cr)],col:beakC,tex:'smooth'});
@@ -1988,8 +1997,9 @@ function startPlay(){
   const cv=$('screen');cv.width=GW;cv.height=GH;
   const p={...S,care:care()}, top=getSprite(p,{mode:'idle',f:0}).top, sc=clamp(22/(OY-top),.26,.75);
   const maxH=3+(care()>=70?1:0)+(care()>=90?1:0);
-  SFX.play('round');G={p,sc,round:1,kills:0,goal:5,hearts:maxH,maxH,inv:0,x:46,y:0,vy:0,ground:true,atk:0,atkCd:0,cd:0,off:0,speed:44,enemies:[],shots:[],bshots:[],parts:[],spawnT:1,state:'banner',stT:now(),banner:'ROUND 1',boss:null,pw:20,ph:20};
+  SFX.play('round');G={flyer:isBird(S),p,sc,round:1,kills:0,goal:5,hearts:maxH,maxH,inv:0,x:46,y:0,vy:0,ground:true,atk:0,atkCd:0,cd:0,off:0,speed:44,enemies:[],shots:[],bshots:[],parts:[],spawnT:1,state:'banner',stT:now(),banner:'ROUND 1',boss:null,pw:20,ph:20};
   $('crt').classList.add('playing');$('careKeys').hidden=true;$('playKeys').hidden=false;$('led').classList.add('fight');
+  $('gJumpB').innerHTML=G.flyer?'<span class="mv">Flap</span><small>fly up</small>':'<span class="mv">Jump</span><small>stomp</small>';
   $('gSpc').querySelector('small').textContent=S.el[0]?EL[S.el[0]].n.toLowerCase()+' shot':'pebble';
   gHud();
 }
@@ -2032,7 +2042,8 @@ function gKill(e){
   for(let i=0;i<10;i++)g.parts.push({x:e.x,y:GG+e.y-4,vx:rnd(-60,60),vy:rnd(-90,-10),life:.6,col:i%2?e.col:'#FFFFFF'});
   gHud();
 }
-function gJump(){const g=G;if(!g||g.state==='win'||g.state==='lose')return;if(g.ground){g.vy=-178;g.ground=false;SFX.play('jump');}}
+const isBird=p=>p.sp==='eagle'||p.sp==='crow';
+function gJump(){const g=G;if(!g||g.state==='win'||g.state==='lose')return;if(g.flyer){if(GG+g.y-g.ph>26){g.vy=-135;g.ground=false;SFX.play('jump');}}else if(g.ground){g.vy=-178;g.ground=false;SFX.play('jump');}}
 function gAttack(){const g=G;if(!g||g.atkCd>0||g.state==='win'||g.state==='lose')return;g.atk=.22;g.atkCd=.34;SFX.play('swipe');}
 function gSpecial(){const g=G;if(!g||g.cd>0||g.state==='win'||g.state==='lose')return;SFX.play('shoot');g.cd=1.2;g.shots.push({x:g.x+g.pw/2,y:GG+g.y-g.ph*.5,vx:175,el:S.el[0]||null});}
 const overlap=(a,b)=>a.x0<b.x1&&a.x1>b.x0&&a.y0<b.y1&&a.y1>b.y0;
@@ -2043,7 +2054,7 @@ function updateGame(dt){
   if(g.state==='banner'&&T-g.stT>1.6){g.banner='';if(g.round>3){g.state='boss';spawnBoss();}else g.state='run';gHud();}
   const running=g.state==='run'||(g.state==='banner'&&g.round<=3);
   if(running) g.off+=g.speed*dt;
-  g.vy+=440*dt;g.y+=g.vy*dt;if(g.y>=0){g.y=0;g.vy=0;g.ground=true;}
+  g.vy+=(g.flyer?300:440)*dt;if(g.flyer)g.vy=Math.min(g.vy,110);g.y+=g.vy*dt;if(g.y>=0){g.y=0;g.vy=0;g.ground=true;}
   g.atk=Math.max(0,g.atk-dt);g.atkCd=Math.max(0,g.atkCd-dt);g.cd=Math.max(0,g.cd-dt);g.inv=Math.max(0,g.inv-dt);
   const pb={x0:g.x-g.pw/2+2,x1:g.x+g.pw/2-2,y0:GG+g.y-g.ph+3,y1:GG+g.y};
   const zone={x0:g.x,x1:g.x+g.pw/2+16,y0:GG+g.y-g.ph-10,y1:GG+g.y+2};
@@ -2067,7 +2078,7 @@ function updateGame(dt){
     else if(bo.mode==='fight'){
       bo.shootT-=dt;bo.jumpT-=dt;bo.dashT-=dt;
       if(bo.shootT<=0){bo.shootT=rnd(1.3,2.1);g.bshots.push({x:bo.x-bo.w/2,y:GG+bo.y-bo.h*.45,vx:-115,el:bo.p.el[0]||null});}
-      if(bo.jumpT<=0&&bo.y===0){bo.jumpT=rnd(2.2,3.4);bo.vy=-170;}
+      if(bo.jumpT<=0&&bo.y===0){bo.jumpT=rnd(2.2,3.4);bo.vy=isBird(bo.p)?-210:-170;}
       if(bo.dashT<=0){bo.dashT=rnd(4.5,6.5);bo.mode='dash';}
     }else if(bo.mode==='dash'){bo.x-=125*dt;if(bo.x<g.x+28)bo.mode='back';}
     else if(bo.mode==='back'){bo.x+=60*dt;if(bo.x>=bo.tx){bo.x=bo.tx;bo.mode='fight';}}
@@ -2109,10 +2120,10 @@ function drawGame(c,t){
   drawRunBg(c,g.off,t,!!g.boss);
   for(const e of g.enemies)drawEnemy(c,e,t);
   const bo=g.boss;
-  if(bo){const blink=bo.inv>0&&Math.floor(t*25)%2;if(!blink&&bo.hp>0){const r=drawMini(c,bo.p,bo.x,GG+bo.y,bo.sc,t,{mode:bo.mode==='dash'?'walk':'idle',f:bo.mode==='dash'?Math.floor(t*12)%4:Math.floor(t*2)%2},true,{invert:true,mood:null,seed:2});bo.w=r.w;bo.h=r.h;}
+  if(bo){const blink=bo.inv>0&&Math.floor(t*25)%2;if(!blink&&bo.hp>0){const r=drawMini(c,bo.p,bo.x,GG+bo.y,bo.sc,t,(isBird(bo.p)&&bo.y<-1)?{mode:'fly',f:Math.floor(t*12)%4}:{mode:bo.mode==='dash'?'walk':'idle',f:bo.mode==='dash'?Math.floor(t*12)%4:Math.floor(t*2)%2},true,{invert:true,mood:null,seed:2});bo.w=r.w;bo.h=r.h;}
     for(let i=0;i<6;i++){const a=t*2+i,rr=bo.w*.55;px(c,bo.x+Math.cos(a)*rr,GG+bo.y-bo.h*.5+Math.sin(a)*bo.h*.45,1,1,'rgba(200,120,255,.8)');}}
   const blink=g.inv>0&&Math.floor(t*20)%2;
-  if(!blink&&g.state!=='lose'){const pose=!g.ground?{mode:'idle',f:0}:(g.state==='run'||g.state==='banner'||g.boss)?{mode:'walk',f:Math.floor(t*10)%4}:{mode:'idle',f:0};
+  if(!blink&&g.state!=='lose'){const pose=!g.ground?(g.flyer?{mode:'fly',f:Math.floor(t*(g.vy<0?14:7))%4}:{mode:'idle',f:0}):(g.state==='run'||g.state==='banner'||g.boss)?{mode:'walk',f:Math.floor(t*10)%4}:{mode:'idle',f:0};
     const r=drawMini(c,g.p,g.x+(g.atk>0?3:0),GG+g.y,g.sc,t,pose,false,{mood:g.hearts<=1?'sad':'happy'});g.pw=r.w;g.ph=r.h;}
   if(g.atk>0){const k=g.atk/.22,cx=g.x+g.pw/2+4,cy=GG+g.y-g.ph*.5,col=S.el[0]?EL[S.el[0]].c:'#FFFFFF';for(let i=0;i<9;i++){const a=-1.2+i*.3,r=10+(1-k)*4;px(c,cx+Math.cos(a)*r,cy+Math.sin(a)*r,2,2,i%2?'#FFFFFF':col);}}
   for(const s of g.shots)drawOrb(c,s,t,s.el?EL[s.el].c:null);
