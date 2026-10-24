@@ -1,9 +1,4 @@
-<!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
-<title>Fuselings</title>
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><style>body{padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}</style></head><body><title>Fuselings</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;600;700&family=VT323&display=swap">
@@ -300,10 +295,6 @@ input[type=text]::placeholder{color:var(--ph-dim);opacity:.8}
 .pick b{font-weight:400;font-size:19px;color:var(--sel)}.pick small{font-size:15px;color:var(--ph-dim)}
 .tabs button{font-size:17px}
 </style>
-<style>html{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}</style>
-</head>
-<body>
-
 
 <main class="desk">
   <div class="rig">
@@ -1023,7 +1014,7 @@ function layerMask(shapes){
   for(let i=0;i<m.length;i++) m[i]=d[i*4+3]>=128?1:0;
   return m;
 }
-function shadeLayer(out,m,l,seed,F,gm){
+function shadeLayer(out,m,l,seed,F,gm,hm){
   if(!l.fin) F=null;
   let x0=SW,x1=-1,y0=SH,y1=-1;
   for(let y=0;y<SH;y++)for(let x=0;x<SW;x++)if(m[y*SW+x]){if(x<x0)x0=x;if(x>x1)x1=x;if(y<y0)y0=y;if(y>y1)y1=y;}
@@ -1069,7 +1060,7 @@ function shadeLayer(out,m,l,seed,F,gm){
         if(shine) alpha=Math.max(alpha,220);
       }
     }
-    const o=i*4;out[o]=c[0];out[o+1]=c[1];out[o+2]=c[2];out[o+3]=alpha;if(gm)gm[i]=F&&l.fin&&l.g!=='head'?1:0;
+    const o=i*4;out[o]=c[0];out[o+1]=c[1];out[o+2]=c[2];out[o+3]=alpha;if(gm)gm[i]=F&&l.fin&&l.g!=='head'?1:0;if(hm)hm[i]=l.g==='head'?1:0;
   }
 }
 
@@ -1138,10 +1129,10 @@ function buildSprite(p,pose){
   for(const n in A) AA[n]=(n==='back'||n==='claws'||n==='spots'||n==='belly')?A[n].map(T):T(A[n]);
   const img=rctx.createImageData(SW,SH), out=img.data, seed=ORDER.length+Object.keys(SPECIES).indexOf(k)*17;
   const hb={x0:SW,x1:-1,y1:-1};
-  const gm=new Uint8Array(SW*SH);
+  const gm=new Uint8Array(SW*SH),hm=new Uint8Array(SW*SH);
   layers.forEach((l,i)=>{const m=layerMask(l.shapes);
     if(l.g==='head') for(let y=0;y<SH;y++)for(let x=0;x<SW;x++)if(m[y*SW+x]){if(x<hb.x0)hb.x0=x;if(x>hb.x1)hb.x1=x;if(y>hb.y1)hb.y1=y;}
-    shadeLayer(out,m,l,seed+i,F,gm);});
+    shadeLayer(out,m,l,seed+i,F,gm,hm);});
   (AA.claws||[]).forEach(([cx,cy])=>{const x=Math.round(cx),y=Math.round(cy)-1;for(const dx of [0,-2]){const i=(y*SW+x+dx)*4;if(x+dx>=0&&x+dx<SW&&out[i+3]){out[i]=238;out[i+1]=228;out[i+2]=208;}}});
   let l=SW,r=0,tp=SH;
   for(let y=0;y<SH;y++)for(let x=0;x<SW;x++)if(out[(y*SW+x)*4+3]){if(x<l)l=x;if(x>r)r=x;if(y<tp)tp=y;}
@@ -1161,8 +1152,10 @@ function buildSprite(p,pose){
   let gmc=null,gmf=null;
   if(F&&F.sheen){gmc=document.createElement('canvas');gmc.width=SW;gmc.height=SH;const gx=gmc.getContext('2d'),gd=gx.createImageData(SW,SH);for(let i=0;i<gm.length;i++)if(gm[i]&&out[i*4+3])gd.data[i*4+3]=255;gx.putImageData(gd,0,0);
     gmf=document.createElement('canvas');gmf.width=SW;gmf.height=SH;const gf=gmf.getContext('2d');gf.translate(SW,0);gf.scale(-1,1);gf.drawImage(gmc,0,0);}
-  const alpha=new Uint8Array(SW*SH);for(let i=0;i<alpha.length;i++)alpha[i]=out[i*4+3]?1:0;
-  return {alpha,gm:gmc,gmf,cv,flip:fl,A:AA,k,l,r,top:tp,tops,bots,edge,drips,blooms,backTops,bellyBots,backEdge,bellyEdge,backMid,chest:AA.chest};
+  const alpha=new Uint8Array(SW*SH);for(let i=0;i<alpha.length;i++)alpha[i]=out[i*4+3]?(hm[i]?2:1):0;
+  const bm=document.createElement('canvas');bm.width=SW;bm.height=SH;{const bx=bm.getContext('2d'),bd=bx.createImageData(SW,SH);for(let i=0;i<alpha.length;i++)if(alpha[i]===1)bd.data[i*4+3]=255;bx.putImageData(bd,0,0);}
+  const bmf=document.createElement('canvas');bmf.width=SW;bmf.height=SH;{const f=bmf.getContext('2d');f.translate(SW,0);f.scale(-1,1);f.drawImage(bm,0,0);}
+  return {alpha,bm,bmf,gm:gmc,gmf,cv,flip:fl,A:AA,k,l,r,top:tp,tops,bots,edge,drips,blooms,backTops,bellyBots,backEdge,bellyEdge,backMid,chest:AA.chest};
 }
 
 // ---------- elemental effects ----------
@@ -2020,11 +2013,14 @@ function drawAcc(c,acc,S_,X,Y,st,dir,t,pl){
   if((acc==='scarf'||acc==='bell')&&A.neck&&A.neckBase&&pl){
     const P=[X(A.neck[0]),Y(A.neck[1])],Bp=[X(A.neckBase[0]),Y(A.neckBase[1])];
     let vx=P[0]-Bp[0],vy=P[1]-Bp[1];const L=Math.hypot(vx,vy)||1;vx/=L;vy/=L;
-    const nx=-vy,ny=vx,cx=P[0]*.86+Bp[0]*.14,cy=P[1]*.86+Bp[1]*.14,ang=Math.atan2(ny,nx);
-    // find where the band leaves the body on each side, using the sprite's own outline
-    const inside=(sx,sy)=>{const lx=Math.round(pl.flip?SW-1-(sx-pl.x0):sx-pl.x0),ly=Math.round(sy-pl.y0);return lx>=0&&ly>=0&&lx<SW&&ly<SH&&S_.alpha[ly*SW+lx];};
+    // look up the sprite: 1 = body/neck, 2 = head
+    const at=(sx,sy)=>{const lx=Math.round(pl.flip?SW-1-(sx-pl.x0):sx-pl.x0),ly=Math.round(sy-pl.y0);return lx>=0&&ly>=0&&lx<SW&&ly<SH?S_.alpha[ly*SW+lx]:0;};
+    const inside=(sx,sy)=>at(sx,sy)===1;
+    // sit the collar on the neck just before the head begins
+    let u=.86;for(let q=0;q<=40;q++){const uu=q/40;if(at(Bp[0]+(P[0]-Bp[0])*uu,Bp[1]+(P[1]-Bp[1])*uu)===2){u=Math.max(0,uu-2.5/L);break;}}
+    const nx=-vy,ny=vx,cx=Bp[0]+(P[0]-Bp[0])*u,cy=Bp[1]+(P[1]-Bp[1])*u,ang=Math.atan2(ny,nx);
     const cap=Math.round((A.neckR||5)+1.5);
-    const edge=sg=>{const cp=ny*sg<0?Math.round(cap*1.8):cap;let d=0;while(d<cp&&inside(cx+nx*sg*(d+1),cy+ny*sg*(d+1)))d++;return d;};
+    const edge=sg=>{const cp=ny*sg<0?Math.round(cap*1.3):cap;let d=0;while(d<cp&&inside(cx+nx*sg*(d+1),cy+ny*sg*(d+1)))d++;return d;};
     const dA=edge(1),dB=edge(-1),half=Math.max(dA,dB)+1;
     const th=acc==='scarf'?Math.max(3,Math.round(2.2*k+1)):2;
     // draw the band, then keep only the part that lies over the animal
@@ -2033,7 +2029,7 @@ function drawAcc(c,acc,S_,X,Y,st,dir,t,pl){
     const AR=(x,y,w,h,col)=>{accCtx.fillStyle=col;accCtx.fillRect(x,y,w,h);};
     if(acc==='scarf'){AR(-half,-th/2,half*2,th,'#C8302A');AR(-half,-th/2,half*2,1,'#E8584A');AR(-half,th/2-1,half*2,1,'#8A1A18');for(let q=-half+2;q<half;q+=4)AR(q,-th/2,1,th,'#E8584A');}
     else{AR(-half,-1,half*2,2,'#2F5EC8');AR(-half,-1,half*2,1,'#5A86E8');}
-    accCtx.setTransform(1,0,0,1,0,0);accCtx.globalCompositeOperation='destination-in';accCtx.drawImage(pl.flip?S_.flip:S_.cv,0,0);accCtx.globalCompositeOperation='source-over';
+    accCtx.setTransform(1,0,0,1,0,0);accCtx.globalCompositeOperation='destination-in';accCtx.drawImage(pl.flip?S_.bmf:S_.bm,0,0);accCtx.globalCompositeOperation='source-over';
     c.drawImage(accCv,pl.x0,pl.y0);
     // the throat is the lower end of the band
     const eA=[cx+nx*dA,cy+ny*dA],eB=[cx-nx*dB,cy-ny*dB],tp=eA[1]>eB[1]?eA:eB;
@@ -2531,6 +2527,4 @@ const hm=(location.hash||'').match(/^#(fl[A-Za-z0-9_-]+)$/);
 if(hm){const foe=decode(hm[1]);if(foe) challenge(foe,'You opened a battle link.');}
 })();
 </script>
-
-</body>
-</html>
+</body></html>
