@@ -922,7 +922,7 @@ function quadBuild(k,st,pose,col){
   A.spots=[[-bl*.22,by+bh*.12,'body'],[bl*.02,by-bh*.05,'body'],[-bl*.05,by+bh*.28,'body']];
   A.chest=[bl*.42,by-bh*(q.shell?.18:.02),'body'];
   A.belly=q.shell?[[-bl*.25,by-bh*.3,'body'],[0,by-bh*.34,'body'],[bl*.25,by-bh*.3,'body']]:[[-bl*.2,by-bh*.4,'body'],[bl*.02,by-bh*.44,'body'],[bl*.24,by-bh*.36,'body']];
-  return {L,H,A,pivot,hr,neckBase:[bl*.3,by+bh*(q.shell?-.1:.12)],neckR:q.shell?hr*.55:(bh*.4+hr*.62)/2};
+  return {L,H,A,pivot,hr,neckBase:[bl*.3,by+bh*(q.shell?-.1:.12)],neckR:q.shell?hr*.55:hr*.62};
 }
 function frogBuild(st,pose,col){
   const L=[],H=[],A={claws:[]};
@@ -1134,7 +1134,7 @@ function buildSprite(p,pose){
   layers.forEach(l=>{l.shapes=l.shapes.map(sh=>xfShape(l.g==='head'?xfShape(rotShape(sh,tl,pv[0],pv[1]),hs,pv[0],pv[1]):sh,s,0,0));});
   const T=a=>{if(!a)return null;const q=a[2]==='head'?xfPt(rotPt(a,tl,pv[0],pv[1]),hs,pv[0],pv[1]):a;return [OX+q[0]*s,OY-q[1]*s];};
   const AA={};
-  AA.neck=T([pv[0],pv[1],'body']);AA.neckBase=T([R.neckBase[0],R.neckBase[1],'body']);AA.neckR=R.neckR*s;AA.headR=R.hr*s*hs;AA.tilt=tl;
+  AA.neck=T([pv[0],pv[1],'body']);AA.neckBase=T([R.neckBase[0],R.neckBase[1],'body']);AA.neckR=R.neckR*s*(hs+1)/2;AA.headR=R.hr*s*hs;AA.tilt=tl;
   for(const n in A) AA[n]=(n==='back'||n==='claws'||n==='spots'||n==='belly')?A[n].map(T):T(A[n]);
   const img=rctx.createImageData(SW,SH), out=img.data, seed=ORDER.length+Object.keys(SPECIES).indexOf(k)*17;
   const hb={x0:SW,x1:-1,y1:-1};
@@ -1161,7 +1161,8 @@ function buildSprite(p,pose){
   let gmc=null,gmf=null;
   if(F&&F.sheen){gmc=document.createElement('canvas');gmc.width=SW;gmc.height=SH;const gx=gmc.getContext('2d'),gd=gx.createImageData(SW,SH);for(let i=0;i<gm.length;i++)if(gm[i]&&out[i*4+3])gd.data[i*4+3]=255;gx.putImageData(gd,0,0);
     gmf=document.createElement('canvas');gmf.width=SW;gmf.height=SH;const gf=gmf.getContext('2d');gf.translate(SW,0);gf.scale(-1,1);gf.drawImage(gmc,0,0);}
-  return {gm:gmc,gmf,cv,flip:fl,A:AA,k,l,r,top:tp,tops,bots,edge,drips,blooms,backTops,bellyBots,backEdge,bellyEdge,backMid,chest:AA.chest};
+  const alpha=new Uint8Array(SW*SH);for(let i=0;i<alpha.length;i++)alpha[i]=out[i*4+3]?1:0;
+  return {alpha,gm:gmc,gmf,cv,flip:fl,A:AA,k,l,r,top:tp,tops,bots,edge,drips,blooms,backTops,bellyBots,backEdge,bellyEdge,backMid,chest:AA.chest};
 }
 
 // ---------- elemental effects ----------
@@ -1383,7 +1384,7 @@ function drawPetAt(ctx,p,x,ground,t,o={}){
   if(A.beak&&o.chomp&&Math.sin(t*18)>0) px(ctx,Math.round(X(A.beak[0])),Math.round(Y(A.beak[1])),3,1,dk);
   if(p.mat==='diamond'||p.mat==='gold'){const g=(t*.7)%1;if(g<.3){const sx=X(S_.l)+g*w*3,sy=Y(S_.top)+6+g*8;px(ctx,sx,sy-1,1,3,'#FFFFFF');px(ctx,sx-1,sy,3,1,'#FFFFFF');}}
   const bx=X(A.body[0]), byy=Y(A.body[1]), rr=Math.max(8,(OY-S_.top)*.45);
-  if(p.equip){if(p.equip.neck)drawAcc(ctx,p.equip.neck,S_,X,Y,st,dir,t);if(p.equip.head)drawAcc(ctx,p.equip.head,S_,X,Y,st,dir,t);if(p.equip.acc)drawAcc(ctx,p.equip.acc,S_,X,Y,st,dir,t);}
+  if(p.equip){const pl={x0,y0,flip};if(p.equip.neck)drawAcc(ctx,p.equip.neck,S_,X,Y,st,dir,t,pl);if(p.equip.head)drawAcc(ctx,p.equip.head,S_,X,Y,st,dir,t,pl);if(p.equip.acc)drawAcc(ctx,p.equip.acc,S_,X,Y,st,dir,t,pl);}
   elementFx(ctx,p,S_,X,Y,t,'front',ground,o);
   return {bx0:Math.min(X(S_.l),X(S_.r)),bx1:Math.max(X(S_.l),X(S_.r)),top:Y(S_.top),front:X(dir>0?S_.r:S_.l),mouth:A.mouth?[X(A.mouth[0]),Y(A.mouth[1])]:A.beak?[X(A.beak[0]),Y(A.beak[1])]:[X(S_.r),Y(S_.top)+6],body:[bx,byy],headX:A.eye?X(A.eye[0]):bx};
 }
@@ -2012,22 +2013,34 @@ const COSMETICS=[
   {id:'sunset',type:'light',n:'Sunset glow',c:'#FF8A3A'},{id:'neon',type:'light',n:'Neon',c:'#FF3AD8'},{id:'moon',type:'light',n:'Moonlight',c:'#5A78D8'},{id:'disco',type:'light',n:'Disco',c:'#B05AFF'},
 ];
 const COSBY=Object.fromEntries(COSMETICS.map(c=>[c.id,c]));
-function drawAcc(c,acc,S_,X,Y,st,dir,t){
+const accCv=document.createElement('canvas');accCv.width=SW;accCv.height=SH;const accCtx=accCv.getContext('2d');
+function drawAcc(c,acc,S_,X,Y,st,dir,t,pl){
   const A=S_.A, hR=A.headR||8, k=clamp(hR/8.5,.7,1.6), tilt=-(A.tilt||0)*dir;
   const R=(x,y,w,h,col)=>{c.fillStyle=col;c.fillRect(x,y,w,h);};
-  if((acc==='scarf'||acc==='bell')&&A.neck&&A.neckBase){
+  if((acc==='scarf'||acc==='bell')&&A.neck&&A.neckBase&&pl){
     const P=[X(A.neck[0]),Y(A.neck[1])],Bp=[X(A.neckBase[0]),Y(A.neckBase[1])];
     let vx=P[0]-Bp[0],vy=P[1]-Bp[1];const L=Math.hypot(vx,vy)||1;vx/=L;vy/=L;
-    const nx=-vy,ny=vx,cx=P[0]*.72+Bp[0]*.28,cy=P[1]*.72+Bp[1]*.28,half=Math.min(7*k,(A.neckR||5)*.8+1),ang=Math.atan2(ny,nx);
-    c.save();c.translate(cx,cy);c.rotate(ang);
-    if(acc==='scarf'){const th=Math.max(3,Math.round(2.2*k+1));R(-half,-th/2,half*2,th,'#C8302A');R(-half,-th/2,half*2,1,'#E8584A');R(-half,th/2-1,half*2,1,'#8A1A18');for(let q=-half+2;q<half;q+=4)R(q,-th/2,1,th,'#E8584A');}
-    else{R(-half,-1,half*2,2,'#2F5EC8');R(-half,-1,half*2,1,'#5A86E8');}
-    c.restore();
-    const e1=[cx+nx*half,cy+ny*half],e2=[cx-nx*half,cy-ny*half],th=e1[1]>e2[1]?e1:e2;
+    const nx=-vy,ny=vx,cx=P[0]*.86+Bp[0]*.14,cy=P[1]*.86+Bp[1]*.14,ang=Math.atan2(ny,nx);
+    // find where the band leaves the body on each side, using the sprite's own outline
+    const inside=(sx,sy)=>{const lx=Math.round(pl.flip?SW-1-(sx-pl.x0):sx-pl.x0),ly=Math.round(sy-pl.y0);return lx>=0&&ly>=0&&lx<SW&&ly<SH&&S_.alpha[ly*SW+lx];};
+    const cap=Math.round((A.neckR||5)+1.5);
+    const edge=sg=>{const cp=ny*sg<0?Math.round(cap*1.8):cap;let d=0;while(d<cp&&inside(cx+nx*sg*(d+1),cy+ny*sg*(d+1)))d++;return d;};
+    const dA=edge(1),dB=edge(-1),half=Math.max(dA,dB)+1;
+    const th=acc==='scarf'?Math.max(3,Math.round(2.2*k+1)):2;
+    // draw the band, then keep only the part that lies over the animal
+    accCtx.setTransform(1,0,0,1,0,0);accCtx.clearRect(0,0,SW,SH);accCtx.globalCompositeOperation='source-over';
+    accCtx.translate(-pl.x0,-pl.y0);accCtx.translate(cx,cy);accCtx.rotate(ang);
+    const AR=(x,y,w,h,col)=>{accCtx.fillStyle=col;accCtx.fillRect(x,y,w,h);};
+    if(acc==='scarf'){AR(-half,-th/2,half*2,th,'#C8302A');AR(-half,-th/2,half*2,1,'#E8584A');AR(-half,th/2-1,half*2,1,'#8A1A18');for(let q=-half+2;q<half;q+=4)AR(q,-th/2,1,th,'#E8584A');}
+    else{AR(-half,-1,half*2,2,'#2F5EC8');AR(-half,-1,half*2,1,'#5A86E8');}
+    accCtx.setTransform(1,0,0,1,0,0);accCtx.globalCompositeOperation='destination-in';accCtx.drawImage(pl.flip?S_.flip:S_.cv,0,0);accCtx.globalCompositeOperation='source-over';
+    c.drawImage(accCv,pl.x0,pl.y0);
+    // the throat is the lower end of the band
+    const eA=[cx+nx*dA,cy+ny*dA],eB=[cx-nx*dB,cy-ny*dB],tp=eA[1]>eB[1]?eA:eB;
     if(acc==='scarf'){const sw=Math.round(Math.sin(t*3)),len=Math.round(4+k*3);
-      R(Math.round(th[0])-2,Math.round(th[1])-2,4,4,'#B02824');
-      for(let q=0;q<len;q++){R(Math.round(th[0]-dir*(1+q*.35))+sw*(q>len/2?1:0),Math.round(th[1]+1+q),2,1,q===len-1?'#F2EDE4':'#C8302A');R(Math.round(th[0]+dir*(1+q*.2)),Math.round(th[1]+1+q*.8),2,1,q===len-2?'#F2EDE4':'#A82420');}}
-    else{const bx=Math.round(th[0]-1),by=Math.round(th[1]);const bs=Math.max(3,Math.round(2.4*k));R(bx,by,bs,bs,'#E8B923');R(bx,by,1,1,'#FFF2B0');R(bx+Math.floor(bs/2),by+bs,1,1,'#7A5A10');R(bx-1,by+bs-1,bs+2,1,'#B88A12');}
+      R(Math.round(tp[0])-2,Math.round(tp[1])-2,4,4,'#B02824');
+      for(let q=0;q<len;q++){R(Math.round(tp[0]-dir*(1+q*.35))+sw*(q>len/2?1:0),Math.round(tp[1]+1+q),2,1,q===len-1?'#F2EDE4':'#C8302A');R(Math.round(tp[0]+dir*(1+q*.2)),Math.round(tp[1]+1+q*.8),2,1,q===len-2?'#F2EDE4':'#A82420');}}
+    else{const bs=Math.max(3,Math.round(2.4*k)),bx=Math.round(tp[0]-bs/2),by=Math.round(tp[1]);R(bx,by,bs,bs,'#E8B923');R(bx,by,1,1,'#FFF2B0');R(bx+Math.floor(bs/2),by+bs,1,1,'#7A5A10');R(bx-1,by+bs-1,bs+2,1,'#B88A12');R(Math.round(tp[0]),by-1,1,1,'#7A5A10');}
   }
   if(A.headTop&&(acc==='tophat'||acc==='bow'||acc==='flowers')){
     const hx=X(A.headTop[0]),hy=Y(A.headTop[1]);
