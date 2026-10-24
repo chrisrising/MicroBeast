@@ -2490,6 +2490,8 @@ function choosePet(kind,cb){
 }
 function returnHome(){if(RETURN_TO!=null&&RETURN_TO!==W.active&&W.pets[RETURN_TO]){const r=RETURN_TO;RETURN_TO=null;setTimeout(()=>switchPet(r,true),1200);}else RETURN_TO=null;}
 function drawBackPets(c,t,dt){
+  // meadow has far hills to roam on; every other scene's walkable ground starts at the horizon line
+  const bg=(S.equip&&S.equip.bg)||'meadow', farY=bg==='meadow'?90:105;
   W.pets.forEach((p,i)=>{
     if(p===S)return;
     let b=BGP.get(p);if(!b){b={x:30+((i*53)%100),dir:i%2?-1:1,moving:false,sit:false,next:0};BGP.set(p,b);}
@@ -2497,7 +2499,7 @@ function drawBackPets(c,t,dt){
     if(b.moving){b.x+=b.dir*dt*5;if(b.x<14){b.x=14;b.dir=1;}if(b.x>146){b.x=146;b.dir=-1;}}
     const asleep=p.asleep&&p.stage<3, pose=asleep?{mode:'sleep',f:0}:b.moving?{mode:'walk',f:Math.floor(t*5)%4}:b.sit?{mode:'sit',f:0}:{mode:'idle',f:Math.floor(t*1.2)%2};
     const top=getSprite(p,{mode:'idle',f:0}).top, sc=clamp(14/(OY-top),.18,.42);
-    c.globalAlpha=.88;drawMini(c,p,b.x,90,sc,t,pose,b.dir<0,{mood:asleep?null:'happy',seed:i});c.globalAlpha=1;
+    c.globalAlpha=.88;drawMini(c,p,b.x,farY,sc,t,pose,b.dir<0,{mood:asleep?null:'happy',seed:i});c.globalAlpha=1;
   });
 }
 
