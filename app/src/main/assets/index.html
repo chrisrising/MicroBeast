@@ -294,15 +294,159 @@ input[type=text]::placeholder{color:var(--ph-dim);opacity:.8}
 .pick canvas{width:100%;max-width:150px;height:auto;image-rendering:pixelated}
 .pick b{font-weight:400;font-size:19px;color:var(--sel)}.pick small{font-size:15px;color:var(--ph-dim)}
 .tabs button{font-size:17px}
+/* ---- the room: a 90s desk, a 3D CRT and a keyboard view ---- */
+:root{--wallc:#24212C;--gut:max(12px, env(safe-area-inset-left, 0px));--wall:72px;--surf:118px}
+body{padding:0;background:#16141B}
+.desk{position:relative;flex-direction:column;justify-content:flex-start;align-items:center;padding:calc(6px + env(safe-area-inset-top, 0px)) var(--gut) 0;
+  background:radial-gradient(ellipse 60% 42% at 50% 46%,rgba(120,210,190,.10),transparent 70%),
+    radial-gradient(ellipse 50% 40% at 8% 0%,rgba(255,200,120,.08),transparent 70%),
+    repeating-linear-gradient(90deg,rgba(255,255,255,.018) 0 2px,transparent 2px 26px),
+    linear-gradient(180deg,#2B2734,var(--wallc) 60%,#1C1A22)}
+.desk::after{content:"";position:absolute;inset:0;pointer-events:none;z-index:9;background:radial-gradient(ellipse 85% 80% at 50% 45%,transparent 55%,rgba(0,0,0,.45))}
+.room{position:absolute;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+.poster{position:absolute;left:5%;top:calc(3% + env(safe-area-inset-top, 0px));width:clamp(64px,21cqw,150px);transform:rotate(-4deg);filter:drop-shadow(0 4px 6px rgba(0,0,0,.55)) saturate(.85) brightness(.82)}
+.calendar{position:absolute;right:6%;top:calc(4% + env(safe-area-inset-top, 0px));width:clamp(50px,14cqw,104px);transform:rotate(2.5deg);filter:drop-shadow(0 3px 5px rgba(0,0,0,.5)) brightness(.8)}
+.wallnote{position:absolute;right:calc(8% + clamp(50px,14cqw,104px));top:calc(7% + env(safe-area-inset-top, 0px));width:clamp(54px,13cqw,90px);aspect-ratio:1;padding:6px 5px;background:linear-gradient(180deg,#F9E77A,#F2D84E);color:#3A3020;
+  font-family:var(--pixel);font-size:clamp(9px,2.4cqw,14px);line-height:1.1;transform:rotate(7deg);box-shadow:0 3px 5px rgba(0,0,0,.45);filter:brightness(.82);clip-path:polygon(0 0,100% 0,100% 88%,86% 100%,0 100%)}
+.wallgap{flex:1 1 0;min-height:var(--wall)}
+.viewnote{position:absolute;z-index:11;left:calc(8% + clamp(64px,21cqw,150px));top:calc(8% + env(safe-area-inset-top, 0px));width:clamp(62px,15cqw,96px);aspect-ratio:1;border:0;padding:6px 4px 4px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
+  background:linear-gradient(180deg,#9FE6C4,#7FD6AE);color:#1E3A2E;font-family:var(--pixel);font-size:clamp(10px,2.6cqw,14px);font-weight:600;line-height:1.05;text-transform:uppercase;letter-spacing:.04em;
+  transform:rotate(-5deg);box-shadow:0 4px 6px rgba(0,0,0,.5),inset 0 8px 6px -6px rgba(255,255,255,.4);clip-path:polygon(0 0,100% 0,100% 86%,84% 100%,0 100%);transition:transform .12s}
+.viewnote svg{width:22px;height:22px}
+.viewnote:hover{transform:rotate(-2deg) scale(1.05)}
+.viewnote:active{transform:rotate(-2deg) scale(.96)}
+.viewnote::before{content:"";position:absolute;top:-4px;left:35%;width:30%;height:9px;background:rgba(233,223,194,.75);transform:rotate(3deg)}
+
+/* the monitor, now with depth */
+.rig{position:relative;z-index:2;flex:none;padding-top:30px;container-type:inline-size;width:clamp(170px, min(92cqw, 600px, calc((100cqh - 236px - var(--wall) - var(--surf) - 40px) * 1.333 + 52px)), 600px)}
+.rig::after{content:"";position:absolute;z-index:-2;left:6%;right:-4%;bottom:-10px;height:26px;background:radial-gradient(closest-side,rgba(0,0,0,.62),rgba(0,0,0,.25) 60%,transparent)}
+.mtop{position:absolute;z-index:0;top:16px;left:0;right:-12px;height:24px;clip-path:polygon(12px 0,100% 0,calc(100% - 12px) 14px,calc(100% - 12px) 100%,0 100%,0 14px);
+  background:repeating-linear-gradient(90deg,rgba(70,52,28,.45) 0 3px,transparent 3px 9px) 50% 7px/46% 5px no-repeat,
+    linear-gradient(180deg,#AFA48B,#CFC5AE 45%,#E2DAC6 85%,#EAE3D0)}
+.mside{position:absolute;z-index:0;top:16px;bottom:26px;right:-12px;width:12px;clip-path:polygon(0 14px,100% 0,100% calc(100% - 16px),0 100%);
+  background:repeating-linear-gradient(180deg,transparent 0 7px,rgba(50,38,20,.35) 7px 9px) 70% 30%/3px 34% no-repeat,linear-gradient(90deg,#9E9379,#B5AA90 40%,#A0957B)}
+.mhump{position:absolute;z-index:-1;left:calc(17% + 8px);right:calc(17% - 6px);top:4px;height:18px;clip-path:polygon(9px 0,100% 0,calc(100% - 7px) 100%,0 100%);
+  background:repeating-linear-gradient(90deg,rgba(50,38,20,.5) 0 3px,transparent 3px 8px) 50% 5px/60% 4px no-repeat,linear-gradient(180deg,#8E836C,#AEA389 60%,#B7AC92)}
+.monitor{z-index:1}
+.monitor::after{content:"";position:absolute;z-index:3;inset:0;border-radius:inherit;pointer-events:none;
+  background:linear-gradient(90deg,rgba(0,0,0,.10),transparent 4%,transparent 96%,rgba(0,0,0,.14)),linear-gradient(180deg,rgba(255,255,255,.18),transparent 3%)}
+.bezel{box-shadow:0 0 0 1px rgba(90,70,40,.38),0 1px 0 1.5px rgba(255,255,255,.5),inset 0 6px 8px rgba(60,40,15,.45),inset 0 -3px 3px rgba(255,255,255,.6),inset 7px 0 8px rgba(60,40,15,.16),inset -7px 0 8px rgba(60,40,15,.16)}
+.crt{box-shadow:0 0 0 2px #0A0908,0 0 0 5px #1C1915,0 0 0 6px #2E2A24,0 1px 0 7px rgba(255,255,255,.28),inset 0 0 0 1px rgba(255,255,255,.06),0 0 24px rgba(120,220,170,.16)}
+.bulge{position:absolute;inset:0;z-index:7;pointer-events:none;border-radius:inherit;
+  background:radial-gradient(ellipse 95% 55% at 42% -8%,rgba(255,255,255,.13),rgba(255,255,255,.04) 45%,transparent 62%),
+    linear-gradient(115deg,transparent 64%,rgba(255,255,255,.05) 66%,rgba(255,255,255,.05) 74%,transparent 76%),
+    radial-gradient(ellipse 75% 72% at 50% 52%,transparent 66%,rgba(0,0,0,.32) 100%);
+  box-shadow:inset 0 2px 1px rgba(255,255,255,.12),inset 0 -2px 3px rgba(0,0,0,.5)}
+.postit{position:absolute;z-index:4;left:-6px;top:6px;width:44px;padding:4px 3px 6px;background:linear-gradient(180deg,#F9E77A,#F0D448);color:#4A3A20;font-family:var(--pixel);font-size:8.5px;line-height:1.05;text-align:center;letter-spacing:.04em;
+  transform:rotate(-9deg);box-shadow:0 2px 3px rgba(0,0,0,.35);clip-path:polygon(0 0,100% 0,100% 80%,82% 100%,0 100%)}
+.stand{position:relative;width:54%;height:26px;margin:0 auto;background:none;clip-path:none}
+.stand::before{content:"";position:absolute;left:28%;right:28%;top:0;height:12px;background:linear-gradient(90deg,#7E735C,#B5AA90 30%,#A69B81 70%,#7A6F58);clip-path:polygon(8% 0,92% 0,100% 100%,0 100%)}
+.stand::after{content:"";position:absolute;left:0;right:0;top:9px;height:16px;border-radius:50%;background:radial-gradient(ellipse 60% 80% at 50% 20%,#E4DCC8,#C7BDA5 50%,#9A8F76);box-shadow:inset 0 -3px 3px rgba(60,45,20,.35),0 2px 0 #7E735C}
+
+/* boot: the tube is dark, then a line of light, then a flicker into life */
+.boot{position:absolute;inset:0;z-index:6;pointer-events:none;background:radial-gradient(ellipse at 50% 50%,#0E1311,#060807);animation:bootDark 2.5s linear forwards}
+.boot i{position:absolute;inset:0;background:radial-gradient(ellipse 60% 50% at 50% 50%,#FFFFFF,#CFFFE4 60%,rgba(170,255,210,.6));box-shadow:0 0 18px #CFFFE4;transform:scale(0,.006);opacity:0;animation:bootLine 2.5s linear forwards}
+@keyframes bootDark{0%,42%{opacity:1}43%{opacity:0}46%{opacity:.75}48%{opacity:0}53%{opacity:.45}55%{opacity:.05}58%{opacity:.3}60%,100%{opacity:0}}
+@keyframes bootLine{0%,24%{opacity:0;transform:scale(0,.006)}27%{opacity:1;transform:scale(1,.006)}32%{transform:scale(1,.02)}38%{opacity:1;transform:scale(1,1)}43%{opacity:.9}48%{opacity:0;transform:scale(1,1)}100%{opacity:0;transform:scale(1,1)}}
+.booting canvas{animation:bootGlow 2.5s linear forwards}
+@keyframes bootGlow{0%,42%{filter:brightness(1.8) saturate(.3) blur(.6px)}60%{filter:brightness(1.25) saturate(.8)}100%{filter:saturate(1.15) contrast(1.08) brightness(1.04)}}
+.led.off{background:#4A463C!important;box-shadow:0 0 0 2px #7A705C,0 1px 0 2.5px rgba(255,255,255,.5)!important}
+
+/* the desk */
+.surface{position:relative;z-index:1;flex:1.25 1 0;min-height:var(--surf);align-self:stretch;margin:0 calc(-1 * var(--gut));display:flex;flex-direction:column;justify-content:flex-end}
+.surface::before{content:"";position:absolute;left:0;right:0;top:-46px;bottom:0;z-index:-1;
+  background:radial-gradient(ellipse 46% 40% at 50% 0%,rgba(140,230,190,.14),transparent 70%),
+    repeating-linear-gradient(178deg,rgba(0,0,0,.08) 0 2px,transparent 2px 7px,rgba(255,220,170,.035) 7px 9px,transparent 9px 15px),
+    linear-gradient(180deg,#3E2A1B,#5A3D26 18%,#6E4B2E 60%,#7A5434);
+  box-shadow:inset 0 2px 0 rgba(255,220,170,.12)}
+.surface::after{content:"";position:absolute;left:0;right:0;bottom:0;height:calc(12px + env(safe-area-inset-bottom, 0px));z-index:3;background:linear-gradient(180deg,#9A6E44,#5A3A22 25%,#3A2414);box-shadow:0 -1px 0 rgba(0,0,0,.4)}
+.clutter{position:absolute;inset:0 0 calc(12px + env(safe-area-inset-bottom, 0px));pointer-events:none}
+.it{position:absolute;display:block;filter:brightness(.92) saturate(.92)}
+.mug{left:4%;bottom:34%;width:clamp(58px,17cqw,110px)}
+.ring{left:21%;bottom:22%;width:clamp(40px,11cqw,72px);filter:none}
+.b1{left:25%;bottom:8%;width:clamp(34px,10cqw,62px)}
+.pencil{left:31%;bottom:34%;width:clamp(96px,28cqw,190px);transform:rotate(-7deg)}
+.floppy{right:17%;bottom:26%;width:clamp(78px,23cqw,140px)}
+.can{right:4%;bottom:34%;width:clamp(28px,8.4cqw,50px)}
+.b2{right:38%;bottom:6%;width:clamp(26px,8cqw,46px);transform:rotate(30deg)}
+.wrap{left:52%;bottom:14%;width:clamp(30px,9cqw,54px);transform:rotate(-14deg)}
+.crumbs{left:42%;bottom:6%;width:clamp(36px,10cqw,62px);filter:none}
+.steam path{opacity:0;animation:steam 3.6s ease-in-out infinite}
+.steam path:nth-child(2){animation-delay:1.2s}.steam path:nth-child(3){animation-delay:2.4s}
+@keyframes steam{0%{opacity:0;transform:translateY(6px)}30%{opacity:.32}100%{opacity:0;transform:translateY(-14px)}}
+
+/* keyboard view: the CRT fills the top two-thirds, a keyboard takes the bottom third */
+body.v-kb{--wall:0px}
+.v-kb .room,.v-kb .clutter,.v-kb .viewnote,.v-kb .wallgap{display:none}
+.v-kb .rig{width:clamp(200px, min(calc(100cqw - 14px), 760px, calc((64cqh - 128px) * 1.333 + 56px)), 760px);animation:zoomIn .35s ease-out}
+.v-kb .surface{flex:1 1 0;min-height:0;margin-top:2px;padding:6px var(--gut) calc(16px + env(safe-area-inset-bottom, 0px))}
+.v-kb .surface::before{top:-38px}
+.kbwrap{flex:1 1 0;min-height:0;display:flex;align-items:center;justify-content:center;perspective:700px;container-type:size;animation:zoomIn .35s ease-out}
+@keyframes zoomIn{from{opacity:.4;transform:scale(.94)}to{opacity:1;transform:none}}
+.kb{width:min(100cqw,820px);max-height:100%;display:flex;flex-direction:column;gap:5px;padding:6px 10px 10px;border-radius:10px 10px 14px 14px;transform:rotateX(16deg);transform-origin:50% 100%;
+  background:linear-gradient(180deg,rgba(255,255,255,.25),rgba(255,255,255,0) 10%,rgba(0,0,0,0) 85%,rgba(60,40,10,.18)),var(--case);
+  box-shadow:inset 0 2px 1px rgba(255,255,255,.7),inset 0 -2px 2px rgba(70,50,20,.3),0 1px 0 #BFB49B,0 2px 0 #A79B80,0 3px 0 #9C8F74,0 5px 0 #85785D,0 6px 0 #6E634C,0 14px 18px -4px rgba(0,0,0,.65)}
+.kbhead{display:flex;align-items:center;gap:8px;min-height:22px}
+.kbrand{font-family:var(--pixel);font-weight:700;font-size:10px;letter-spacing:.2em;color:#968B74;text-shadow:0 1px 0 rgba(255,255,255,.7)}
+.kbleds{margin-left:auto;display:flex;align-items:center;gap:4px;font-family:var(--pixel);font-size:8px;letter-spacing:.1em;color:#8E836C}
+.kbleds i{width:6px;height:6px;border-radius:50%;background:#5E5A4C;box-shadow:0 0 0 1.5px #8C826C;margin-left:5px}
+.kbleds i.on{background:#4BE07A;box-shadow:0 0 5px #4BE07A,0 0 0 1.5px #8C826C}
+.kbleds i.fight{background:#FF5A4A;box-shadow:0 0 5px #FF5A4A,0 0 0 1.5px #8C826C}
+.kbswitch{display:flex;align-items:center;gap:4px;border:0;border-radius:4px;padding:3px 7px;font-family:var(--pixel);font-size:9px;font-weight:600;letter-spacing:.1em;color:#ECE5D4;
+  background:linear-gradient(180deg,#5A554C,#3C3832);box-shadow:0 2px 0 #22201C,0 3px 3px rgba(0,0,0,.35)}
+.kbswitch svg{width:13px;height:13px}
+.kbswitch:active{transform:translateY(2px);box-shadow:0 0 0 #22201C}
+.kbslot{display:flex;flex-direction:column;gap:5px}
+.kb .lcd{margin:0;padding:4px 8px 5px}
+.kb .keywell{padding:6px 6px 4px}
+.kb .btns{counter-reset:fk}
+.kb .tb{border-radius:4px 4px 6px 6px;min-height:46px}
+.kb .tb:not([hidden]){counter-increment:fk}
+.kb .tb::before{content:counter(fk);position:absolute;left:5px;top:3px;font-size:8px;opacity:.55;font-family:var(--term-font)}
+.dkrows{flex:none;display:grid;grid-template-rows:repeat(4,clamp(20px,9cqh,34px));gap:4px;padding:4px 6px 2px;border-radius:7px;background:linear-gradient(180deg,#A49980,#BCB199);box-shadow:inset 0 3px 6px rgba(50,35,10,.45),inset 0 -1px 1px rgba(255,255,255,.4)}
+.dr{display:flex;gap:4px;min-height:0}
+.dr.r1{padding-left:3%}.dr.r2{padding-left:1%}
+.dk{flex:1 1 0;min-width:0;display:flex;align-items:flex-start;justify-content:flex-start;padding:1px 0 0 4px;border-radius:3px 3px 4px 4px;font-family:var(--pixel);font-size:9px;color:#6A604E;
+  background:radial-gradient(ellipse 80% 60% at 50% 35%,rgba(255,255,255,.35),transparent 70%),linear-gradient(180deg,#EEE8DA,#D6CDB8);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.8),0 1px 0 #B3A88E,0 2px 0 #9C8F74,0 3px 2px rgba(0,0,0,.35);cursor:pointer;user-select:none;-webkit-user-select:none}
+.dk.w2{flex:1.7 1 0;color:#ECE5D4;background:linear-gradient(180deg,#8E8574,#6E6656);box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 1px 0 #5A5244,0 2px 0 #4A4336,0 3px 2px rgba(0,0,0,.35)}
+.dk.sp{flex:6 1 0}
+.dk:active,.dk.down{transform:translateY(2px);box-shadow:inset 0 1px 0 rgba(255,255,255,.6),0 0 0 #9C8F74,0 1px 1px rgba(0,0,0,.35)}
+.tb.pressed{transform:translateY(4px);box-shadow:inset 0 1px 0 rgba(255,255,255,.6),inset 0 -1px 1px rgba(0,0,0,.15),0 1px 0 var(--sd),0 2px 2px rgba(0,0,0,.4)}
+@container (max-height:230px){.dr.r0,.dr.r1{display:none}.dkrows{grid-template-rows:repeat(2,24px)}}
+@container (max-height:170px){.dkrows{display:none}.kb .tb{min-height:38px}}
+@container (max-height:130px){.kbhead,.kb .lcd{display:none}}
+@media (max-height:620px){:root{--wall:18px;--surf:48px}.poster,.calendar,.wallnote{display:none}.viewnote{left:auto;right:8px;top:8px;width:58px}}
+@media (prefers-reduced-motion: reduce){.boot,.boot i,.booting canvas,.steam path{animation-duration:.01s!important}.steam path{opacity:0}}
 </style>
 
-<main class="desk">
+<main class="desk" id="desk">
+  <div class="room" aria-hidden="true">
+    <svg class="poster" viewBox="0 0 100 132"><rect width="100" height="132" fill="#1B2A55"/><rect width="100" height="132" fill="url(#psky)"/>
+      <defs><linearGradient id="psky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0E1638"/><stop offset=".7" stop-color="#2A3F7A"/><stop offset="1" stop-color="#5A3A7A"/></linearGradient></defs>
+      <g fill="#fff"><circle cx="14" cy="14" r=".9"/><circle cx="80" cy="22" r="1.2"/><circle cx="62" cy="10" r=".7"/><circle cx="24" cy="40" r=".8"/><circle cx="88" cy="56" r=".7"/><circle cx="10" cy="80" r="1"/><circle cx="70" cy="88" r=".8"/><circle cx="40" cy="24" r=".6"/></g>
+      <circle cx="50" cy="60" r="22" fill="#E8743B"/><path d="M30 52 q20 -6 40 0 M29 62 q21 -5 42 1 M33 71 q17 -4 34 0" stroke="#C4552A" stroke-width="3" fill="none"/><circle cx="43" cy="50" r="6" fill="#F4A06A" opacity=".5"/>
+      <ellipse cx="50" cy="62" rx="36" ry="7" fill="none" stroke="#F7D348" stroke-width="2.4" transform="rotate(-12 50 62)"/>
+      <circle cx="82" cy="36" r="5" fill="#B9C2D8"/><circle cx="80.5" cy="35" r="1.4" fill="#8E98B4"/>
+      <text x="50" y="106" text-anchor="middle" font-family="monospace" font-weight="700" font-size="15" letter-spacing="1" fill="#F7D348">COSMIC</text>
+      <text x="50" y="121" text-anchor="middle" font-family="monospace" font-weight="700" font-size="8.5" letter-spacing="2" fill="#8FD3FF">TOUR '94</text>
+      <rect width="100" height="132" fill="#fff" opacity=".07"/><path d="M100 112 L100 132 L84 132 Z" fill="#23202B"/><path d="M84 132 L100 112 L90 124 Z" fill="#E9E2CF" opacity=".5"/>
+      <rect x="-4" y="-2" width="18" height="7" fill="#E9DFC2" opacity=".75" transform="rotate(-30 5 2)"/><rect x="86" y="-2" width="18" height="7" fill="#E9DFC2" opacity=".75" transform="rotate(32 95 2)"/></svg>
+    <svg class="calendar" viewBox="0 0 80 104"><circle cx="40" cy="4" r="2.2" fill="#6E6654"/><path d="M34 12 L40 4 L46 12" stroke="#6E6654" fill="none"/><rect x="2" y="10" width="76" height="92" fill="#F4F0E6"/><rect x="2" y="10" width="76" height="22" fill="#C8392F"/>
+      <text x="40" y="24" text-anchor="middle" font-family="monospace" font-weight="700" font-size="11" fill="#fff">OCT</text><text x="40" y="30.5" text-anchor="middle" font-family="monospace" font-size="5.5" fill="#FFD9D2">1994</text>
+      <g fill="#B8AE98"><rect x="6" y="38" width="8" height="1.6"/><rect x="16" y="38" width="8" height="1.6"/><rect x="26" y="38" width="8" height="1.6"/><rect x="36" y="38" width="8" height="1.6"/><rect x="46" y="38" width="8" height="1.6"/><rect x="56" y="38" width="8" height="1.6"/><rect x="66" y="38" width="8" height="1.6"/><rect x="6" y="48" width="8" height="1.6"/><rect x="16" y="48" width="8" height="1.6"/><rect x="26" y="48" width="8" height="1.6"/><rect x="36" y="48" width="8" height="1.6"/><rect x="46" y="48" width="8" height="1.6"/><rect x="56" y="48" width="8" height="1.6"/><rect x="66" y="48" width="8" height="1.6"/><rect x="6" y="58" width="8" height="1.6"/><rect x="16" y="58" width="8" height="1.6"/><rect x="26" y="58" width="8" height="1.6"/><rect x="36" y="58" width="8" height="1.6"/><rect x="46" y="58" width="8" height="1.6"/><rect x="56" y="58" width="8" height="1.6"/><rect x="66" y="58" width="8" height="1.6"/><rect x="6" y="68" width="8" height="1.6"/><rect x="16" y="68" width="8" height="1.6"/><rect x="26" y="68" width="8" height="1.6"/><rect x="36" y="68" width="8" height="1.6"/><rect x="46" y="68" width="8" height="1.6"/><rect x="56" y="68" width="8" height="1.6"/><rect x="66" y="68" width="8" height="1.6"/><rect x="6" y="78" width="8" height="1.6"/><rect x="16" y="78" width="8" height="1.6"/><rect x="26" y="78" width="8" height="1.6"/><rect x="36" y="78" width="8" height="1.6"/><rect x="46" y="78" width="8" height="1.6"/><rect x="56" y="78" width="8" height="1.6"/><rect x="66" y="78" width="8" height="1.6"/><rect x="6" y="88" width="8" height="1.6"/><rect x="16" y="88" width="8" height="1.6"/><rect x="26" y="88" width="8" height="1.6"/><rect x="36" y="88" width="8" height="1.6"/><rect x="46" y="88" width="8" height="1.6"/><rect x="56" y="88" width="8" height="1.6"/><rect x="66" y="88" width="8" height="1.6"/></g><circle cx="52.5" cy="64.5" r="5.2" fill="none" stroke="#D8392F" stroke-width="1.4"/><path d="M14 74 l5 5 M19 74 l-5 5 M24 74 l5 5 M29 74 l-5 5" stroke="#3A3A44" stroke-width="1"/>
+      <rect x="2" y="98" width="76" height="4" fill="#DCD5C2"/></svg>
+    <span class="wallnote" id="wallNote">feed Pip!!</span>
+  </div>
+  <div class="wallgap"></div>
   <div class="rig">
+    <i class="mhump" aria-hidden="true"></i><i class="mtop" aria-hidden="true"></i><i class="mside" aria-hidden="true"></i>
     <section class="monitor" aria-label="Palwardens">
       <div class="grain" id="grain" aria-hidden="true"></div>
       <div class="wear" aria-hidden="true"></div>
       <i class="screw l" aria-hidden="true"></i><i class="screw r" aria-hidden="true"></i>
       <span class="sticker" aria-hidden="true">PROPERTY OF ROOM 12</span>
+      <span class="postit" aria-hidden="true">BACK IN 5</span>
       <div class="bezel">
         <div class="crt" id="crt">
           <canvas id="screen" width="160" height="120" aria-label="Your pet on the monitor"></canvas>
@@ -310,7 +454,9 @@ input[type=text]::placeholder{color:var(--ph-dim);opacity:.8}
           <div class="burn" aria-hidden="true">PALWARDENS</div>
           <div class="noise" id="noise" aria-hidden="true"></div>
           <div class="roll" aria-hidden="true"></div>
+          <div class="bulge" aria-hidden="true"></div>
           <div class="glass" aria-hidden="true"></div>
+          <div class="boot" id="boot" aria-hidden="true"><i></i></div>
           <div class="toast glow" id="toast" aria-live="polite"></div>
           <div class="ghud glow" aria-live="polite"><span id="gInfo"></span><div class="hp" id="gBossBar" hidden><b></b></div><div id="gBanner"></div></div>
           <div class="bhud glow">
@@ -356,6 +502,41 @@ input[type=text]::placeholder{color:var(--ph-dim);opacity:.8}
     </section>
     <div class="stand" aria-hidden="true"></div>
   </div>
+  <div class="surface" id="surface">
+    <div class="clutter" aria-hidden="true">
+      <svg class="it mug" viewBox="0 -34 64 104"><defs><linearGradient id="mg" x1="0" x2="1"><stop offset="0" stop-color="#173E52"/><stop offset=".3" stop-color="#3E8DB3"/><stop offset=".62" stop-color="#2E6C8A"/><stop offset="1" stop-color="#123446"/></linearGradient></defs>
+        <ellipse cx="30" cy="66" rx="25" ry="4.5" fill="#000" opacity=".38"/><path d="M50 26 c13 0 13 23 0 23" fill="none" stroke="#25607C" stroke-width="6.5"/><path d="M50 27 c10 1 10 19 0 21" fill="none" stroke="#4C9CC2" stroke-width="1.4" opacity=".6"/>
+        <path d="M8 16 v40 q0 10 22 10 q22 0 22 -10 v-40 z" fill="url(#mg)"/><path d="M14 22 v32" stroke="#fff" stroke-opacity=".25" stroke-width="3" stroke-linecap="round"/>
+        <path d="M30 36 c-3 -4 -9 -1 -6 4 l6 6 l6 -6 c3 -5 -3 -8 -6 -4z" fill="#F07A8A"/><path d="M44 18 q1 10 -1 16" stroke="#4A2A12" stroke-width="2.4" fill="none" opacity=".7"/>
+        <ellipse cx="30" cy="16" rx="22" ry="6" fill="#5AAAD0"/><ellipse cx="30" cy="16.6" rx="19" ry="4.6" fill="#2A170A"/><ellipse cx="30" cy="17.4" rx="17" ry="3.5" fill="#5A3518"/><ellipse cx="25" cy="16.6" rx="5" ry="1" fill="#8A5A30" opacity=".6"/><rect x="40" y="10.5" width="3" height="2" fill="#E6F2F7"/>
+        <g class="steam" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round"><path d="M22 10 q-5 -7 0 -14 q5 -7 0 -14"/><path d="M31 10 q-5 -7 0 -14 q5 -7 0 -14"/><path d="M40 10 q-5 -7 0 -14 q5 -7 0 -14"/></g></svg>
+      <svg class="it ring" viewBox="0 0 60 20"><ellipse cx="30" cy="10" rx="26" ry="7" fill="none" stroke="#3A220E" stroke-opacity=".45" stroke-width="2"/><ellipse cx="30" cy="10" rx="24" ry="6" fill="none" stroke="#3A220E" stroke-opacity=".18" stroke-width="1"/></svg>
+      <svg class="it ball b1" viewBox="0 0 40 34"><ellipse cx="21" cy="30" rx="15" ry="3" fill="#000" opacity=".35"/><path d="M6 20 L9 9 L18 4 L29 6 L35 15 L33 26 L22 31 L11 29 Z" fill="#ECE8DE"/><path d="M22 31 L33 26 L35 15 L26 20 L20 28 Z" fill="#C9C2B2"/><path d="M9 9 L17 16 L29 6 M17 16 L14 27 M17 16 L28 18 L35 15 M11 22 L6 20" stroke="#ABA392" stroke-width="1" fill="none"/><path d="M12 12 L16 8" stroke="#5A7BC8" stroke-width=".8" opacity=".5"/></svg>
+      <svg class="it pencil" viewBox="0 0 120 16"><ellipse cx="60" cy="13" rx="56" ry="2.4" fill="#000" opacity=".3"/><rect x="11" y="4" width="89" height="6.5" fill="#F2C230"/><rect x="11" y="4" width="89" height="2" fill="#F9DC6A"/><rect x="11" y="8.6" width="89" height="1.9" fill="#C8961A"/><rect x="100" y="3.6" width="7" height="7.3" fill="#B8B8B0"/><rect x="101.5" y="3.6" width="1" height="7.3" fill="#8A8A80"/><rect x="107" y="3.8" width="9" height="6.9" rx="2" fill="#E88AA0"/><path d="M11 4 L0 7.3 L11 10.5 Z" fill="#E9C9A0"/><path d="M3.6 6.2 L0 7.3 L3.6 8.4 Z" fill="#2E2E34"/><text x="40" y="9" font-family="monospace" font-size="4.4" fill="#5A4210">HB 2</text></svg>
+      <svg class="it floppy" viewBox="0 0 90 48"><ellipse cx="46" cy="42" rx="40" ry="4" fill="#000" opacity=".35"/>
+        <path d="M16 26 L76 26 L86 38 L26 38 Z" fill="#B8342A"/><path d="M26 38 L86 38 L86 41 L26 41 Z" fill="#7A1E16"/><path d="M76 26 L86 38 L86 41 L76 29 Z" fill="#8E2A20"/>
+        <path d="M8 19 L68 19 L78 31 L18 31 Z" fill="#2F5EC8"/><path d="M18 31 L78 31 L78 34 L18 34 Z" fill="#1A3478"/><path d="M68 19 L78 31 L78 34 L68 22 Z" fill="#22448E"/>
+        <path d="M12 9 L72 9 L83 23 L23 23 Z" fill="#26262E"/><path d="M23 23 L83 23 L83 26.4 L23 26.4 Z" fill="#101014"/><path d="M72 9 L83 23 L83 26.4 L72 12.4 Z" fill="#1A1A20"/>
+        <path d="M32 9 L52 9 L55 13 L35 13 Z" fill="#AEB5BE"/><path d="M42 9.6 L46 9.6 L47.4 12.4 L43.4 12.4 Z" fill="#26262E"/>
+        <path d="M24 15 L68 15 L72 21 L28 21 Z" fill="#F2EDE0"/><path d="M27 17 L68 17" stroke="#D8392F" stroke-width=".8"/><path d="M29 19.3 L58 19.3" stroke="#6E6A60" stroke-width=".6"/></svg>
+      <svg class="it can" viewBox="0 0 30 58"><defs><linearGradient id="cg" x1="0" x2="1"><stop offset="0" stop-color="#7A1410"/><stop offset=".32" stop-color="#E0402F"/><stop offset=".55" stop-color="#C02C20"/><stop offset="1" stop-color="#5E0E0A"/></linearGradient><linearGradient id="cs" x1="0" x2="1"><stop offset="0" stop-color="#8A9098"/><stop offset=".4" stop-color="#E6EAEE"/><stop offset="1" stop-color="#7A8088"/></linearGradient></defs>
+        <ellipse cx="15" cy="54" rx="14" ry="3" fill="#000" opacity=".38"/><path d="M3 10 L3 49 Q15 54 27 49 L27 10 Z" fill="url(#cg)"/><path d="M3 49 Q15 54 27 49 L27 51 Q15 56 3 51 Z" fill="url(#cs)"/>
+        <path d="M3 10 Q4 5 8 4 L22 4 Q26 5 27 10 Q15 14 3 10Z" fill="url(#cs)"/><ellipse cx="15" cy="5.6" rx="8" ry="2" fill="#B8BEC6"/><ellipse cx="17" cy="5.4" rx="3" ry="1" fill="#6E747C"/>
+        <text x="15" y="31" text-anchor="middle" font-family="monospace" font-weight="700" font-size="8.4" fill="#FFF4E8" transform="rotate(-90 15 30)">FIZZ</text><rect x="7" y="12" width="2.6" height="34" fill="#fff" opacity=".3"/><path d="M20 34 q3 2 1 6" stroke="#6E100C" stroke-width="1.2" fill="none"/></svg>
+      <svg class="it ball b2" viewBox="0 0 40 34"><ellipse cx="20" cy="30" rx="14" ry="3" fill="#000" opacity=".35"/><path d="M7 22 L8 11 L16 5 L27 7 L34 14 L32 25 L21 30 L12 28 Z" fill="#F2E7A6"/><path d="M21 30 L32 25 L34 14 L25 19 L19 27 Z" fill="#D4C780"/><path d="M8 11 L18 16 L27 7 M18 16 L15 27 M18 16 L28 19" stroke="#B8AA66" stroke-width="1" fill="none"/></svg>
+      <svg class="it wrap" viewBox="0 0 40 20"><ellipse cx="20" cy="17" rx="16" ry="2.4" fill="#000" opacity=".3"/><path d="M13 6 L3 1 L6 10 L3 18 L13 14 Z" fill="#7A3CC0"/><path d="M27 6 L37 1 L34 10 L37 18 L27 14 Z" fill="#7A3CC0"/><rect x="12" y="4.5" width="16" height="11" rx="4" fill="#9A5AE0"/><path d="M15 7 Q20 5 25 7" stroke="#fff" stroke-opacity=".7" stroke-width="1.2" fill="none"/><path d="M5 4 L9 8" stroke="#D4B8FF" stroke-width=".8"/></svg>
+      <svg class="it crumbs" viewBox="0 0 40 10"><g fill="#E8B04A"><rect x="2" y="5" width="2.4" height="1.8"/><rect x="9" y="2" width="1.8" height="1.6"/><rect x="15" y="6" width="2.8" height="2"/><rect x="24" y="3" width="1.6" height="1.4"/><rect x="31" y="6" width="2.2" height="1.8"/></g></svg>
+    </div>
+    <div class="kbwrap" id="kbwrap" hidden>
+      <div class="kb" id="kb">
+        <div class="kbhead"><span class="kbrand">PALWARDENS · KB-101</span><span class="kbleds"><i class="on"></i>NUM<i id="kbCaps"></i>CAPS<i></i>SCRL</span>
+          <button class="kbswitch" id="deskBtn" type="button" aria-label="Switch to desk view"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg>DESK</button></div>
+        <div class="kbslot" id="kbslot"></div>
+        <div class="dkrows" id="dkrows" aria-hidden="true"></div>
+      </div>
+    </div>
+  </div>
+  <button class="viewnote" id="kbBtn" type="button" aria-label="Switch to keyboard view"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 10h1M9 10h1M12 10h1M15 10h1M18 10h1M7 14h10"/></svg>keyboard<br>view</button>
 </main>
 
 <!-- main menu -->
@@ -2559,6 +2740,39 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden){try{tick()
 let lastSave=0;
 setInterval(()=>{tick();if(!G&&!B&&!S.asleep&&S.m.energy>50&&!isRestless()&&Math.random()<1/900)setRestless();renderMeters();renderEvo();renderHead();if(Date.now()-lastSave>5000){save();lastSave=Date.now();}},1000);
 
+// ---------- views: the monitor on a messy desk, or zoomed in over a keyboard ----------
+const VIEW=(()=>{
+  const mon=document.querySelector('.monitor'),mini=$('mini'),well=document.querySelector('.keywell'),slot=$('kbslot');
+  const rows=['QWERTYUIOP','ASDFGHJKL','ZXCVBNM'];
+  $('dkrows').innerHTML=rows.map((r,i)=>`<div class="dr r${i}">${i===2?'<span class="dk w2">SHIFT</span>':''}${[...r].map(c=>`<span class="dk">${c}</span>`).join('')}${i===1?'<span class="dk w2">ENTER</span>':i===0?'<span class="dk w2">DEL</span>':'<span class="dk w2">SHIFT</span>'}</div>`).join('')+
+    '<div class="dr r3"><span class="dk w2">CTRL</span><span class="dk w2">ALT</span><span class="dk sp" data-k="space"></span><span class="dk w2">ALT</span><span class="dk w2">CTRL</span></div>';
+  // the space bar nudges the pet (or jumps in the minigame), like tapping the screen
+  $('dkrows').addEventListener('pointerdown',e=>{const k=e.target.closest('.dk');if(!k)return;SFX.play('click');
+    if(k.dataset.k==='space'){const r=$('screen').getBoundingClientRect();$('screen').dispatchEvent(new PointerEvent('pointerdown',{clientX:r.left+r.width*(.2+Math.random()*.6),clientY:r.top+r.height*.6,bubbles:true}));}});
+  let cur='desk';
+  function set(v){
+    cur=v;document.body.classList.toggle('v-kb',v==='kb');$('kbwrap').hidden=v!=='kb';
+    if(v==='kb'){slot.appendChild(mini);slot.appendChild(well);}else{mon.appendChild(mini);mon.appendChild(well);}
+  }
+  $('kbBtn').onclick=()=>{SFX.play('click');set('kb');};
+  $('deskBtn').onclick=()=>{SFX.play('click');set('desk');};
+  // the number keys press the visible action keys, left to right
+  document.addEventListener('keydown',e=>{
+    if(e.repeat||e.ctrlKey||e.metaKey||e.altKey)return;const n='123456'.indexOf(e.key);if(n<0)return;
+    if(document.querySelector('.sheet:not([hidden])'))return;
+    const grp=[...document.querySelectorAll('.keywell .btns')].find(g=>!g.hidden);if(!grp)return;
+    const b=[...grp.querySelectorAll('.tb')].filter(x=>!x.hidden)[n];if(!b||b.disabled)return;
+    b.classList.add('pressed');setTimeout(()=>b.classList.remove('pressed'),130);SFX.play('click');b.click();});
+  // little touches that follow the game: the wall note names the pet; CAPS lights up when it wants a fight
+  setInterval(()=>{$('wallNote').textContent=`feed ${S.name}!!`;$('kbCaps').classList.toggle('fight',!!(typeof isRestless==='function'&&isRestless()));},1500);
+  $('wallNote').textContent=`feed ${S.name}!!`;
+  // power on: dark tube, a line of light, a flicker into life
+  const crt=$('crt'),led=$('led'),boot=$('boot');
+  crt.classList.add('booting');led.classList.add('off');
+  setTimeout(()=>{led.classList.remove('off');},650);
+  setTimeout(()=>{crt.classList.remove('booting');boot.remove();},2600);
+  return {set,get:()=>cur};
+})();
 const awayAtLoad=S.last?Date.now()-S.last:0;
 tick();renderAll();requestAnimationFrame(frame);
 if(firstRun) openSpecies(false); else if(!S.sp) openSpecies(true);
