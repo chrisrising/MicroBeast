@@ -495,8 +495,27 @@ body.v-kb{--wall:0px}
 .v-kb .wrap{left:62%;top:4px;bottom:auto;width:clamp(22px,6cqw,40px)}
 .v-kb .crumbs{left:48%;top:14px;bottom:auto;width:clamp(28px,8cqw,52px)}
 .v-kb .kbwrap{position:relative;z-index:2}
-.mrow.r0 .mk{font-size:8.5px;letter-spacing:.02em;padding-left:2px;padding-right:2px}
-@media (min-width:480px){.mrow.r0 .mk{font-size:10px;letter-spacing:.06em}}
+.mrow .mk{font-size:8.5px;letter-spacing:.02em;padding-left:2px;padding-right:2px}
+@media (min-width:480px){.mrow .mk{font-size:10px;letter-spacing:.06em}}
+
+/* keyboard view: menus and pop-ups appear on the CRT itself */
+.crt>.sheet{position:absolute;inset:0;z-index:4;padding:3.5% 4%;background:rgba(2,8,5,.9);align-items:stretch}
+.crt>.sheet .box{max-width:none;width:100%;height:100%;max-height:100%;padding:7px 9px 9px;gap:7px;font-size:17px;border-width:1px;box-shadow:none;background:repeating-linear-gradient(to bottom,rgba(141,255,168,.035) 0 1px,transparent 1px 3px),rgba(4,12,7,.6);
+  scrollbar-width:thin;scrollbar-color:var(--ph-dim) transparent;-webkit-overflow-scrolling:touch}
+.crt>.sheet .box.tall{height:100%}
+.crt>.sheet h3{font-size:12px;padding:2px 6px}
+.crt>.sheet .x{font-size:16px}
+.crt>.sheet .btn{font-size:16px;padding:3px 9px}
+.crt>.sheet .tabs button{font-size:14px;padding:2px 1px}
+.crt>.sheet .sub,.crt>.sheet .choice .d{font-size:15px}
+.crt>.sheet .count,.crt>.sheet .stat b{font-size:24px}
+.crt>.sheet .choice{padding:6px 8px;gap:9px;grid-template-columns:30px 1fr}.crt>.sheet .choice .sw{width:30px;height:30px}
+.crt>.sheet .species{gap:4px}.crt>.sheet .sp{font-size:13px}
+.crt>.sheet .qr img{width:150px}
+.mk.back{--top1:#FFE2A8;--top2:#E9B866;--sk1:#C9964A;--sk2:#9A6C2A;--ink:#4A300C}
+.mk.back.lit{animation:backlit 1.4s ease-in-out infinite}
+@keyframes backlit{0%,100%{filter:none}50%{filter:drop-shadow(0 0 6px rgba(255,190,90,.9)) brightness(1.06)}}
+.tv-off .mk.back{pointer-events:none;filter:saturate(.6) brightness(.92)}
 </style>
 
 <main class="desk" id="desk">
@@ -620,9 +639,10 @@ body.v-kb{--wall:0px}
           </div>
           <div class="mrow r1">
             <button class="mk pwr" type="button" data-act="power" aria-label="Power"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v8"/><path d="M6.6 6.6a8 8 0 1 0 10.8 0"/></svg><span>Power</span></button>
-            <button class="mk" type="button" data-act="pet" id="mkPet"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h13l-3-3M20 16H7l3 3"/></svg><span>Swap pet</span></button>
-            <button class="mk" type="button" data-act="snd" id="mkSnd"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9h4l5-4v14l-5-4H3z"/><path d="M16 9a4 4 0 0 1 0 6"/></svg><span id="mkSndLab">Sound on</span></button>
-            <button class="mk dark" type="button" data-act="desk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg><span>Desk view</span></button>
+            <button class="mk" type="button" data-act="pet" id="mkPet"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h13l-3-3M20 16H7l3 3"/></svg><span>Swap</span></button>
+            <button class="mk" type="button" data-act="snd" id="mkSnd"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9h4l5-4v14l-5-4H3z"/><path d="M16 9a4 4 0 0 1 0 6"/></svg><span id="mkSndLab">Sound</span></button>
+            <button class="mk back" type="button" data-act="back" id="mkBack"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 6l-6 6 6 6M4 12h11a5 5 0 0 1 0 10h-2"/></svg><span>Back</span></button>
+            <button class="mk dark" type="button" data-act="desk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg><span>Desk</span></button>
           </div>
         </div>
       </div>
@@ -2840,14 +2860,20 @@ const VIEW=(()=>{
   // menu keys: each opens its page of the menu; the bottom row is power, pet swap, sound and the desk view
   $('mkeys').addEventListener('click',e=>{const k=e.target.closest('.mk');if(!k||k.disabled)return;SFX.play('click');
     if(k.dataset.tab){showTab(k.dataset.tab);$('menuSheet').hidden=false;return;}
-    const a=k.dataset.act;if(a==='power')$('pwrKey').click();else if(a==='pet')$('petBtn').click();else if(a==='snd'){$('sndBtn').click();syncKeys();}else if(a==='desk')set('desk');});
-  function syncKeys(){$('mkPet').disabled=W.pets.length<2;$('mkSndLab').textContent=SFX.muted?'Sound off':'Sound on';$('mkSnd').classList.toggle('muted',SFX.muted);}
+    const a=k.dataset.act;if(a==='power')$('pwrKey').click();else if(a==='pet')$('petBtn').click();else if(a==='snd'){$('sndBtn').click();syncKeys();}else if(a==='desk')set('desk');else if(a==='back')goBack();});
+  // BACK closes whatever is open on screen, using its own close/cancel button where it has one
+  const BACKORDER=['resetSheet','pickSheet','giftSheet','unlockSheet','feedSheet','qrSheet','challengeSheet','evoSheet','battleSheet','menuSheet'];
+  function goBack(){const id=BACKORDER.find(i=>!$(i).hidden);if(!id)return;const sh=$(id);
+    const c=sh.querySelector('.x')||[...sh.querySelectorAll('button[id]')].find(b=>/(Close|No|Later|Keep|Cancel)$/.test(b.id));if(c)c.click();else sh.hidden=true;}
+  const sheets=[...document.querySelectorAll('.sheet')];
+  new MutationObserver(()=>$('mkBack').classList.toggle('lit',sheets.some(s=>!s.hidden))).observe(document.body,{attributes:true,subtree:true,attributeFilter:['hidden']});
+  function syncKeys(){$('mkPet').disabled=W.pets.length<2;$('mkSndLab').textContent=SFX.muted?'Muted':'Sound';$('mkSnd').classList.toggle('muted',SFX.muted);}
   syncKeys();setInterval(syncKeys,1500);
   new MutationObserver(()=>{const l=$('led').classList;$('kbPwr').className=l.contains('off')?'':l.contains('fight')?'fight':l.contains('sleep')?'sleep':'on';}).observe($('led'),{attributes:true});
   let cur='desk';
   function set(v){
     cur=v;document.body.classList.toggle('v-kb',v==='kb');$('kbwrap').hidden=v!=='kb';
-    if(v==='kb'){slot.appendChild(mini);slot.appendChild(well);}else{mon.appendChild(mini);mon.appendChild(well);}
+    if(v==='kb'){slot.appendChild(mini);slot.appendChild(well);sheets.forEach(s=>$('crt').appendChild(s));}else{mon.appendChild(mini);mon.appendChild(well);sheets.forEach(s=>document.body.appendChild(s));}
   }
   $('kbBtn').onclick=()=>{SFX.play('click');set('kb');};
   // the number keys press the visible action keys, left to right
