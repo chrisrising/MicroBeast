@@ -1,11 +1,11 @@
-# Fuselings for Android
+# Palwardens for Android
 
-A small Android app that runs the Fuselings creature-care game from its own files.
+A small Android app that runs the Palwardens creature-care game from its own files.
 
 ## Get the APK (GitHub does the build)
 
 1. Push this folder to a GitHub repository (Claude can do this for you).
-2. GitHub builds the app automatically. After about 5 minutes, open the repository's **Releases** page on your phone and download `Fuselings.apk`.
+2. GitHub builds the app automatically. After about 5 minutes, open the repository's **Releases** page on your phone and download `Palwardens.apk`.
 3. Open the file to install. The first time, Android asks you to allow installs from your browser.
 
 ## Notes

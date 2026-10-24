@@ -3,11 +3,11 @@ plugins {
 }
 
 android {
-    namespace = "com.fuselings.game"
+    namespace = "com.palwardens.game"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.fuselings.game"
+        applicationId = "com.palwardens.game"
         minSdk = 24
         targetSdk = 34
         versionCode = 1

@@ -1,4 +1,4 @@
-package com.fuselings.game;
+package com.palwardens.game;
 
 import android.app.Activity;
 import android.os.Bundle;
@@ -10,7 +10,7 @@ import android.webkit.WebViewClient;
 
 import androidx.webkit.WebViewAssetLoader;
 
-/** Hosts the Fuselings game page from the app's bundled assets. */
+/** Hosts the Palwardens game page from the app's bundled assets. */
 public class MainActivity extends Activity {
     private static final String START_URL = "https://appassets.androidplatform.net/assets/index.html";
     private WebView web;
