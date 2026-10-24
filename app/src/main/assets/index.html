@@ -1023,7 +1023,7 @@ function layerMask(shapes){
   for(let i=0;i<m.length;i++) m[i]=d[i*4+3]>=128?1:0;
   return m;
 }
-function shadeLayer(out,m,l,seed,F){
+function shadeLayer(out,m,l,seed,F,gm){
   if(!l.fin) F=null;
   let x0=SW,x1=-1,y0=SH,y1=-1;
   for(let y=0;y<SH;y++)for(let x=0;x<SW;x++)if(m[y*SW+x]){if(x<x0)x0=x;if(x>x1)x1=x;if(y<y0)y0=y;if(y>y1)y1=y;}
@@ -1062,14 +1062,14 @@ function shadeLayer(out,m,l,seed,F){
         const ta=l.mat||tip?F.ta*.35:F.ta;
         c=[c[0]+(F.trgb[0]-c[0])*ta,c[1]+(F.trgb[1]-c[1])*ta,c[2]+(F.trgb[2]-c[2])*ta];
         let shine=false;
-        if(F.alpha) alpha=Math.round(255*(l.mat||tip?F.stripAlpha:F.alpha));
+        if(F.alpha) alpha=Math.round(255*(l.g==='head'?Math.max(.88,F.alpha):l.mat||tip?F.stripAlpha:F.alpha));
         if(F.spec&&lit>.17&&Hh[i]>.35){c=F.grgb&&hash(x,y,9)>.5?F.grgb:[255,255,255];shine=true;}
-        if(F.streak&&Hh[i]>.3&&((x+y+300)%19)<2&&hash(x>>2,y>>2,4)>.35){c=[235,250,255];shine=true;}
-        if(F.sparkle&&hash(x,y,seed)>.965){const r=hash(x,y,3);c=r>.66?[255,255,255]:r>.33?[160,225,255]:[255,190,240];shine=true;}
+        if(F.streak&&l.g!=='head'&&Hh[i]>.3&&((x+y+300)%19)<2&&hash(x>>2,y>>2,4)>.35){c=[235,250,255];shine=true;}
+        if(F.sparkle&&l.g!=='head'&&hash(x,y,seed)>.965){const r=hash(x,y,3);c=r>.66?[255,255,255]:r>.33?[160,225,255]:[255,190,240];shine=true;}
         if(shine) alpha=Math.max(alpha,220);
       }
     }
-    const o=i*4;out[o]=c[0];out[o+1]=c[1];out[o+2]=c[2];out[o+3]=alpha;
+    const o=i*4;out[o]=c[0];out[o+1]=c[1];out[o+2]=c[2];out[o+3]=alpha;if(gm)gm[i]=F&&l.fin&&l.g!=='head'?1:0;
   }
 }
 
@@ -1138,9 +1138,10 @@ function buildSprite(p,pose){
   for(const n in A) AA[n]=(n==='back'||n==='claws'||n==='spots'||n==='belly')?A[n].map(T):T(A[n]);
   const img=rctx.createImageData(SW,SH), out=img.data, seed=ORDER.length+Object.keys(SPECIES).indexOf(k)*17;
   const hb={x0:SW,x1:-1,y1:-1};
+  const gm=new Uint8Array(SW*SH);
   layers.forEach((l,i)=>{const m=layerMask(l.shapes);
     if(l.g==='head') for(let y=0;y<SH;y++)for(let x=0;x<SW;x++)if(m[y*SW+x]){if(x<hb.x0)hb.x0=x;if(x>hb.x1)hb.x1=x;if(y>hb.y1)hb.y1=y;}
-    shadeLayer(out,m,l,seed+i,F);});
+    shadeLayer(out,m,l,seed+i,F,gm);});
   (AA.claws||[]).forEach(([cx,cy])=>{const x=Math.round(cx),y=Math.round(cy)-1;for(const dx of [0,-2]){const i=(y*SW+x+dx)*4;if(x+dx>=0&&x+dx<SW&&out[i+3]){out[i]=238;out[i+1]=228;out[i+2]=208;}}});
   let l=SW,r=0,tp=SH;
   for(let y=0;y<SH;y++)for(let x=0;x<SW;x++)if(out[(y*SW+x)*4+3]){if(x<l)l=x;if(x>r)r=x;if(y<tp)tp=y;}
@@ -1157,7 +1158,10 @@ function buildSprite(p,pose){
   const drips=bellyBots.filter(([x])=>x%3===0&&hash(x,5,1)>.45).slice(0,10);
   const blooms=backTops.filter(([x])=>x%4===0&&hash(x,9,3)>.62).slice(0,6);
   const backMid=backTops.length?backTops[Math.floor(backTops.length/2)]:null;
-  return {cv,flip:fl,A:AA,k,l,r,top:tp,tops,bots,edge,drips,blooms,backTops,bellyBots,backEdge,bellyEdge,backMid,chest:AA.chest};
+  let gmc=null,gmf=null;
+  if(F&&F.sheen){gmc=document.createElement('canvas');gmc.width=SW;gmc.height=SH;const gx=gmc.getContext('2d'),gd=gx.createImageData(SW,SH);for(let i=0;i<gm.length;i++)if(gm[i]&&out[i*4+3])gd.data[i*4+3]=255;gx.putImageData(gd,0,0);
+    gmf=document.createElement('canvas');gmf.width=SW;gmf.height=SH;const gf=gmf.getContext('2d');gf.translate(SW,0);gf.scale(-1,1);gf.drawImage(gmc,0,0);}
+  return {gm:gmc,gmf,cv,flip:fl,A:AA,k,l,r,top:tp,tops,bots,edge,drips,blooms,backTops,bellyBots,backEdge,bellyEdge,backMid,chest:AA.chest};
 }
 
 // ---------- elemental effects ----------
@@ -1330,7 +1334,13 @@ function drawPetAt(ctx,p,x,ground,t,o={}){
   ctx.fillRect(Math.round(cxs-sh),ground,Math.round(sh*2),1);ctx.fillRect(Math.round(cxs-sh*.8),ground+1,Math.round(sh*1.6),1);
   let img=flip?S_.flip:S_.cv;
   const F=p.mat?FINISH[p.mat]:null, ph=F&&F.sheen?((t*.4+(o.seed||0))%2.4):9;
-  if(o.tint||ph<1){
+  let sheenImg=null;
+  if(!o.tint&&ph<1&&S_.gm){
+    const bx0=Math.round(S_.l-20+ph*(S_.r-S_.l+50)),bx=flip?SW-1-bx0:bx0,sk=flip?-1:1;
+    tctx.globalCompositeOperation='source-over';tctx.clearRect(0,0,SW,SH);tctx.fillStyle=`rgba(255,255,255,${F.sheen})`;tctx.beginPath();tctx.moveTo(bx,0);tctx.lineTo(bx+5*sk,0);tctx.lineTo(bx-25*sk,SH);tctx.lineTo(bx-30*sk,SH);tctx.closePath();tctx.fill();
+    tctx.globalCompositeOperation='destination-in';tctx.drawImage(flip?S_.gmf:S_.gm,0,0);tctx.globalCompositeOperation='source-over';sheenImg=tint;
+  }
+  else if(o.tint){
     tctx.globalCompositeOperation='source-over';tctx.clearRect(0,0,SW,SH);tctx.drawImage(img,0,0);tctx.globalCompositeOperation='source-atop';
     if(o.tint){tctx.fillStyle=o.tint;tctx.fillRect(0,0,SW,SH);}
     else{const bx=Math.round(S_.l-20+ph*(S_.r-S_.l+50));tctx.fillStyle=`rgba(255,255,255,${F.sheen})`;tctx.beginPath();tctx.moveTo(bx,0);tctx.lineTo(bx+5,0);tctx.lineTo(bx-25,SH);tctx.lineTo(bx-30,SH);tctx.closePath();tctx.fill();tctx.fillStyle=`rgba(255,255,255,${F.sheen*.5})`;tctx.fillRect(0,0,0,0);}
@@ -1341,13 +1351,14 @@ function drawPetAt(ctx,p,x,ground,t,o={}){
   if(!GL&&p.stage>=1&&!o.noFx) for(const e of (p.el||[])) if(ELGLOW[e]&&!(e==='lightning'&&hash(Math.floor(t*7),0,2)<.6)){GL=ELGLOW[e];break;}
   if(GL){ctx.save();ctx.shadowColor=GL[0]+(.5+.3*Math.sin(t*2.2))+')';ctx.shadowBlur=GL[1];ctx.drawImage(img,x0,y0);ctx.restore();}
   else ctx.drawImage(img,x0,y0);
+  if(sheenImg)ctx.drawImage(sheenImg,x0,y0);
   const A=S_.A, k=S_.k, st=p.stage, dk='#140C08';
   const mood=o.mood, asleep=o.asleep;
   if(A.eye){
     const ex=Math.round(X(A.eye[0])), ey=Math.round(Y(A.eye[1])), big=st<=1;
     const closed=asleep||((t+(o.seed||0))%4.3)<.13;
     const slit=k==='lizard'||k==='snake', iris=k==='eagle'?'#F2C230':k==='crow'?'#C9D4E2':k==='frog'?'#E8C23A':k==='serval'?'#E0A830':k==='wolf'?'#D8B040':slit?'#D8C23A':null;
-    const darkBody=lum(bodyColor(p))<.4, lid=darkBody?'#E9E2D4':dk;
+    const darkBody=lum(bodyColor(p))<.4||p.mat==='glass'||p.mat==='diamond'||p.mat==='obsidian', lid=darkBody&&p.mat!=='glass'&&p.mat!=='diamond'?'#E9E2D4':dk;
     if(closed){if(darkBody)px(ctx,ex-1,ey+1,big?3:2,1,'rgba(233,226,212,.7)');px(ctx,ex-1,ey,big?3:2,1,dk);}
     else if(mood==='happy'&&!o.battle){px(ctx,ex-1,ey,1,1,lid);px(ctx,ex,ey-1,1,1,lid);px(ctx,ex+1,ey,1,1,lid);}
     else{
