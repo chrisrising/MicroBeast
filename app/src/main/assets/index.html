@@ -377,7 +377,7 @@ body{padding:0;background:#16141B}
 
 /* keyboard view: the CRT fills the top two-thirds, a keyboard takes the bottom third */
 body.v-kb{--wall:0px}
-.v-kb .room,.v-kb .clutter,.v-kb .viewnote,.v-kb .wallgap{display:none}
+.v-kb .room,.v-kb .viewnote,.v-kb .wallgap{display:none}
 .v-kb .rig{width:clamp(200px, min(calc(100cqw - 14px), 760px, calc((64cqh - 128px) * 1.333 + 56px)), 760px);animation:zoomIn .35s ease-out}
 .v-kb .surface{flex:1 1 0;min-height:0;margin-top:2px;padding:6px var(--gut) calc(16px + env(safe-area-inset-bottom, 0px))}
 .v-kb .surface::before{top:-38px}
@@ -443,6 +443,60 @@ body.v-kb{--wall:0px}
 @media (prefers-reduced-motion: reduce){.tv-off .pwrkey{animation:none;box-shadow:0 0 8px 3px rgba(90,255,140,.5)}}
 .kbrand{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
 .kbleds{flex:none}
+
+/* keyboard view v2: screen right up close, chunky mechanical keys for every menu page */
+.v-kb .rig{width:min(calc(100cqw + 2 * var(--gut)), calc((62cqh - 26px) * 1.333 + 26px));padding-top:0;animation:zoomIn .35s ease-out}
+.v-kb .mtop,.v-kb .mhump,.v-kb .mside,.v-kb .stand,.v-kb .strip,.v-kb .sticker,.v-kb .postit,.v-kb .rig::after{display:none}
+.v-kb .monitor{padding:6px;border-radius:0 0 14px 14px}
+.v-kb .bezel{padding:7px;border-radius:10px}
+.v-kb .surface{margin-top:0}
+.v-kb .surface::before{top:-20px}
+.kbleds i.sleep{background:#F0A63A;box-shadow:0 0 5px #F0A63A,0 0 0 1.5px #8C826C}
+.kb{gap:7px;padding:8px 10px 14px}
+.kb .keywell,.mkeys{padding:7px 7px 6px;border-radius:9px;background:linear-gradient(180deg,#8F846C,#A99E85);box-shadow:inset 0 3px 7px rgba(40,28,10,.55),inset 0 -1px 1px rgba(255,255,255,.35),0 1px 0 rgba(255,255,255,.55)}
+.mkeys{display:flex;flex-direction:column;gap:9px}
+.mrow{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);gap:7px}
+/* the keycap: a tall skirt with a dished top face */
+.kb .tb,.mk{--top1:#FAF6EC;--top2:#E2D9C5;--sk1:#CBC1AA;--sk2:#A89D84;--ink:#4E463A;
+  position:relative;isolation:isolate;border:0;margin:0;min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
+  border-radius:8px 8px 9px 9px;padding:5px 4px 12px;color:var(--ink);font-family:var(--pixel);font-weight:700;font-size:10px;letter-spacing:.07em;text-transform:uppercase;line-height:1.05;text-shadow:0 1px 0 rgba(255,255,255,.6);
+  background:linear-gradient(180deg,var(--sk1),var(--sk2));
+  box-shadow:0 0 0 1px rgba(50,36,18,.45),0 1px 0 rgba(50,36,18,.5),0 2px 0 #6E634C,0 3px 0 #655A44,0 4px 0 #5C523D,0 5px 1px #4F4634,0 8px 8px rgba(0,0,0,.45);
+  transform:translateY(-2px);transition:transform .06s,box-shadow .06s;cursor:pointer}
+.kb .tb::after,.mk::after{content:"";position:absolute;z-index:-1;left:6%;right:6%;top:2px;bottom:9px;border-radius:6px 6px 7px 7px;
+  background:radial-gradient(ellipse 85% 70% at 50% 42%,var(--top1),var(--top2) 78%),var(--top2);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.95),inset 0 -3px 4px rgba(60,40,15,.12),inset 3px 0 3px rgba(255,255,255,.35),inset -3px 0 3px rgba(60,40,15,.08),0 1px 2px rgba(0,0,0,.18)}
+.kb .tb:active:not([disabled]),.kb .tb.pressed,.mk:active:not([disabled]){transform:translateY(3px);box-shadow:0 0 0 1px rgba(50,36,18,.45),0 1px 0 #6E634C,0 2px 1px #4F4634,0 3px 4px rgba(0,0,0,.4)}
+.kb .tb.red,.mk.red{--top1:#F08A72;--top2:#C9503C;--sk1:#B34432;--sk2:#8A2A1C;--ink:#FFF4EE;text-shadow:0 -1px 0 rgba(0,0,0,.35)}
+.kb .tb.dark,.mk.dark{--top1:#6E685D;--top2:#4A453D;--sk1:#423D36;--sk2:#2C2925;--ink:#F0EADC;text-shadow:0 -1px 0 rgba(0,0,0,.6)}
+.mk.pwr{--top1:#CFEBD6;--top2:#9ECBA9;--sk1:#86B190;--sk2:#5F8A69;--ink:#1F4A2B}
+.mk.muted{--ink:#8A7F6C}
+.mk[disabled]{opacity:.5;cursor:not-allowed}
+.kb .tb{min-height:52px;font-size:10.5px}
+.kb .tb svg,.mk svg{width:16px;height:16px;flex:none}
+.mk{min-height:44px}
+.mk span{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.kb .tb::before{z-index:1}
+.tv-off .mk:not(.pwr){pointer-events:none;filter:saturate(.6) brightness(.92)}
+.tv-off .mk.pwr{animation:pressme2 1.6s ease-in-out infinite}
+@keyframes pressme2{0%,100%{filter:none}50%{filter:drop-shadow(0 0 8px rgba(90,255,140,.9)) brightness(1.08)}}
+@container (max-height:250px){.mk svg{display:none}.mk{min-height:34px}}
+@container (max-height:200px){.mrow.r0{display:none}}
+@container (max-height:150px){.kbhead,.kb .lcd{display:none}}
+/* rubbish on the desk between the monitor and the keyboard */
+.v-kb .clutter{display:block;position:absolute;inset:0 0 auto;height:100%;z-index:0;margin:0}
+.v-kb .mug{left:2%;top:-2px;bottom:auto;width:clamp(40px,11cqw,78px)}
+.v-kb .ring{left:auto;right:30%;top:4px;bottom:auto;width:clamp(30px,8cqw,54px)}
+.v-kb .b1{left:24%;top:2px;bottom:auto;width:clamp(22px,6cqw,40px)}
+.v-kb .pencil{left:36%;top:6px;bottom:auto;width:clamp(70px,20cqw,140px);transform:rotate(4deg)}
+.v-kb .floppy{right:auto;left:13%;top:8px;bottom:auto;width:clamp(46px,12cqw,90px);transform:rotate(-8deg)}
+.v-kb .can{right:2%;top:-4px;bottom:auto;width:clamp(20px,5.4cqw,40px);transform:rotate(90deg) translateX(30%)}
+.v-kb .b2{right:14%;top:4px;bottom:auto;width:clamp(18px,5cqw,34px)}
+.v-kb .wrap{left:62%;top:4px;bottom:auto;width:clamp(22px,6cqw,40px)}
+.v-kb .crumbs{left:48%;top:14px;bottom:auto;width:clamp(28px,8cqw,52px)}
+.v-kb .kbwrap{position:relative;z-index:2}
+.mrow.r0 .mk{font-size:8.5px;letter-spacing:.02em;padding-left:2px;padding-right:2px}
+@media (min-width:480px){.mrow.r0 .mk{font-size:10px;letter-spacing:.06em}}
 </style>
 
 <main class="desk" id="desk">
@@ -554,10 +608,23 @@ body.v-kb{--wall:0px}
     </div>
     <div class="kbwrap" id="kbwrap" hidden>
       <div class="kb" id="kb">
-        <div class="kbhead"><span class="kbrand">PALWARDENS · KB-101</span><span class="kbleds"><i class="on"></i>NUM<i id="kbCaps"></i>CAPS<i></i>SCRL</span>
-          <button class="kbswitch" id="deskBtn" type="button" aria-label="Switch to desk view"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg>DESK</button></div>
+        <div class="kbhead"><span class="kbrand">PALWARDENS · KB-101</span><span class="kbleds"><i id="kbPwr"></i>PWR<i id="kbCaps"></i>CAPS<i></i>SCRL</span></div>
         <div class="kbslot" id="kbslot"></div>
-        <div class="dkrows" id="dkrows" aria-hidden="true"></div>
+        <div class="mkeys" id="mkeys">
+          <div class="mrow r0">
+            <button class="mk" type="button" data-tab="status"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12h4l3-7 4 14 3-7h4"/></svg><span>Status</span></button>
+            <button class="mk" type="button" data-tab="stats"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 20V10M12 20V4M19 20v-7"/></svg><span>Stats</span></button>
+            <button class="mk" type="button" data-tab="items"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 4h8l-1 5h3l-2 11H8L6 9h3z"/></svg><span>Cosmetics</span></button>
+            <button class="mk" type="button" data-tab="shop"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M12 8v8M9.5 10a2.5 2 0 0 1 5 0c0 2.5-5 1.5-5 4a2.5 2 0 0 0 5 0"/></svg><span>Shop</span></button>
+            <button class="mk" type="button" data-tab="system"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"/></svg><span>Settings</span></button>
+          </div>
+          <div class="mrow r1">
+            <button class="mk pwr" type="button" data-act="power" aria-label="Power"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v8"/><path d="M6.6 6.6a8 8 0 1 0 10.8 0"/></svg><span>Power</span></button>
+            <button class="mk" type="button" data-act="pet" id="mkPet"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h13l-3-3M20 16H7l3 3"/></svg><span>Swap pet</span></button>
+            <button class="mk" type="button" data-act="snd" id="mkSnd"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9h4l5-4v14l-5-4H3z"/><path d="M16 9a4 4 0 0 1 0 6"/></svg><span id="mkSndLab">Sound on</span></button>
+            <button class="mk dark" type="button" data-act="desk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg><span>Desk view</span></button>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -2770,19 +2837,19 @@ setInterval(()=>{tick();if(!G&&!B&&!S.asleep&&S.m.energy>50&&!isRestless()&&Math
 // ---------- views: the monitor on a messy desk, or zoomed in over a keyboard ----------
 const VIEW=(()=>{
   const mon=document.querySelector('.monitor'),mini=$('mini'),well=document.querySelector('.keywell'),slot=$('kbslot');
-  const rows=['QWERTYUIOP','ASDFGHJKL','ZXCVBNM'];
-  $('dkrows').innerHTML=rows.map((r,i)=>`<div class="dr r${i}">${i===2?'<span class="dk w2">SHIFT</span>':''}${[...r].map(c=>`<span class="dk">${c}</span>`).join('')}${i===1?'<span class="dk w2">ENTER</span>':i===0?'<span class="dk w2">DEL</span>':'<span class="dk w2">SHIFT</span>'}</div>`).join('')+
-    '<div class="dr r3"><span class="dk w2">CTRL</span><span class="dk w2">ALT</span><span class="dk sp" data-k="space"></span><span class="dk w2">ALT</span><span class="dk w2">CTRL</span></div>';
-  // the space bar nudges the pet (or jumps in the minigame), like tapping the screen
-  $('dkrows').addEventListener('pointerdown',e=>{const k=e.target.closest('.dk');if(!k)return;SFX.play('click');
-    if(k.dataset.k==='space'){const r=$('screen').getBoundingClientRect();$('screen').dispatchEvent(new PointerEvent('pointerdown',{clientX:r.left+r.width*(.2+Math.random()*.6),clientY:r.top+r.height*.6,bubbles:true}));}});
+  // menu keys: each opens its page of the menu; the bottom row is power, pet swap, sound and the desk view
+  $('mkeys').addEventListener('click',e=>{const k=e.target.closest('.mk');if(!k||k.disabled)return;SFX.play('click');
+    if(k.dataset.tab){showTab(k.dataset.tab);$('menuSheet').hidden=false;return;}
+    const a=k.dataset.act;if(a==='power')$('pwrKey').click();else if(a==='pet')$('petBtn').click();else if(a==='snd'){$('sndBtn').click();syncKeys();}else if(a==='desk')set('desk');});
+  function syncKeys(){$('mkPet').disabled=W.pets.length<2;$('mkSndLab').textContent=SFX.muted?'Sound off':'Sound on';$('mkSnd').classList.toggle('muted',SFX.muted);}
+  syncKeys();setInterval(syncKeys,1500);
+  new MutationObserver(()=>{const l=$('led').classList;$('kbPwr').className=l.contains('off')?'':l.contains('fight')?'fight':l.contains('sleep')?'sleep':'on';}).observe($('led'),{attributes:true});
   let cur='desk';
   function set(v){
     cur=v;document.body.classList.toggle('v-kb',v==='kb');$('kbwrap').hidden=v!=='kb';
-    if(v==='kb'){slot.appendChild(mini);slot.appendChild(well);$('deskBtn').before($('pwrKey'));}else{mon.appendChild(mini);mon.appendChild(well);document.querySelector('.monitor .power').before($('pwrKey'));}
+    if(v==='kb'){slot.appendChild(mini);slot.appendChild(well);}else{mon.appendChild(mini);mon.appendChild(well);}
   }
   $('kbBtn').onclick=()=>{SFX.play('click');set('kb');};
-  $('deskBtn').onclick=()=>{SFX.play('click');set('desk');};
   // the number keys press the visible action keys, left to right
   document.addEventListener('keydown',e=>{
     if(e.repeat||e.ctrlKey||e.metaKey||e.altKey)return;const n='123456'.indexOf(e.key);if(n<0)return;
