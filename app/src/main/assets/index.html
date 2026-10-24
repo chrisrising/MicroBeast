@@ -516,6 +516,47 @@ body.v-kb{--wall:0px}
 .mk.back.lit{animation:backlit 1.4s ease-in-out infinite}
 @keyframes backlit{0%,100%{filter:none}50%{filter:drop-shadow(0 0 6px rgba(255,190,90,.9)) brightness(1.06)}}
 .tv-off .mk.back{pointer-events:none;filter:saturate(.6) brightness(.92)}
+
+/* menu mode on the keyboard: keys flip over into navigation */
+@keyframes flipOut{to{transform:perspective(320px) rotateX(90deg);opacity:.6}}
+@keyframes flipIn{from{transform:perspective(320px) rotateX(-90deg);opacity:.6}to{transform:perspective(320px) rotateX(0) translateY(-2px);opacity:1}}
+.kb .flipout{animation:flipOut .15s ease-in forwards!important;pointer-events:none}
+.kb .flipin{animation:flipIn .22s ease-out both!important}
+.kb.menumode .kbslot .keywell,.kb.menumode .mkeys{display:none}
+.navkeys{display:flex;flex-direction:column;gap:7px}
+.navcat,.navpad{padding:7px 7px 6px;border-radius:9px;background:linear-gradient(180deg,#8F846C,#A99E85);box-shadow:inset 0 3px 7px rgba(40,28,10,.55),inset 0 -1px 1px rgba(255,255,255,.35),0 1px 0 rgba(255,255,255,.55)}
+.navcat{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);gap:7px}
+.navcat .mk{min-height:52px;--top1:#F4EEDC;--top2:#D9CDAE}
+.navcat .mk.on{--top1:#FFE9B8;--top2:#EFC77A;--ink:#4A300C}
+.navpad{display:flex;flex-direction:column;gap:9px}
+.mk.nk svg{width:18px;height:18px}
+.mk.nk.enter{--top1:#E8E2D2;--top2:#C9BFA7}
+.mk.nk.more{--ink:#B0641C}
+.mk.nk.more svg{animation:nudge 1s ease-in-out infinite}
+@keyframes nudge{50%{transform:translateY(2px)}}
+#nkNext{flex-direction:column}
+.crt>.sheet .box{overflow:hidden;touch-action:none}
+.kbsel{outline:2px solid var(--amber)!important;outline-offset:1px;box-shadow:0 0 10px rgba(255,179,71,.45)!important}
+.crt>.sheet .btn.kbsel,.crt>.sheet .item.kbsel,.crt>.sheet .choice.kbsel{background:rgba(255,179,71,.16)}
+/* first-time sticky notes */
+.tutnote{position:fixed;z-index:30;left:-999px;top:0;width:150px;padding:12px 12px 14px;background:linear-gradient(180deg,#FBEA7E,#F2D74C);color:#3A2E12;font-family:var(--pixel);
+  box-shadow:0 8px 16px rgba(0,0,0,.45),inset 0 10px 10px -8px rgba(255,255,255,.5);clip-path:polygon(0 0,100% 0,100% 86%,86% 100%,0 100%);transform:rotate(-4deg);cursor:pointer;display:none}
+.tutnote.fall{display:block;animation:tutfall 1s cubic-bezier(.25,.9,.35,1.1) both}
+.tutnote::before{content:"";position:absolute;top:-5px;left:38%;width:26%;height:12px;background:rgba(233,223,194,.8);transform:rotate(3deg)}
+.tutnote b{display:block;font-size:16px;line-height:1.1;margin-bottom:4px}
+.tutnote span{display:block;font-size:12px;line-height:1.2;opacity:.85}
+.tutnote.gone{animation:tutgone .5s ease-in forwards}
+@keyframes tutfall{0%{transform:translate(30px,-110vh) rotate(-28deg)}35%{transform:translate(-22px,-40vh) rotate(14deg)}60%{transform:translate(14px,-8vh) rotate(-10deg)}80%{transform:translate(-5px,4px) rotate(2deg)}100%{transform:translate(0,0) rotate(-4deg)}}
+@keyframes tutgone{to{transform:translate(40px,110vh) rotate(40deg);opacity:.4}}
+.tutarrow{position:fixed;inset:0;width:100vw;height:100vh;z-index:29;pointer-events:none;opacity:0;transition:opacity .3s}
+.tutarrow.on{opacity:1}
+.tutarrow path{fill:none;stroke:#E8402F;stroke-width:3.5;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:2 7;filter:drop-shadow(0 1px 1px rgba(0,0,0,.5))}
+.tutarrow path+path{stroke-dasharray:none}
+@media (prefers-reduced-motion: reduce){.tutnote.fall,.tutnote.gone,.kb .flipin,.kb .flipout{animation-duration:.01s!important}}
+
+.crt>.sheet .box{overflow:hidden;touch-action:none;overscroll-behavior:contain}
+.navcat .mk span{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+@media (max-width:479px){.navcat .mk{letter-spacing:0;font-size:7.6px;padding-left:1px;padding-right:1px}}
 </style>
 
 <main class="desk" id="desk">
@@ -643,6 +684,25 @@ body.v-kb{--wall:0px}
             <button class="mk" type="button" data-act="snd" id="mkSnd"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9h4l5-4v14l-5-4H3z"/><path d="M16 9a4 4 0 0 1 0 6"/></svg><span id="mkSndLab">Sound</span></button>
             <button class="mk back" type="button" data-act="back" id="mkBack"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 6l-6 6 6 6M4 12h11a5 5 0 0 1 0 10h-2"/></svg><span>Back</span></button>
             <button class="mk dark" type="button" data-act="desk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg><span>Desk</span></button>
+          </div>
+        </div>
+        <div class="navkeys" id="navkeys" hidden>
+          <div class="navcat" id="navcat"></div>
+          <div class="navpad">
+            <div class="mrow">
+              <button class="mk nk" type="button" data-nav="left" aria-label="Left"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button>
+              <button class="mk nk" type="button" data-nav="up" aria-label="Up"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 15l7-7 7 7"/></svg></button>
+              <button class="mk nk" type="button" data-nav="down" id="nkDown" aria-label="Down"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 9l7 7 7-7"/></svg></button>
+              <button class="mk nk" type="button" data-nav="right" aria-label="Right"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></button>
+              <button class="mk nk enter" type="button" data-nav="enter"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 5v7a3 3 0 0 1-3 3H6M10 11l-4 4 4 4"/></svg><span>Enter</span></button>
+            </div>
+            <div class="mrow">
+              <button class="mk nk" type="button" data-nav="pgprev" id="nkPrev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 6l-6 6 6 6M19 6l-6 6 6 6"/></svg><span>Page</span></button>
+              <button class="mk nk" type="button" data-nav="pgnext" id="nkNext"><span>Page</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 6l6 6-6 6M5 6l6 6-6 6"/></svg></button>
+              <button class="mk nk" type="button" data-nav="top"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 4h12M12 20V9M7 13l5-5 5 5"/></svg><span>Top</span></button>
+              <button class="mk back lit noflip" type="button" data-nav="back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 6l-6 6 6 6M4 12h11a5 5 0 0 1 0 10h-2"/></svg><span>Back</span></button>
+              <button class="mk dark nk" type="button" data-nav="desk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg><span>Desk</span></button>
+            </div>
           </div>
         </div>
       </div>
@@ -2870,10 +2930,73 @@ const VIEW=(()=>{
   function syncKeys(){$('mkPet').disabled=W.pets.length<2;$('mkSndLab').textContent=SFX.muted?'Muted':'Sound';$('mkSnd').classList.toggle('muted',SFX.muted);}
   syncKeys();setInterval(syncKeys,1500);
   new MutationObserver(()=>{const l=$('led').classList;$('kbPwr').className=l.contains('off')?'':l.contains('fight')?'fight':l.contains('sleep')?'sleep':'on';}).observe($('led'),{attributes:true});
+  // ---- menu mode: while something is open on the screen, the keys flip over into navigation keys ----
+  const NAVORDER=['nameSheet',...BACKORDER], kb=$('kb'), navcat=$('navcat');
+  const openSheet=()=>{const id=NAVORDER.find(i=>!$(i).hidden);return id?$(id):null;};
+  const boxOf=sh=>sh&&sh.querySelector('.box');
+  const vis=el=>el.offsetParent!==null&&!el.closest('[hidden]');
+  const selectables=()=>{const b=boxOf(openSheet());if(!b)return[];return [...b.querySelectorAll('button,input')].filter(e=>vis(e)&&!e.disabled&&!e.classList.contains('x')&&e.getAttribute('role')!=='tab');};
+  let menuMode=false,selEl=null,selIdx=0,catKey='';
+  const SHORT={'TREASURES FOUND':'Finds','ACCESSORIES':'Accessories','GADGETS':'Gadgets','BACKGROUNDS':'Scenes','LIGHTING':'Lights','FOOD':'Food','DYES':'Dyes'};
+  function ensureVisible(el){const b=boxOf(openSheet());if(!b||!el)return;const br=b.getBoundingClientRect(),r=el.getBoundingClientRect();
+    if(r.bottom>br.bottom-6)b.scrollTop+=r.bottom-br.bottom+10;else if(r.top<br.top+6)b.scrollTop-=br.top-r.top+10;syncMore();}
+  function select(el){if(selEl)selEl.classList.remove('kbsel');selEl=el;if(!el)return;el.classList.add('kbsel');const l=selectables();selIdx=Math.max(0,l.indexOf(el));ensureVisible(el);}
+  function syncMore(){const b=boxOf(openSheet());$('nkDown').classList.toggle('more',!!b&&b.scrollTop+b.clientHeight<b.scrollHeight-3);}
+  function nav(dir){
+    const b=boxOf(openSheet());if(!b)return;const els=selectables();
+    if(dir==='enter'){if(!selEl||!selEl.isConnected)return;if(selEl.tagName==='INPUT'){selEl.focus();return;}const i=selIdx;selEl.click();setTimeout(()=>{if(!selEl||!selEl.isConnected){const l=selectables();select(l[Math.min(i,l.length-1)]||null);}},60);return;}
+    if(dir==='top'){b.scrollTop=0;select(els[0]||null);return;}
+    if(dir==='pgprev'||dir==='pgnext'){if(openSheet()!==$('menuSheet'))return;const T=['status','stats','items','shop','system'];showTab(T[(T.indexOf(curTab)+(dir==='pgnext'?1:4))%5]);b.scrollTop=0;requestAnimationFrame(()=>{select(selectables()[0]||null);buildCats(true);});return;}
+    if(!els.length||!selEl||!selEl.isConnected){if(els.length&&(!selEl||!selEl.isConnected)){select(els[0]);return;}b.scrollTop+=dir==='down'?b.clientHeight*.6:dir==='up'?-b.clientHeight*.6:0;syncMore();return;}
+    const r=selEl.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2;let best=null,bs=1e9;
+    for(const e of els){if(e===selEl)continue;const q=e.getBoundingClientRect(),dx=q.left+q.width/2-cx,dy=q.top+q.height/2-cy;
+      if(dir==='down'&&dy<=r.height*.4)continue;if(dir==='up'&&dy>=-r.height*.4)continue;
+      if((dir==='left'&&dx>=-4)||(dir==='right'&&dx<=4))continue;if((dir==='left'||dir==='right')&&Math.abs(dy)>Math.max(r.height,q.height)*.6)continue;
+      const s=(dir==='up'||dir==='down')?Math.abs(dy)+Math.abs(dx)*1.6:Math.abs(dx)+Math.abs(dy)*3;if(s<bs){bs=s;best=e;}}
+    if(!best&&(dir==='left'||dir==='right')){const i=els.indexOf(selEl)+(dir==='right'?1:-1);best=els[i]||null;}
+    if(!best){if(dir==='down'||dir==='up'){b.scrollTop+=(dir==='down'?1:-1)*b.clientHeight*.5;syncMore();}return;}
+    const br=b.getBoundingClientRect(),q=best.getBoundingClientRect();
+    if(dir==='down'&&q.top>br.bottom+b.clientHeight*.2){b.scrollTop+=b.clientHeight*.6;syncMore();return;}
+    if(dir==='up'&&q.bottom<br.top-b.clientHeight*.2){b.scrollTop-=b.clientHeight*.6;syncMore();return;}
+    select(best);
+  }
+  function buildCats(animate){
+    const sh=openSheet(),b=boxOf(sh);if(!b)return;
+    const secs=[...b.querySelectorAll('.isec')].filter(vis).map(s=>{const t=(s.querySelector('.k')||{}).textContent||'';const k=t.split(' ·')[0].trim();return {label:SHORT[k]||k.charAt(0)+k.slice(1).toLowerCase(),el:s};});
+    const items=secs.length?secs.slice(0,5):selectables().slice(0,5).map(e=>({label:(e.querySelector('b')||e).textContent.replace(/[>×]/g,'').trim()||e.placeholder||'Type',el:e,direct:true}));
+    const key=(sh.id+':'+curTab+':'+items.map(i=>i.label).join('|'));if(key===catKey)return;catKey=key;
+    navcat.innerHTML='';
+    items.forEach((it,i)=>{const k=document.createElement('button');k.type='button';k.className='mk cat';k.innerHTML=`<span>${it.label.replace(/</g,'&lt;')}</span>`;
+      k.onclick=()=>{SFX.play('click');navcat.querySelectorAll('.cat').forEach(c=>c.classList.toggle('on',c===k));
+        if(it.direct){select(it.el);if(it.el.tagName==='INPUT')it.el.focus();else it.el.click();return;}
+        const first=[...it.el.querySelectorAll('button,input')].find(e=>vis(e)&&!e.disabled);
+        const bx=boxOf(openSheet());bx.scrollTop+=it.el.getBoundingClientRect().top-bx.getBoundingClientRect().top-4;syncMore();if(first){if(selEl)selEl.classList.remove('kbsel');selEl=first;first.classList.add('kbsel');selIdx=selectables().indexOf(first);}};
+      navcat.appendChild(k);
+      if(animate){k.style.animationDelay=i*22+'ms';k.classList.add('flipin');setTimeout(()=>k.classList.remove('flipin'),420+i*22);}});
+    if(!items.length){const k=document.createElement('button');k.type='button';k.className='mk cat';k.disabled=true;k.innerHTML='<span>—</span>';navcat.appendChild(k);}
+    const isMenu=sh===$('menuSheet');$('nkPrev').disabled=!isMenu;$('nkNext').disabled=!isMenu;
+  }
+  const realKeys=()=>[...kb.querySelectorAll('.keywell .btns:not([hidden]) .tb:not([hidden]),.mkeys .mk:not(.back)')];
+  const navKeys=()=>[...kb.querySelectorAll('.navkeys .mk:not(.noflip)')];
+  function flipKeys(out,after,inn){out.forEach(k=>k.classList.add('flipout'));setTimeout(()=>{out.forEach(k=>k.classList.remove('flipout'));after();inn().forEach((k,i)=>{k.style.animationDelay=i*16+'ms';k.classList.add('flipin');setTimeout(()=>k.classList.remove('flipin'),420+i*16);});},150);}
+  let modeQ=0,lastSheet=null;
+  function updateMode(){
+    const sh=openSheet(),want=cur==='kb'&&!!sh;
+    if(want&&!menuMode){menuMode=true;SFX.play('click');flipKeys(realKeys(),()=>{kb.classList.add('menumode');$('navkeys').hidden=false;catKey='';buildCats(false);select(selectables()[0]||null);},navKeys);}
+    else if(!want&&menuMode){menuMode=false;if(selEl)selEl.classList.remove('kbsel');selEl=null;flipKeys(navKeys(),()=>{kb.classList.remove('menumode');$('navkeys').hidden=true;},realKeys);}
+    else if(want){if(sh!==lastSheet){catKey='';select(selectables()[0]||null);}buildCats(true);if(!selEl||!selEl.isConnected){const l=selectables();select(l[Math.min(selIdx,l.length-1)]||null);}}
+    lastSheet=sh;syncMore();
+  }
+  new MutationObserver(()=>{cancelAnimationFrame(modeQ);modeQ=requestAnimationFrame(updateMode);}).observe(document.body,{attributes:true,childList:true,subtree:true,attributeFilter:['hidden']});
+  $('navkeys').addEventListener('click',e=>{const k=e.target.closest('[data-nav]');if(!k||k.disabled)return;SFX.play('click');const d=k.dataset.nav;
+    if(d==='back')goBack();else if(d==='desk')set('desk');else nav(d);});
+  document.addEventListener('keydown',e=>{if(!menuMode||e.ctrlKey||e.metaKey||e.altKey)return;const a=document.activeElement;if(a&&a.tagName==='INPUT'&&e.key!=='Enter')return;
+    const m={ArrowUp:'up',ArrowDown:'down',ArrowLeft:'left',ArrowRight:'right',Enter:'enter'}[e.key];if(!m)return;e.preventDefault();if(m==='enter'&&a&&a.tagName==='INPUT'){a.blur();return;}nav(m);});
   let cur='desk';
   function set(v){
     cur=v;document.body.classList.toggle('v-kb',v==='kb');$('kbwrap').hidden=v!=='kb';
     if(v==='kb'){slot.appendChild(mini);slot.appendChild(well);sheets.forEach(s=>$('crt').appendChild(s));}else{mon.appendChild(mini);mon.appendChild(well);sheets.forEach(s=>document.body.appendChild(s));}
+    window.dispatchEvent(new Event('viewchange'));
   }
   $('kbBtn').onclick=()=>{SFX.play('click');set('kb');};
   // the number keys press the visible action keys, left to right
@@ -2896,11 +3019,48 @@ const VIEW=(()=>{
       crt.classList.remove('off','shut');SFX.play('thunk');SFX.play('hum');
       const b=document.createElement('div');b.className='boot';b.innerHTML='<i></i>';crt.appendChild(b);crt.classList.add('booting');
       setTimeout(()=>{if(on)led.classList.remove('off');},650);
-      bootT=setTimeout(()=>{crt.classList.remove('booting');b.remove();if(!started){started=true;window.__startup&&window.__startup();}},2600);
+      bootT=setTimeout(()=>{crt.classList.remove('booting');b.remove();if(!started){started=true;window.__startup&&window.__startup();}dispatchEvent(new Event('poweron'));},2600);
     }else{crt.classList.remove('booting');crt.classList.add('off','shut');led.classList.add('off');SFX.play('thunk');}
   }
   key.onclick=()=>power(!on);
   return {set,get:()=>cur,power};
+})();
+// ---------- first-time sticky notes: switch the PC on, then where to change the view ----------
+(()=>{
+  let stage=0;try{stage=+(localStorage.getItem('palwardens.tut')||0);}catch(e){}
+  if(stage>=2)return;
+  const setStage=n=>{stage=n;try{localStorage.setItem('palwardens.tut',String(n));}catch(e){}};
+  const note=document.createElement('div');note.className='tutnote';note.setAttribute('role','status');
+  const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');svg.setAttribute('class','tutarrow');svg.setAttribute('aria-hidden','true');
+  document.body.append(svg,note);let target=null,shown=false;
+  function place(){
+    if(!shown||!target)return;const t=target(),r=t.getBoundingClientRect(),vw=innerWidth,vh=innerHeight,nw=note.offsetWidth,nh=note.offsetHeight;
+    const cx=r.left+r.width/2;let x,y,above=r.top>nh+70;
+    if(above){x=Math.min(Math.max(cx-nw-18,10),vw-nw-10);y=Math.max(10,r.top-nh-56);}else{x=Math.min(Math.max(r.right+18,10),vw-nw-10);y=Math.min(r.bottom+44,vh-nh-10);}
+    note.style.left=x+'px';note.style.top=y+'px';
+    const sx=x+nw*(above?.78:.3),sy=above?y+nh-4:y+4,ex=cx+(above?0:r.width*.25),ey=above?r.top-6:r.bottom+4,mx=(sx+ex)/2+(above?-30:30),my=(sy+ey)/2;
+    svg.setAttribute('viewBox',`0 0 ${vw} ${vh}`);
+    const ang=Math.atan2(ey-my,ex-mx),hl=11,a1=ang+2.6,a2=ang-2.6;
+    svg.innerHTML=`<path d="M${sx} ${sy} Q${mx} ${my} ${ex} ${ey}" /><path d="M${ex+Math.cos(a1)*hl} ${ey+Math.sin(a1)*hl} L${ex} ${ey} L${ex+Math.cos(a2)*hl} ${ey+Math.sin(a2)*hl}"/>`;
+  }
+  function show(html,tgt){target=tgt;note.innerHTML=html;note.classList.remove('gone');shown=true;note.classList.remove('fall');void note.offsetWidth;note.classList.add('fall');svg.classList.remove('on');place();setTimeout(()=>{if(shown){svg.classList.add('on');place();}},900);}
+  function hide(){if(!shown)return;shown=false;note.classList.add('gone');svg.classList.remove('on');}
+  addEventListener('resize',place);addEventListener('viewchange',()=>setTimeout(place,380));
+  note.addEventListener('click',()=>{if(stage===1){hide();setStage(2);}});
+  const pwrTarget=()=>VIEW.get()==='kb'?document.querySelector('.mkeys .mk.pwr'):$('pwrKey');
+  const viewTarget=()=>VIEW.get()==='kb'?document.querySelector('.mkeys [data-act=desk]'):$('kbBtn');
+  function second(){
+    // wait until the screen is on and nothing is open (a new player names their pet first)
+    const iv=setInterval(()=>{if(document.body.classList.contains('tv-off')||document.querySelector('.sheet:not([hidden])'))return;clearInterval(iv);
+      setStage(1);show(`<b>Psst!</b><span>Tap here to change the view</span>`,viewTarget);},700);
+  }
+  const onView=()=>{if(stage===1&&shown){hide();setStage(2);}};
+  $('kbBtn').addEventListener('click',onView);document.querySelector('.mkeys [data-act=desk]').addEventListener('click',onView);
+  if(stage===0){
+    setTimeout(()=>{if(document.body.classList.contains('tv-off'))show(`<b>Turn the PC on!</b><span>press the power button</span>`,pwrTarget);},900);
+    const onPower=()=>{if(stage!==0)return;hide();setTimeout(second,3400);stage=.5;};
+    $('pwrKey').addEventListener('click',onPower);document.querySelector('.mkeys .mk.pwr').addEventListener('click',onPower);
+  }else second();
 })();
 const awayAtLoad=S.last?Date.now()-S.last:0, hm=(location.hash||'').match(/^#(fl[A-Za-z0-9_-]+)$/);
 tick();renderAll();requestAnimationFrame(frame);
