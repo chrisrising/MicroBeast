@@ -945,7 +945,13 @@ function snakeBuild(st,pose,col){
   A.shoulder=[6,20+nh*.6,'body'];A.body=[-6,6,'body'];A.tail=[-37,2,'body'];
   A.spots=[[-20,4,'body'],[-6,5,'body'],[10,10,'body']];
   A.chest=[12,21,'body'];A.belly=[[-20,1.8,'body'],[-6,1.8,'body'],[8,7,'body']];
-  return {L,H,A,pivot:[9,29+nh],hr:7,neckBase:[7,21+nh*.6],neckR:4.6};
+  const bzs=[[[-30,4],[-14,-3+sway*.5],[2,4.5],3.8,5.5],[[2,4.5],[19,9],[8,15+nh*.3],5.5,5],[[8,15+nh*.3],[-1+sway,24+nh],[9,30+nh],5,4.2]],spine=[];
+  bzs.forEach(([p0,p1,p2,r0,r1],j)=>{for(let q=0;q<=6;q++){const t=q/6;if(j===0&&t<.12)continue;if(j>0&&q===0)continue;if(j===2&&t>.55)break;
+    const A_=(1-t)*(1-t),B_=2*(1-t)*t,C_=t*t,x=A_*p0[0]+B_*p1[0]+C_*p2[0],y=A_*p0[1]+B_*p1[1]+C_*p2[1];
+    let dx=2*(1-t)*(p1[0]-p0[0])+2*t*(p2[0]-p1[0]),dy=2*(1-t)*(p1[1]-p0[1])+2*t*(p2[1]-p1[1]);const l=Math.hypot(dx,dy)||1;dx/=l;dy/=l;
+    const r=(r0+(r1-r0)*t)*.72;spine.push([x-dy*r,y+dx*r]);}});
+  A.back=[spine[2],spine[5],spine[8]].map(v=>[v[0],v[1],'body']);
+  return {L,H,A,pivot:[9,29+nh],hr:7,neckBase:[7,21+nh*.6],neckR:4.6,spine};
 }
 function birdBuild(k,st,pose,col){
   const eagle=k==='eagle', L=[],H=[],A={claws:[]};
@@ -1078,22 +1084,38 @@ const FINISH={
   diamond:{tint:'#CBEFFF',ta:.42,spec:1,sparkle:1,metal:.35,alpha:.86,stripAlpha:.9,sheen:.55,glow:'rgba(200,240,255,'},
 };
 for(const k in FINISH){FINISH[k].trgb=hex(FINISH[k].tint);if(FINISH[k].glint)FINISH[k].grgb=hex(FINISH[k].glint);}
-function stripLayers(mat,b){
-  const a=[b[0][0]+(b[0][0]-b[1][0])*.6,b[0][1]+(b[0][1]-b[1][1])*.6], m=[b[1][0],b[1][1]+.8], c=[b[2][0]+(b[2][0]-b[1][0])*.4,b[2][1]+(b[2][1]-b[1][1])*.4];
-  const P=u=>{const A=(1-u)*(1-u),B=2*(1-u)*u,C=u*u;return [A*a[0]+B*m[0]+C*c[0],A*a[1]+B*m[1]+C*c[1]];};
-  const at=(n,f)=>Array.from({length:n},(_,i)=>f(P((i+.5)/n),i));
-  const col=MAT[mat].c, L=(shapes,tex)=>({shapes,col,tex,mat:true,fin:true}), tube=(r,tex)=>L([Bz(a,m,c,r,r*.85)],tex);
+function stripLayers(mat,b,spine){
+  // a path along the top of the back; each piece is laid out in the path's own frame so it sits flat on the curve
+  let P,D;
+  if(spine&&spine.length>1){
+    const seg=[0];for(let i=1;i<spine.length;i++)seg.push(seg[i-1]+Math.hypot(spine[i][0]-spine[i-1][0],spine[i][1]-spine[i-1][1]));
+    const tot=seg[seg.length-1];
+    const find=u=>{const d=u*tot;let i=1;while(i<seg.length-1&&seg[i]<d)i++;return [i,(d-seg[i-1])/((seg[i]-seg[i-1])||1)];};
+    P=u=>{const [i,f]=find(u),a=spine[i-1],c=spine[i];return [a[0]+(c[0]-a[0])*f,a[1]+(c[1]-a[1])*f];};
+    D=u=>{const [i]=find(u),a=spine[i-1],c=spine[i],l=Math.hypot(c[0]-a[0],c[1]-a[1])||1;return [(c[0]-a[0])/l,(c[1]-a[1])/l];};
+  }else{
+    const a=[b[0][0]+(b[0][0]-b[1][0])*.6,b[0][1]+(b[0][1]-b[1][1])*.6], m=[b[1][0],b[1][1]+.8], c=[b[2][0]+(b[2][0]-b[1][0])*.4,b[2][1]+(b[2][1]-b[1][1])*.4];
+    P=u=>{const A=(1-u)*(1-u),B=2*(1-u)*u,C=u*u;return [A*a[0]+B*m[0]+C*c[0],A*a[1]+B*m[1]+C*c[1]];};
+    D=u=>{const dx=2*(1-u)*(m[0]-a[0])+2*u*(c[0]-m[0]),dy=2*(1-u)*(m[1]-a[1])+2*u*(c[1]-m[1]),l=Math.hypot(dx,dy)||1;return [dx/l,dy/l];};
+  }
+  // piece(n, fn): fn gets a mapper q(along,out) -> model point, the tangent angle and the index
+  const at=(n,f)=>Array.from({length:n},(_,i)=>{const u=(i+.5)/n,[x,y]=P(u),[tx,ty]=D(u),nx=-ty,ny=tx;return f((al,ou)=>[x+tx*al+nx*ou,y+ty*al+ny*ou],Math.atan2(ty,tx),i);});
+  const pg=(q,...v)=>{const o=[];for(let i=0;i<v.length;i+=2)o.push(...q(v[i],v[i+1]));return Pg(...o);};
+  const el=(q,an,al,ou,rx,ry)=>{const [x,y]=q(al,ou);return E(x,y,rx,ry,an);};
+  const col=MAT[mat].c, L=(shapes,tex)=>({shapes,col,tex,mat:true,fin:true});
+  const tube=(r,tex)=>{const n=14,pts=Array.from({length:n+1},(_,i)=>P(i/n)),sh=[];for(let i=0;i<n;i++){const t0=i/n,t1=(i+1)/n,r0=r*(1-.15*t0),r1=r*(1-.15*t1);sh.push(Cp(pts[i][0],pts[i][1],r0,pts[i+1][0],pts[i+1][1],r1));}return L(sh,tex);};
+  const n=spine?Math.max(5,Math.round(spine.length*.5)):0, N=k=>spine?Math.max(k,n):k;
   switch(mat){
     case 'wood': return [tube(2.8,'grain')];
-    case 'stone': return [L(at(5,([x,y],i)=>E(x,y+.5,3.4-(i%2)*.8,2.6-(i%2)*.5)),'speck')];
-    case 'bone': return [tube(1.3,'smooth'),L(at(4,([x,y])=>E(x,y+1.8,1.9,2.5)),'smooth')];
-    case 'iron': return [L(at(4,([x,y])=>E(x,y+.6,3.6,2.4)),'smooth'),{shapes:at(4,([x,y])=>E(x,y+1,.75,.75)),flat:'#2E3236',edge:false}];
-    case 'steel': return [L(at(5,([x,y])=>Pg(x-3.5,y-1,x-2,y+3.5,x+3,y+2.5,x+3.5,y-1)),'smooth')];
+    case 'stone': return [L(at(N(5),(q,an,i)=>el(q,an,0,.5,3.4-(i%2)*.8,2.6-(i%2)*.5)),'speck')];
+    case 'bone': return [tube(1.3,'smooth'),L(at(N(4),(q,an)=>el(q,an,0,1.8,1.9,2.5)),'smooth')];
+    case 'iron': return [L(at(N(4),(q,an)=>el(q,an,0,.6,3.6,2.4)),'smooth'),{shapes:at(N(4),(q,an)=>el(q,an,0,1,.75,.75)),flat:'#2E3236',edge:false}];
+    case 'steel': return [L(at(N(5),q=>pg(q,-3.5,-1,-2,3.5,3,2.5,3.5,-1)),'smooth')];
     case 'amber': return [tube(2.7,'smooth')];
-    case 'glass': return [L(at(4,([x,y],i)=>Pg(x-2.7,y-1,x-.6,y+5.5+(i%2)*1.5,x+2.7,y-1)),'smooth')];
-    case 'obsidian': return [L(at(5,([x,y],i)=>Pg(x-2.3,y-1,x+(i%2?1:-1),y+6+(i%3),x+2.3,y-1)),'smooth')];
-    case 'gold': return [tube(2.4,'smooth'),{shapes:at(5,([x,y])=>E(x,y+1.5,.95,.95)),flat:'#FFF3B8',edge:false}];
-    case 'diamond': return [L(at(4,([x,y])=>Pg(x,y-1.5,x-2.7,y+2,x,y+5.8,x+2.7,y+2)),'smooth')];
+    case 'glass': return [L(at(N(4),(q,an,i)=>pg(q,-2.7,-1,-.6,5.5+(i%2)*1.5,2.7,-1)),'smooth')];
+    case 'obsidian': return [L(at(N(5),(q,an,i)=>pg(q,-2.3,-1,(i%2?1:-1),6+(i%3),2.3,-1)),'smooth')];
+    case 'gold': return [tube(2.4,'smooth'),{shapes:at(N(5),(q,an)=>el(q,an,0,1.5,.95,.95)),flat:'#FFF3B8',edge:false}];
+    case 'diamond': return [L(at(N(4),q=>pg(q,0,-1.5,-2.7,2,0,5.8,2.7,2)),'smooth')];
   }
   return [];
 }
@@ -1116,7 +1138,7 @@ function buildSprite(p,pose){
     return {...l,tips:p.mat?tipsOf(l):null};
   };
   const bodyL=R.L.map(l=>({...forge(l),g:'body',fin:!l.flat})), headL=R.H.map(l=>({...forge(l),g:'head',fin:!l.flat}));
-  if(p.mat&&k!=='turtle') stripLayers(p.mat,A.back).forEach(l=>bodyL.push({...l,g:'body'}));
+  if(p.mat&&k!=='turtle') stripLayers(p.mat,A.back,R.spine).forEach(l=>bodyL.push({...l,g:'body'}));
   if(st>=1&&el[0]) BACKF[el[0]](A.back,f,A).forEach(l=>bodyL.push({...l,g:'body'}));
   if(st>=2&&el[1]) CHESTF[el[1]](A.chest,A.belly).forEach(l=>bodyL.push({...l,g:'body'}));
   const layers=bodyL.concat(headL);
