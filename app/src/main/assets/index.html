@@ -735,6 +735,23 @@ body.v-kb{--wall:0px}
 .bk.sm .bscr{flex:1;min-width:0}
 .bk.sm .bscr i{display:none}
 .bk.sm .bcap{flex:none;margin-left:4px}
+
+/* battle key screens scale with the size of the board, so they read well on a big PC screen too */
+.bbkeys,.bbdesk{container-type:inline-size}
+.bbkeys .bk{min-height:clamp(84px,17cqi,140px)}
+.bbkeys .bk.sm{min-height:clamp(46px,8cqi,70px)!important}
+.bbkeys .bscr,.bbdesk .bscr{padding:.35em .4em .3em}
+.bbkeys .bscr b{font-size:clamp(13px,3.7cqi,26px)}
+.bbkeys .bscr i,.bbkeys .bscr em{font-size:clamp(11.5px,3cqi,21px)}
+.bbkeys .bcap{font-size:clamp(9.5px,1.8cqi,14px)}
+/* the same board on the monitor when you're in desk view */
+.bbdesk{display:grid;grid-auto-flow:row;grid-auto-columns:auto;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px}
+.bbdesk[hidden]{display:none!important}
+.bbdesk .bk{min-height:clamp(58px,15cqi,92px);padding:5px 4px 12px!important;gap:3px!important;margin:0}
+.bbdesk .bk.sm{min-height:clamp(34px,7cqi,48px)!important;padding:4px 6px 11px!important}
+.bbdesk .bscr b{font-size:clamp(12px,3.6cqi,20px)}
+.bbdesk .bscr i,.bbdesk .bscr em{font-size:clamp(10.5px,2.9cqi,16px)}
+.bbdesk .bcap{font-size:clamp(8px,1.8cqi,11px)}
 </style>
 
 <main class="desk" id="desk">
@@ -810,6 +827,7 @@ body.v-kb{--wall:0px}
         <button class="tb" id="gSpc" type="button"><span class="mv">Special</span><small>shot</small></button>
         <button class="tb dark" id="gQuit" type="button"><span class="mv">Quit</span><small>stop</small></button>
       </div>
+      <div class="btns bbdesk" id="bbDesk" hidden></div>
       <div class="btns battle" id="battleKeys" hidden>
         <button class="tb" id="mAtk" type="button"></button>
         <button class="tb" id="mSp0" type="button"></button>
@@ -3370,7 +3388,7 @@ const VIEW=(()=>{
     if(e.repeat||e.ctrlKey||e.metaKey||e.altKey)return;const n='123456'.indexOf(e.key);if(n<0)return;
     if(document.querySelector('.sheet:not([hidden])')||document.body.classList.contains('tv-off'))return;
     const grp=[...document.querySelectorAll('.keywell .btns')].find(g=>!g.hidden);if(!grp)return;
-    const b=[...grp.querySelectorAll('.tb')].filter(x=>!x.hidden)[n];if(!b||b.disabled)return;
+    const b=[...grp.querySelectorAll('.tb,.bk')].filter(x=>!x.hidden)[n];if(!b||b.disabled)return;
     b.classList.add('pressed');setTimeout(()=>b.classList.remove('pressed'),130);SFX.play('click');b.click();});
   // little touches that follow the game: the wall note names the pet; CAPS lights up when it wants a fight
   setInterval(()=>{$('wallNote').textContent=`feed ${S.name}!!`;$('kbCaps').classList.toggle('fight',!!(typeof isRestless==='function'&&isRestless()));},1500);
@@ -3588,7 +3606,7 @@ $('eggLater').onclick=()=>{$('eggSheet').hidden=true;toast('You can hatch an egg
   const lum=c=>{const n=parseInt(c.slice(1),16);return ((n>>16)*299+((n>>8)&255)*587+(n&255)*114)/1000;};
   const cap=c=>`--top1:${mix(c,'#FFFFFF',.42)};--top2:${c};--sk1:${shade(c,-.12)};--sk2:${shade(c,-.42)};--ink:${lum(c)>150?'#2A2018':'#FFFFFF'}`;
   function render(){
-    const on=!!B&&VIEW.get()==='kb';wrap.classList.toggle('battling',on);if(!B)return;
+    const on=!!B&&VIEW.get()==='kb',desk=!!B&&!on;wrap.classList.toggle('battling',on);$('bbDesk').hidden=!desk;if(B)$('battleKeys').hidden=desk;if(!B)return;
     const foe=B.foe.p;$('bbVs').innerHTML=`vs ${B.foe.name} `+[...new Set(foe.el||[])].map(e=>`<i style="background:${EL[e].c}" title="${EL[e].n}"></i>`).join('');
     let list;
     if(B.over)list=[{id:'bDone',name:'Back to pet',kind:'DONE',sub:'battle over',c:'#4FA86A'}];
@@ -3596,13 +3614,13 @@ $('eggLater').onclick=()=>{$('eggSheet').hidden=true;toast('You can hatch an egg
       ...B.me.sp.map((sp,i)=>({id:'mSp'+i,name:sp.n,kind:'SPECIAL',cd:B.me.cds[i]||0,eff:sp.el?effOne(sp.el,foe.el):1,c:sp.el?EL[sp.el].c:'#B07AFF'})),
       {id:'mGrd',name:'Guard',kind:'GUARD',sub:'block + heal',c:'#6A90BE'},{id:'bFlee',name:'Flee',kind:'FLEE',sub:'run away',dark:1}];
     const nMoves=list.filter(m=>m.kind==='ATTACK'||m.kind==='SPECIAL').length||1;
-    keys.innerHTML=list.map(m=>{const b=$(m.id),dis=!b||b.hidden||b.disabled;
+    keys.innerHTML=$('bbDesk').innerHTML=list.map(m=>{const b=$(m.id),dis=!b||b.hidden||b.disabled;
       const effTxt=m.eff==null?`<em class="even">${m.sub}</em>`:m.eff>1.2?`<em class="good">×${+m.eff.toFixed(2)} SUPER</em>`:m.eff<.9?`<em class="bad">×${+m.eff.toFixed(2)} WEAK</em>`:`<em class="even">×1 NORMAL</em>`;
       const cdTxt=m.kind==='SPECIAL'?(m.cd?`<i class="wait">WAIT ${m.cd}</i>`:'<i>READY</i>'):m.kind==='ATTACK'?'<i>READY</i>':'<i>&nbsp;</i>';
       const small=m.kind==='GUARD'||m.kind==='FLEE',span=m.kind==='DONE'?6:small?3:6/nMoves;
       return `<button class="mk bk${m.dark?' dark':''}${small?' sm':''}" type="button" data-b="${m.id}" ${dis?'disabled':''} style="grid-column:span ${span};${m.c?cap(m.c):''}"><span class="bscr"><b>${m.name}</b>${cdTxt}${effTxt}</span><span class="bcap">${m.kind}</span></button>`;}).join('');
   }
-  keys.addEventListener('click',e=>{const k=e.target.closest('.bk');if(!k||k.disabled)return;SFX.play('click');const b=$(k.dataset.b);if(b&&!b.disabled)b.click();});
+  [keys,$('bbDesk')].forEach(el=>el.addEventListener('click',e=>{const k=e.target.closest('.bk');if(!k||k.disabled)return;SFX.play('click');const b=$(k.dataset.b);if(b&&!b.disabled)b.click();}));
   addEventListener('viewchange',render);
   window.__bb=render;
 })();
