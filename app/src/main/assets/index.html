@@ -1017,7 +1017,7 @@ body:not(.v-kb) .kbsel{outline:none!important;box-shadow:none!important}
 .kb [data-nav=pgprev],.kb [data-nav=pgnext],.kb [data-nav=tab]{display:none!important}
 .kb .navpad.tpad{grid-template-areas:"b . . u . e" "b . l d r e"}
 .kb .navpad.tpad .back{height:100%}
-.v-kb .clutter .mug{width:clamp(66px,19cqw,170px)!important;left:0!important;top:-18px!important;z-index:1}
+.v-kb .clutter .mug{width:clamp(44px,13cqw,110px)!important;left:5%!important;top:4px!important;z-index:0}
 @media (max-width:479px){.mrow .mk span{letter-spacing:-.02em;font-size:7.6px}}
 </style>
 
@@ -2965,7 +2965,7 @@ function openFeed(){
     '';
   $('feedSub').textContent='';
   box.querySelectorAll('.food').forEach(b=>{b.querySelector('canvas').getContext('2d').drawImage(foodSprite(b.dataset.k),0,0);b.onclick=()=>{$('feedSheet').hidden=true;feed(b.dataset.k);};});
-  carousel(box);
+  carousel(box,'feed');
   $('feedSub').textContent=`${S.name} is ${S.m.hunger<35?'hungry':S.m.hunger<70?'a bit peckish':'fairly full'} and ${S.m.thirst<35?'thirsty':S.m.thirst<70?'could use a drink':'not thirsty'}.`;
   $('feedSheet').hidden=false;
 }
@@ -3459,7 +3459,7 @@ function renderShop(){
   box.querySelectorAll('[data-acc]').forEach(b=>{const cv=b.querySelector('canvas'),g=cv.getContext('2d');cv.width=60;cv.height=48;g.imageSmoothingEnabled=false;
     drawPetAt(g,{sp:S.sp,stage:Math.max(1,S.stage),el:S.el,mat:S.mat,dye:S.dye,equip:{[ACC_SLOT[b.dataset.acc]]:b.dataset.acc}},22,46,0,{pose:{mode:'idle',f:0},mood:'happy',seed:1});b.onclick=()=>buyAcc(b.dataset.acc);});
   box.querySelectorAll('[data-dye]').forEach(b=>b.onclick=()=>buyDye(b.dataset.dye));
-  const sh=box.querySelector('.shop');if(sh)carousel(sh);
+  const sh=box.querySelector('.shop');if(sh)carousel(sh,'shop-'+shopPath);
 }
 function buyAcc(id){if((W.coins|0)<ACC_PRICE){toast('Not enough coins');return;}W.coins-=ACC_PRICE;W.own[id]=(W.own[id]||0)+1;SFX.play('coin');save();renderShop();renderItems();toast(`Bought a ${COSBY[id].n.toLowerCase()}! Wear it from Cosmetics.`);}
 function buyFood(k){const F=FOODS[k];if((W.coins|0)<F.price){toast('Not enough coins');return;}W.coins-=F.price;W.pantry[k]=(W.pantry[k]||0)+PACK;SFX.play('coin');save();renderShop();toast(`Bought ${PACK} × ${F.n.toLowerCase()}`);}
@@ -4087,15 +4087,17 @@ function carCenter(it,smooth=true){const c=it.parentElement,x=Math.max(0,it.offs
   if(!smooth||matchMedia('(prefers-reduced-motion: reduce)').matches){c.scrollLeft=x;return;}
   const x0=c.scrollLeft,t0=performance.now(),id=(c._anim=(c._anim||0)+1);c.style.scrollSnapType='none';c._busy=true;
   const step=t=>{if(c._anim!==id)return;const k=Math.min(1,(t-t0)/260),e=1-Math.pow(1-k,3);c.scrollLeft=x0+(x-x0)*e;if(k<1)requestAnimationFrame(step);else{c.style.scrollSnapType='';setTimeout(()=>{c._busy=false;},120);}};requestAnimationFrame(step);}
-function carMark(c,it){[...c.children].forEach(x=>x.classList.toggle('cur',x===it));if(document.querySelector('.kbsel')&&c.contains(document.querySelector('.kbsel'))){document.querySelector('.kbsel').classList.remove('kbsel');it.classList.add('kbsel');}const w=c.parentElement;if(w&&w.classList.contains('carwrap')){const i=[...c.children].indexOf(it);w.querySelector('.cprev').disabled=i<=0;w.querySelector('.cnext').disabled=i>=c.children.length-1;w.querySelector('.cdots').innerHTML=[...c.children].map((_,k)=>`<i class="${k===i?'on':''}"></i>`).join('');}}
+const CARPOS={};const carKey=x=>x&&(x.dataset.k||x.dataset.food||x.dataset.acc||x.dataset.id||'');
+function carMark(c,it){if(c._name)CARPOS[c._name]=carKey(it);[...c.children].forEach(x=>x.classList.toggle('cur',x===it));if(document.querySelector('.kbsel')&&c.contains(document.querySelector('.kbsel'))){document.querySelector('.kbsel').classList.remove('kbsel');it.classList.add('kbsel');}const w=c.parentElement;if(w&&w.classList.contains('carwrap')){const i=[...c.children].indexOf(it);w.querySelector('.cprev').disabled=i<=0;w.querySelector('.cnext').disabled=i>=c.children.length-1;w.querySelector('.cdots').innerHTML=[...c.children].map((_,k)=>`<i class="${k===i?'on':''}"></i>`).join('');}}
 function carSync(c){const mid=c.scrollLeft+c.clientWidth/2;let best=null,bd=1e9;[...c.children].forEach(x=>{const d=Math.abs(x.offsetLeft+x.offsetWidth/2-mid);if(d<bd){bd=d;best=x;}});if(best&&!best.classList.contains('cur'))carMark(c,best);}
 function carStep(c,d){const items=[...c.children],i=items.findIndex(x=>x.classList.contains('cur'));const n=items[clamp(i+d,0,items.length-1)];if(n){SFX.play('swipe');carCenter(n);}}
-function carousel(c){if(!c)return;c.classList.add('carousel');
+function carousel(c,name){if(!c)return;c.classList.add('carousel');if(name)c._name=name;
   if(!c.parentElement.classList.contains('carwrap')){const w=document.createElement('div');w.className='carwrap';c.before(w);
     w.innerHTML='<button class="cbtn cprev" type="button" aria-label="Previous">‹</button><button class="cbtn cnext" type="button" aria-label="Next">›</button><div class="cdots" aria-hidden="true"></div>';
     w.insertBefore(c,w.querySelector('.cnext'));w.querySelector('.cprev').onclick=()=>carStep(c,-1);w.querySelector('.cnext').onclick=()=>carStep(c,1);
     let st=0;c.addEventListener('scroll',()=>{if(c._busy)return;clearTimeout(st);st=setTimeout(()=>carSync(c),90);});}
-  requestAnimationFrame(()=>{const f=c.querySelector('.cur')||c.firstElementChild;if(f)carCenter(f,false);});}
+  const keep=name&&CARPOS[name]&&[...c.children].find(x=>carKey(x)===CARPOS[name]);
+  requestAnimationFrame(()=>{const f=keep||c.querySelector('.cur')||c.firstElementChild;if(f)carCenter(f,false);});}
 // tapping a food at the side slides it to the middle instead of choosing it
 document.addEventListener('click',e=>{const it=e.target.closest('.carousel>*');if(!it||it.classList.contains('cur'))return;e.preventDefault();e.stopPropagation();SFX.play('swipe');carCenter(it);},true);
 
