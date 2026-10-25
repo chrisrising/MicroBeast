@@ -1,4 +1,5 @@
-<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><style>body{padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}</style></head><body><title>Palward</title>
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><style>body{padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}</style></head><body><meta charset="utf-8">
+<title>Palward</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;600;700&family=VT323&display=swap">
@@ -1019,6 +1020,45 @@ body:not(.v-kb) .kbsel{outline:none!important;box-shadow:none!important}
 .kb .navpad.tpad .back{height:100%}
 
 @media (max-width:479px){.mrow .mk span{letter-spacing:-.02em;font-size:7.6px}}
+
+/* adventure */
+.box.adv{gap:5px}
+.ahead{display:flex;align-items:center;gap:8px;font-size:15px}
+.ahead .k{white-space:nowrap}
+.ahp{flex:1;height:8px;background:var(--ph-faint);box-shadow:0 0 0 1px rgba(141,255,168,.4)}
+.ahp i{display:block;height:100%;background:#7CFF9A}.ahp i.mid{background:var(--amber)}.ahp i.low{background:var(--red)}
+.apot{color:#FFE27A;white-space:nowrap}
+.aboost{font-size:13px;min-height:1em;color:var(--amber)}
+.abody{flex:1;min-height:0;display:flex;flex-direction:column;gap:4px}
+.amap{position:relative;flex:1;min-height:120px}
+.amap svg{position:absolute;inset:0;width:100%;height:100%}
+.amap line{stroke:var(--ph-faint);stroke-width:2;stroke-dasharray:4 3}
+.amap line.walk{stroke:var(--ph);stroke-dasharray:none}
+.anode{position:absolute;transform:translate(-50%,-50%);width:26px;height:26px;padding:0;border:2px solid var(--ph-dim);background:var(--term);color:var(--ph-dim);font:16px/1 var(--term-font);display:grid;place-items:center;cursor:default}
+.anode.t-battle{color:#FF8A7A}.anode.t-boss{color:#FF5A4A;width:32px;height:32px;font-size:20px;border-color:#FF5A4A}.anode.t-item{color:#FFE27A}.anode.t-heal{color:#FF8AB0}.anode.t-risk{color:#B9A8FF}
+.anode.done{opacity:.4}
+.anode.here{opacity:1;background:var(--ph);color:var(--term);border-color:var(--ph);box-shadow:0 0 10px rgba(141,255,168,.6)}
+.anode.avail{cursor:pointer;border-color:var(--ph);animation:apulse 1.1s ease-in-out infinite}
+.anode.avail:hover,.anode.kbsel{background:rgba(141,255,168,.18)}
+@keyframes apulse{50%{box-shadow:0 0 10px rgba(141,255,168,.8)}}
+.akey{display:flex;flex-wrap:wrap;gap:2px 9px;font-size:12px;color:var(--ph-dim)}
+.apanel{flex:1;display:flex;flex-direction:column;justify-content:center;gap:10px;text-align:center}
+.atext{font-size:16px;line-height:1.15}.atext b{color:var(--sel);font-weight:400}.atext p{margin:4px 0 0}
+.apanel .btnrow{justify-content:center}.apanel .btn{flex:0 1 auto;font-size:15px;padding:3px 10px}
+#aPlay{font-size:9px!important;letter-spacing:.02em}
+.kb #aPlay{font-size:clamp(7.5px,1.05cqw,13px)!important}
+.trains{display:flex;flex-wrap:wrap;gap:4px}
+
+.ahead{flex-wrap:wrap;justify-content:space-between;gap:2px 8px;font-size:14px}
+.ahprow{flex:1 0 100%;display:flex;align-items:center;gap:6px;font-size:13px}
+.aboost:empty{display:none}
+.amap line{stroke:var(--ph-dim);stroke-width:1.6;opacity:.7}
+.amap line.walk{stroke:var(--ph);opacity:1}
+.akey{font-size:11px;gap:0 7px}
+.apanel{gap:6px}.atext{font-size:14.5px}.atext p{margin:2px 0 0}
+.apanel .btn{font-size:14px;padding:2px 9px}
+.apanel .btnrow{gap:5px}
+.bbkeys,.bbdesk{grid-template-columns:repeat(12,minmax(0,1fr))!important}
 </style>
 
 <main class="desk" id="desk">
@@ -1084,7 +1124,7 @@ body:not(.v-kb) .kbsel{outline:none!important;box-shadow:none!important}
       <div class="keywell">
       <div class="btns" id="careKeys">
         <button class="tb" id="aFeed" type="button"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 7c-1-3-4-3-4-3s2 1 3 3c-3-1-7 0-7 5 0 4 3 9 6 9 1 0 1-.5 2-.5s1 .5 2 .5c3 0 6-5 6-9 0-5-4-6-7-5z"/></svg>Feed</button>
-        <button class="tb" id="aPlay" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M4 12h16M12 4c3 3 3 13 0 16M12 4c-3 3-3 13 0 16"/></svg>Play</button>
+        <button class="tb" id="aPlay" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M4 12h16M12 4c3 3 3 13 0 16M12 4c-3 3-3 13 0 16"/></svg>Adventure</button>
         <button class="tb" id="aClean" type="button"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="8" cy="14" r="4"/><circle cx="15" cy="9" r="3"/><circle cx="16" cy="17" r="2.4"/></svg>Clean</button>
         <button class="tb" id="aSleep" type="button"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M15 3a9 9 0 1 0 6 15A8 8 0 0 1 15 3z"/></svg><span id="sleepLab">Sleep</span></button>
         <button class="tb red" id="battleBtn" type="button"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M4 3l7 7-2 2-7-7V3zm16 0v2l-9.5 9.5 1.6 1.6 1.4-1.4 1.4 1.4-1.4 1.4 2.1 2.1-1.4 1.4-2.1-2.1-1.4 1.4-1.4-1.4 1.4-1.4-1.6-1.6-1.4 1.4-1.4-1.4 1.4-1.4L18 3h2zM3 17.6l2.1-2.1 1.4 1.4L4.4 19 3 17.6z"/></svg>Battle</button>
@@ -1101,6 +1141,7 @@ body:not(.v-kb) .kbsel{outline:none!important;box-shadow:none!important}
         <button class="tb" id="mAtk" type="button"></button>
         <button class="tb" id="mSp0" type="button"></button>
         <button class="tb" id="mSp1" type="button" hidden></button>
+        <button class="tb" id="mSp2" type="button" hidden></button>
         <button class="tb" id="mGrd" type="button"><span class="mv">Guard</span><small>heal</small></button>
         <button class="tb dark" id="bFlee" type="button"><span class="mv">Flee</span><small>run</small></button>
         <button class="tb red" id="bDone" type="button" hidden><span class="mv">Back to pet</span></button>
@@ -1211,6 +1252,16 @@ body:not(.v-kb) .kbsel{outline:none!important;box-shadow:none!important}
   </div>
 </div>
 
+<!-- adventure -->
+<div class="sheet" id="advSheet" hidden>
+  <div class="box adv" role="dialog" aria-labelledby="advTitle">
+    <div class="tbar"><h3 id="advTitle">Adventure</h3><button class="x" id="advQuit" type="button" aria-label="Leave the adventure">[X]</button></div>
+    <div class="ahead" id="advHead"></div>
+    <div class="aboost sub" id="advBoost"></div>
+    <div class="abody" id="advBody"></div>
+  </div>
+</div>
+
 <!-- main menu -->
 <div class="sheet" id="menuSheet" hidden>
   <div class="box tall" role="dialog" aria-labelledby="menuTitle">
@@ -1240,6 +1291,7 @@ body:not(.v-kb) .kbsel{outline:none!important;box-shadow:none!important}
       <div class="chips" id="typeChips"></div>
       <p class="sub" id="matNote"></p>
       <div class="row"><span>RECORD</span><span class="k" id="record">0W – 0L</span></div>
+      <div id="training"></div>
     </div>
     <div class="tab" id="tab-items" role="tabpanel" hidden><div id="itemsBox" class="tab"></div></div>
     <div class="tab" id="tab-shop" role="tabpanel" hidden><div id="shopBox" class="tab"></div><button id="ofOpen2" type="button" hidden></button></div>
@@ -2429,6 +2481,7 @@ function renderStats(){
   $('rarity').innerHTML=S.mat?`<span class="rar r-${MAT[S.mat].r}">${MAT[S.mat].r}</span>`:'';
   const strong=[...new Set(S.el.flatMap(e=>EL[e].s))].map(e=>EL[e].n);
   $('matNote').textContent=(strong.length?`Strong against ${strong.join(', ')}. `:'Pick an element at the first evolution to gain type advantages. ')+`Care score adjusts all stats by up to ±10%.`+((S.evoCare||[]).length?` Care at evolution: ${(S.evoCare||[]).map(c=>c+'%').join(', ')} (bonus HP ${Math.round((S.evoCare||[]).reduce((a,c)=>a+careBonus(c)*4,0))>=0?'+':''}${Math.round((S.evoCare||[]).reduce((a,c)=>a+careBonus(c)*4,0))}, other stats ${Math.round((S.evoCare||[]).reduce((a,c)=>a+careBonus(c)*2,0))>=0?'+':''}${Math.round((S.evoCare||[]).reduce((a,c)=>a+careBonus(c)*2,0))}).`:'');
+  renderTraining();
   $('record').textContent=`${S.wins}W – ${S.losses}L`;$('record2').textContent=`RECORD ${S.wins}W – ${S.losses}L`;
 }
 function renderHead(){
@@ -2445,7 +2498,7 @@ function act(type){
   if(EVO)return;
   const now=performance.now()/1000;
   if(type==='feed'){openFeed();return;}
-  else if(type==='play'){if(W.pets.length<2){startPlay();return;}choosePet('play',startPlay);return;}
+  else if(type==='play'){ADV.start();return;}
   else if(type==='clean'){
     S.m.clean=100;anim={type,t0:now,dur:1.4};toast('Squeaky clean');SFX.play('clean');
   }else if(type==='sleep'){
@@ -2656,19 +2709,21 @@ const ST_MSG={burn:n=>`${n} is burning!`,soak:n=>`${n} is soaked through!`,stun:
 function specialsOf(p){const els=[...new Set(p.el||[])];return els.length?els.map(e=>({...SPECIALS[e],el:e})):[{...FLAIL,el:null}];}
 function fighter(p,isMe,name){const st=computeStats(p);return {p,st,hp:st.hp,guard:false,cds:{},isMe,hit:0,lunge:0,sx:{},name,info:null,sp:specialsOf(p)};}
 
-function startBattle(foe,friendly){
+function startBattle(foe,friendly,opt){
   const wasRestless=isRestless();S.restless=0;S.lastBattle=Date.now();save();
   const me={...S,care:care()};
-  B={wasRestless,me:fighter(me,true,S.name),foe:fighter(foe,false,foe.name),over:false,busy:false,friendly,log:[],fx:[],pops:[],shake:0,flash:0};
+  B={wasRestless,me:fighter(me,true,S.name),foe:fighter(foe,false,foe.name),over:false,busy:false,friendly,log:[],fx:[],pops:[],shake:0,flash:0,adv:opt||null};
+  if(opt){const m=B.me,f=B.foe;m.st.atk=Math.round(m.st.atk*opt.atk);m.st.def=Math.round(m.st.def*opt.def);m.hp=Math.max(1,Math.min(opt.hp,m.st.hp));if(opt.extra&&m.sp.length<3)m.sp.push(opt.extra);B.buddy=opt.buddy;
+    ['hp','atk','def','spd'].forEach(k=>f.st[k]=Math.round(f.st[k]*opt.foeMul));f.hp=f.st.hp;}
   ['menuSheet','challengeSheet','qrSheet','battleSheet'].forEach(id=>$(id).hidden=true);
   const cv=$('screen');cv.width=200;cv.height=150;
   $('crt').classList.add('battling');$('led').classList.add('fight');
   $('careKeys').hidden=true;$('battleKeys').hidden=false;
-  ['mAtk','mSp0','mGrd','bFlee'].forEach(id=>$(id).hidden=false);$('mSp1').hidden=B.me.sp.length<2;$('bDone').hidden=true;
+  ['mAtk','mSp0','mGrd','bFlee'].forEach(id=>$(id).hidden=false);$('mSp1').hidden=B.me.sp.length<2;$('mSp2').hidden=B.me.sp.length<3;$('bDone').hidden=true;if(opt)$('bFlee').hidden=true;
   $('bMeName').textContent=S.name;$('bFoeName').textContent=foe.name;
   $('mAtk').innerHTML=`<span class="mv">${moveNames(B.me.p)[0]}</span><small>attack</small>`;
   const e1=effectiveness(B.me.p.el,foe.el);
-  log(`${friendly?'Friend battle!':'A wild challenger!'} ${foe.name} the ${fullName(foe)} ${STAGES[foe.stage].toLowerCase()} appears.`);
+  log(`${opt?(opt.boss?'BOSS BATTLE!':'Adventure battle!'):friendly?'Friend battle!':'A wild challenger!'} ${foe.name} the ${fullName(foe)} ${STAGES[foe.stage].toLowerCase()} appears.`);
   SFX.play('round');
   setTimeout(()=>{if(B&&!B.busy)log(e1>1.2?'You have the type advantage.':e1<.9?'Careful: type disadvantage.':'An even match-up.');},1400);
   renderBattle();
@@ -2676,7 +2731,7 @@ function startBattle(foe,friendly){
 function endBattle(){
   const wr=B&&B.wasRestless;B=null;if(wr)setTimeout(()=>toast(`${S.name} feels much calmer now`),400);const cv=$('screen');cv.width=160;cv.height=120;
   $('crt').classList.remove('battling');$('led').classList.remove('fight');
-  $('careKeys').hidden=false;$('battleKeys').hidden=true;window.__bb&&window.__bb();renderAll();returnHome();
+  $('careKeys').hidden=false;$('battleKeys').hidden=true;window.__bb&&window.__bb();renderAll();if(!ADV.on)returnHome();
 }
 function log(msg){if(!B)return;B.log=[msg];$('bLog').innerHTML=`<p>${msg}</p>`;}
 function hpBar(f,bar,txt,stEl){
@@ -2698,6 +2753,7 @@ function calc(att,def,pow,el){
   eff=clamp(eff,.5,2.25);
   if(el==='lightning'&&def.sx.soak) eff*=2;
   const crit=Math.random()<.08;
+  const ml=att.p&&att.p.mlv;if(ml)pow*=1+.08*(ml[el||'atk']||0);
   let dmg=att.st.atk*pow*eff*rnd(.85,1)*(crit?1.5:1)-def.st.def*.45;
   dmg=Math.max(1,Math.round(dmg));
   if(def.guard) dmg=Math.max(1,Math.round(dmg*.4));
@@ -2787,6 +2843,7 @@ async function round(mine){
   const me=B.me,foe=B.foe,fm=aiMove(foe);
   const order=[[me,mine,foe],[foe,fm,me]].sort((a,b)=>(a[1].kind==='guard'?-1:0)-(b[1].kind==='guard'?-1:0)||(speedOf(b[0])-speedOf(a[0]))||(Math.random()-.5));
   for(const [f,m,o] of order){if(f.hp<=0||o.hp<=0)break;await takeTurn(f,m,o);if(!B)return;}
+  if(B.buddy&&foe.hp>0&&me.hp>0){const d=Math.max(1,Math.round(me.st.atk*.35));addFx('hit',me,foe,.4);hurt(foe,d,'#FFE27A');log(`${B.buddy.name} joins in for ${d} damage!`);await sleepMs(650);}
   // end of round: burns, seeds and timers
   for(const f of [me,foe]){
     if(f.hp<=0)continue;const o=f===me?foe:me;
@@ -2798,20 +2855,23 @@ async function round(mine){
   }
   if(me.hp<=0||foe.hp<=0){
     B.over=true;const won=foe.hp<=0&&me.hp>0;SFX.play('faint');setTimeout(()=>SFX.play(won?'win':'lose'),650);
+    if(B.adv){B.advWon=won;if(won)S.wins++;else S.losses++;log(won?`${foe.name} fainted! ${S.name} wins!`:`${S.name} fainted...`);S.m.energy=clamp(S.m.energy-5,0,100);save();
+      ['mAtk','mSp0','mSp1','mSp2','mGrd','bFlee'].forEach(id=>$(id).hidden=true);$('bDone').hidden=false;window.__bb&&window.__bb();B.busy=false;renderBattle();return;}
     const cn=won?20+S.stage*5:6;addCoins(cn);
     if(won){S.wins++;S.m.joy=clamp(S.m.joy+15,0,100);B.reward=grantUnlock();log(`${foe.name} fainted. ${S.name} wins! +${cn} coins${B.reward?' and a new item!':''}`);}
     else{S.losses++;S.m.joy=clamp(S.m.joy-5,0,100);log(`${S.name} fainted. ${foe.name} wins this time. +${cn} coins`);}
     if(B.wasRestless)S.m.joy=clamp(S.m.joy+10,0,100);
     S.m.energy=clamp(S.m.energy-10,0,100);S.m.hunger=clamp(S.m.hunger-5,0,100);save();renderMeters();
-    ['mAtk','mSp0','mSp1','mGrd','bFlee'].forEach(id=>$(id).hidden=true);$('bDone').hidden=false;window.__bb&&window.__bb();
+    ['mAtk','mSp0','mSp1','mSp2','mGrd','bFlee'].forEach(id=>$(id).hidden=true);$('bDone').hidden=false;window.__bb&&window.__bb();
   }
   B.busy=false;renderBattle();
 }
 $('mAtk').onclick=()=>round({kind:'attack'});
 $('mSp0').onclick=()=>round({kind:'special',i:0});
 $('mSp1').onclick=()=>round({kind:'special',i:1});
+$('mSp2').onclick=()=>round({kind:'special',i:2});
 $('mGrd').onclick=()=>round({kind:'guard'});
-$('bDone').onclick=()=>{const it=B&&B.reward;endBattle();if(it)setTimeout(()=>showUnlock(it),300);};
+$('bDone').onclick=()=>{if(B&&B.adv){const w=B.advWon,hp=B.me.hp,boss=B.adv.boss;endBattle();ADV.after(w,hp,boss);return;}const it=B&&B.reward;endBattle();if(it)setTimeout(()=>showUnlock(it),300);};
 $('bFlee').onclick=()=>{if(!B||B.busy||B.over)return;SFX.play('flee');endBattle();toast('You fled the battle');};
 
 // ---------- battle drawing ----------
@@ -3483,7 +3543,7 @@ function canHatch(){return W.pets.length<MAXPETS&&W.pets.every(p=>p.stage>=3);}
 function choosePet(kind,cb){
   if(W.pets.length<2){cb();return;}
   const need=kind==='play'?15:10, box=$('pickGrid');
-  $('pkTitle').textContent=kind==='play'?'Who wants to play?':'Who will battle?';
+  $('pkTitle').textContent=kind==='play'?'Who goes on the adventure?':'Who will battle?';
   box.innerHTML=W.pets.map((p,i)=>{const why=p.asleep&&p.stage<3?'asleep':p.m.energy<need?'too tired':'';
     return `<button class="pick" type="button" data-i="${i}" ${why?'disabled':''}><canvas width="96" height="72" aria-hidden="true"></canvas><b>${p.name}</b><small>${STAGES[p.stage]}${why?` · ${why}`:p===S?' · here now':''}</small></button>`;}).join('');
   box.querySelectorAll('.pick').forEach(b=>{const p=W.pets[+b.dataset.i],c=b.querySelector('canvas').getContext('2d');drawScene(c,96,72,false,0,0,p.equip&&p.equip.bg);drawPetAt(c,p,48,56,0,{pose:{mode:'idle',f:0},mood:'happy',noFx:true});
@@ -3571,7 +3631,7 @@ const VIEW=(()=>{
     if(k.dataset.tab){showTab(k.dataset.tab);$('menuSheet').hidden=false;return;}
     const a=k.dataset.act;if(a==='power')$('pwrKey').click();else if(a==='pet')$('petBtn').click();else if(a==='snd'){$('sndBtn').click();syncKeys();}else if(a==='desk')set('desk');else if(a==='back')goBack();else if(a==='office')OFFICE.open();});
   // BACK closes whatever is open on screen, using its own close/cancel button where it has one
-  const BACKORDER=['eggSheet','officeSheet','resetSheet','pickSheet','giftSheet','unlockSheet','feedSheet','qrSheet','challengeSheet','evoSheet','battleSheet','menuSheet'];
+  const BACKORDER=['advSheet','eggSheet','officeSheet','resetSheet','pickSheet','giftSheet','unlockSheet','feedSheet','qrSheet','challengeSheet','evoSheet','battleSheet','menuSheet'];
   function goBack(){const id=BACKORDER.find(i=>$(i)&&!$(i).hidden);if(!id)return;if(id==='officeSheet'&&OFFICE.up())return;if(id==='menuSheet'&&curTab==='shop'&&shopPath){shopPath='';renderShop();return;}if(id==='menuSheet'&&curTab==='items'&&invPath){invPath='';renderItems();return;}const sh=$(id);
     const c=sh.querySelector('.x')||[...sh.querySelectorAll('button[id]')].find(b=>/(Close|No|Later|Keep|Cancel)$/.test(b.id));if(c)c.click();else sh.hidden=true;}
   const sheets=[...document.querySelectorAll('.sheet')];
@@ -3599,6 +3659,7 @@ const VIEW=(()=>{
   function hideAllBut(root,keep){[...root.children].forEach(c=>{if(c===keep||c.matches('.pager'))return;if(c.contains(keep))hideAllBut(c,keep);else hide(c);});}
   function layout(keepSel){
     const sh=openSheet();if(!sh)return;
+    if(sh.id==='advSheet'){clearMarks(sh);const l=selectables();select((selEl&&l.includes(selEl))?selEl:l.find(e=>e.classList.contains('avail'))||l.find(e=>e.closest('.apanel'))||l[0]||null,true);return;}
     const box=boxOf(sh),root=rootOf(sh);if(!box||!root)return;
     if(PG.sheet!==sh||PG.tab!==root){PG.sheet=sh;PG.tab=root;PG.sec=0;PG.page=0;}
     clearMarks(sh);box.scrollTop=0;
@@ -3658,7 +3719,7 @@ const VIEW=(()=>{
     if(PG.secs.length>1&&sh.id!=='menuSheet')items=PG.secs.slice(0,6).map((s,i)=>{const t=(s.querySelector('.k')||{}).textContent||'';const k=t.split(' ·')[0].trim();return {label:SHORT[k]||k.charAt(0)+k.slice(1).toLowerCase(),sec:i};});
     else if(sh.id==='menuSheet')items=[...sh.querySelectorAll('[role=tab]')].map(b=>({label:{INVENTORY:'Inventory',SYSTEM:'Settings'}[b.textContent.trim()]||b.textContent.trim(),tab:b.dataset.tab,on:b.dataset.tab===curTab}));
     else items=selectables().slice(0,5).map(e=>({label:(e.querySelector('b,strong,.mv')||e).textContent.replace(/[>×]/g,'').trim()||e.placeholder||'Type',el:e}));
-    kb.classList.toggle('shopmode',sh.id==='officeSheet'||false);
+    kb.classList.toggle('shopmode',sh.id==='officeSheet'||sh.id==='advSheet');
     const key=(sh.id+':'+(sh.id==='menuSheet'?'':(PG.tab&&PG.tab.id))+':'+items.map(i=>i.label).join('|'));if(key===catKey){[...navcat.querySelectorAll('.cat')].forEach((c,i)=>{if(items[i])c._on=items[i].on;});paintCatsOn();return;}catKey=key;
     navcat.innerHTML='';
     items.forEach((it,i)=>{const k=document.createElement('button');k.type='button';k.className='mk cat';k._sec=it.sec;k._on=it.on;k.innerHTML=`<span>${it.label.replace(/</g,'&lt;')}</span>`;
@@ -3677,7 +3738,7 @@ const VIEW=(()=>{
   let modeQ=0,lastSheet=null,lastTab=null,relayQ=0;
   function updateMode(){
     const sh=openSheet(),want=cur==='kb'&&!!sh,tab=sh&&rootOf(sh);
-    kb.classList.toggle('shopmode',!!sh&&(sh.id==='officeSheet'||false));
+    kb.classList.toggle('shopmode',!!sh&&(sh.id==='officeSheet'||sh.id==='advSheet'));
     if(want&&!menuMode){menuMode=true;SFX.play('click');flipKeys(realKeys(),()=>{kb.classList.add('menumode');$('navkeys').hidden=false;catKey='';layout();buildCats(false);},navKeys);}
     else if(!want&&menuMode){menuMode=false;if(selEl)selEl.classList.remove('kbsel');selEl=null;if(lastSheet)clearMarks(lastSheet);flipKeys(navKeys(),()=>{kb.classList.remove('menumode');$('navkeys').hidden=true;},realKeys);}
     else if(want&&(sh!==lastSheet||tab!==lastTab)){layout();buildCats(true);}
@@ -4068,7 +4129,7 @@ $('eggLater').onclick=()=>{$('eggSheet').hidden=true;toast('You can hatch an egg
     keys.innerHTML=$('bbDesk').innerHTML=list.map(m=>{const b=$(m.id),dis=!b||b.hidden||b.disabled;
       const effTxt=m.eff==null?`<em class="even">${m.sub}</em>`:m.eff>1.2?`<em class="good">×${+m.eff.toFixed(2)} SUPER</em>`:m.eff<.9?`<em class="bad">×${+m.eff.toFixed(2)} WEAK</em>`:`<em class="even">×1 NORMAL</em>`;
       const cdTxt=m.kind==='SPECIAL'?(m.cd?`<i class="wait">WAIT ${m.cd}</i>`:'<i>READY</i>'):m.kind==='ATTACK'?'<i>READY</i>':'<i>&nbsp;</i>';
-      const small=m.kind==='GUARD'||m.kind==='FLEE',span=m.kind==='DONE'?6:small?3:6/nMoves;
+      const small=m.kind==='GUARD'||m.kind==='FLEE',span=m.kind==='DONE'?12:small?(list.filter(x=>x.kind==='GUARD'||x.kind==='FLEE').length===1?12:6):12/nMoves;
       return `<button class="mk bk${m.dark?' dark':''}${small?' sm':''}" type="button" data-b="${m.id}" ${dis?'disabled':''} style="grid-column:span ${span};${m.c?cap(m.c):''}"><span class="bscr"><b>${m.name}</b>${cdTxt}${effTxt}</span><span class="bcap">${m.kind}</span></button>`;}).join('');
   }
   setInterval(()=>{if(B)lcd();},500);
@@ -4116,6 +4177,122 @@ function placeMug(){const m=$('mugSvg');if(!m)return;const P=['width','left','to
   else{w=Math.max(30,Math.min(gap*.75,sf.width*.13));x=sf.width*.05;y=kb.top-cl.top-w*1.55;}
   m.style.width=w+'px';m.style.left=x+'px';m.style.top=y+'px';m.style.bottom='auto';}
 addEventListener('resize',()=>setTimeout(placeMug,50));addEventListener('viewchange',()=>{setTimeout(placeMug,900);setTimeout(placeMug,1600);});
+// ---------- Adventure: a branching path of battles, finds, risks and rest spots, with a boss every 5 stages ----------
+const ADV=(()=>{
+  let A=null;
+  const T={battle:{g:'⚔',n:'Battle'},item:{g:'★',n:'Treasure'},risk:{g:'?',n:'Risky choice'},heal:{g:'♥',n:'Rest spot'},boss:{g:'☠',n:'Boss'}};
+  const RISKS=[
+    {t:'A wobbly rope bridge sways over a deep gorge. There\'s a chest on the far side.',go:'Cross it',stay:'Walk round'},
+    {t:'A glittering chest sits in the middle of a clearing. It might be a trap...',go:'Open it',stay:'Leave it'},
+    {t:'A dark cave hums with strange energy. Something shiny glints inside.',go:'Go in',stay:'Keep going'},
+    {t:'A grumpy-looking mushroom offers a deal: "Eat me, if you dare!"',go:'Eat it',stay:'No thanks'},
+    {t:'A stack of boulders hides a gap. You could squeeze through for a shortcut.',go:'Squeeze through',stay:'Go around'}];
+  const scale=()=>1+.14*(A.leg-1);
+  function genMap(){
+    const layers=[[{t:'start',x:0}]];
+    for(let L=1;L<=5;L++){
+      if(L===5){layers.push([{t:'boss'}]);continue;}
+      const n=L===1?2:2+(Math.random()<.55?1:0),row=[];
+      for(let i=0;i<n;i++){const r=Math.random();row.push({t:r<.42?'battle':r<.62?'item':r<.82?'risk':'heal'});}
+      if(!row.some(x=>x.t==='battle'))row[Math.floor(Math.random()*n)].t='battle';
+      layers.push(row);}
+    layers.forEach((row,L)=>row.forEach((nd,i)=>{nd.L=L;nd.i=i;nd.y=(i+1)/(row.length+1);nd.next=[];nd.done=false;}));
+    for(let L=0;L<5;L++){const a=layers[L],b=layers[L+1];
+      b.forEach(nb=>{let best=a[0];a.forEach(na=>{if(Math.abs(na.y-nb.y)<Math.abs(best.y-nb.y))best=na;});best.next.push(nb.i);});
+      a.forEach(na=>{if(!na.next.length){let best=b[0];b.forEach(nb=>{if(Math.abs(na.y-nb.y)<Math.abs(best.y-nb.y))best=nb;});na.next.push(best.i);}
+        if(Math.random()<.35){const o=b[Math.floor(Math.random()*b.length)];if(!na.next.includes(o.i))na.next.push(o.i);}});}
+    return layers;
+  }
+  const me=()=>W.pets[A.pet];
+  function start(){
+    if(S.asleep){toast(`${S.name} is asleep`);return;}if(S.m.energy<20){toast(`${S.name} is too tired for an adventure`);return;}
+    const go=()=>{const st=computeStats({...S,care:care()});
+      A={pet:W.active,leg:1,map:genMap(),at:[0,0],hp:st.hp,max:st.hp,coins:0,xp:0,atk:1,def:1,extra:null,buddy:null,pushed:false,panel:null};
+      S.m.energy=clamp(S.m.energy-15,0,100);save();SFX.play('round');render();$('advSheet').hidden=false;};
+    if(W.pets.length<2)go();else choosePet('play',go);
+  }
+  const hpBar=()=>{const p=A.hp/A.max;return `<span class="ahp"><i style="width:${Math.round(p*100)}%" class="${p<.25?'low':p<.55?'mid':''}"></i></span><span>${A.hp}/${A.max}</span>`;};
+  function boosts(){const b=[];if(A.atk>1)b.push(`ATK +${Math.round((A.atk-1)*100)}%`);if(A.def>1)b.push(`DEF +${Math.round((A.def-1)*100)}%`);if(A.extra)b.push(A.extra.n);if(A.buddy)b.push('Buddy: '+A.buddy.name);return b.join(' · ');}
+  function render(){
+    const box=$('advBody'),cur=A.map[A.at[0]][A.at[1]];
+    $('advHead').innerHTML=`<span class="k">LEG ${A.leg} · ${Math.min(5,A.at[0])}/5</span><span class="apot">● ${A.coins} · ${A.xp} XP</span><span class="ahprow">HP ${hpBar()}</span>`;
+    $('advBoost').textContent=boosts()||(A.pushed?'Pushed on! Lose now and you lose everything.':'');
+    if(A.panel){box.innerHTML=A.panel;box.querySelectorAll('[data-a]').forEach(b=>b.onclick=()=>act(b.dataset.a));return;}
+    const W_=320,H_=150,X=L=>18+L*(W_-36)/5,Y=y=>8+y*(H_-16);
+    let lines='';A.map.forEach((row,L)=>row.forEach(nd=>nd.next.forEach(j=>{const nb=A.map[L+1][j],walked=nd.done&&nb.done;lines+=`<line x1="${X(L)}" y1="${Y(nd.y)}" x2="${X(L+1)}" y2="${Y(nb.y)}" class="${walked?'walk':''}"/>`;})));
+    const nexts=cur.next.map(j=>A.map[A.at[0]+1][j]);
+    let nodes='';A.map.forEach((row,L)=>row.forEach(nd=>{const avail=nexts.includes(nd),here=nd===cur,g=nd.t==='start'?'◉':T[nd.t].g;
+      nodes+=`<button type="button" class="anode t-${nd.t}${here?' here':''}${nd.done?' done':''}${avail?' avail':''}" style="left:${X(L)/W_*100}%;top:${Y(nd.y)/H_*100}%" ${avail?'':'disabled'} data-go="${L}:${nd.i}" aria-label="${nd.t==='start'?'Start':T[nd.t].n}">${g}</button>`;}));
+    box.innerHTML=`<div class="amap"><svg viewBox="0 0 ${W_} ${H_}" preserveAspectRatio="none" aria-hidden="true">${lines}</svg>${nodes}</div><div class="akey">${Object.values(T).map(v=>`<span>${v.g} ${v.n}</span>`).join('')}</div>`;
+    box.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>{const [L,i]=b.dataset.go.split(':').map(Number);visit(L,i);});
+  }
+  function panel(html,btns){A.panel=`<div class="apanel"><div class="atext">${html}</div><div class="btnrow">${btns.map(([a,t,c])=>`<button class="btn ${c||''}" type="button" data-a="${a}">${t}</button>`).join('')}</div></div>`;render();}
+  let pending=null;
+  function visit(L,i){const nd=A.map[L][i];A.at=[L,i];nd.done=true;SFX.play('click');
+    if(nd.t==='battle'||nd.t==='boss'){const foe=makeFoe(nd.t==='boss');pending={foe,boss:nd.t==='boss'};const o=odds(foe);
+      panel(`<b>${nd.t==='boss'?'BOSS! ':''}${foe.name} the ${fullName(foe)} ${STAGES[foe.stage].toLowerCase()}</b><p>${o.mood}</p><p class="sub">Win chance: about ${Math.round(o.p*100)}%</p>`,[['fight','Fight!']]);}
+    else if(nd.t==='item'){const r=Math.random();let msg;
+      if(r<.45){const h=Math.round(A.max*.4);A.hp=Math.min(A.max,A.hp+h);msg=`a <b>health berry</b>! ${me().name} recovers ${h} HP.`;SFX.play('heal');}
+      else if(r<.75){A.atk+=.1;msg=`a <b>power charm</b>! Attack +10% for this adventure.`;SFX.play('unlock');}
+      else{A.def+=.1;msg=`an <b>iron shell</b>! Defence +10% for this adventure.`;SFX.play('unlock');}
+      const c=5+A.leg*3;A.coins+=c;panel(`${me().name} found ${msg}<p class="sub">…and ${c} coins.</p>`,[['map','Onward']]);}
+    else if(nd.t==='heal'){const h=Math.round(A.max*.5);A.hp=Math.min(A.max,A.hp+h);SFX.play('heal');panel(`A quiet spring. ${me().name} rests and recovers <b>${h} HP</b>.`,[['map','Onward']]);}
+    else{const r=pick(RISKS);pending={risk:r};panel(r.t,[['riskgo',r.go,'warn'],['map',r.stay,'alt']]);}
+  }
+  function makeFoe(boss){const p=me(),stage=boss?Math.min(3,p.stage+(A.leg>1?1:0)):Math.max(0,Math.min(3,p.stage+(Math.random()<.2*A.leg?1:0)-(Math.random()<.25?1:0))),el=[];
+    for(let i=0;i<Math.min(2,stage);i++)el.push(pick(ORDER));const mat=stage===3?sampleDistinct(Object.keys(MAT),1,k=>RWEIGHT[MAT[k].r])[0]:null;
+    return {name:boss?pick(['Grimtooth','Duskfang','Ironjaw','Stormhide','Ashmaw']):pick(NAMES),sp:pick(Object.keys(SPECIES)),stage,el,mat,care:Math.round(rnd(60,95)),boss};}
+  function foeMul(boss){return scale()*(boss?1.25:1);}
+  // how the fight looks from your pet's point of view
+  function odds(foe){const p={...me(),care:careOf(me())},a=computeStats(p),f=computeStats(foe),m=foeMul(foe.boss);
+    const e1=effectiveness(p.el||[],foe.el||[]),e2=effectiveness(foe.el||[],p.el||[]);
+    const myD=Math.max(1,a.atk*A.atk*1.15*e1-f.def*m*.45),thD=Math.max(1,f.atk*m*1.15*e2-a.def*A.def*.45);
+    const tF=f.hp*m/(myD+(A.buddy?a.atk*.35:0)),tM=A.hp/thD,sp=a.spd>f.spd?.3:-.3,x=(tM-tF+sp)/Math.max(1.5,Math.min(tM,tF)*.6);
+    const pr=clamp(1/(1+Math.exp(-x*1.6)),.04,.97),n=me().name;
+    const mood=pr>.78?`${n} feels powerful! ${e1>1.2?'Its element has the edge.':'It looks ready for this.'}`:pr>.56?`${n} feels confident.`:pr>.38?`${n} is a bit nervous${e2>1.2?' — that element is strong against it.':'.'}`:`${n} looks scared! ${e2>1.2?'This foe\'s element hits it hard.':'This one is tough.'}`;
+    return {p:pr,mood};}
+  function act(a){SFX.play('click');
+    if(a==='map'){A.panel=null;pending=null;render();return;}
+    if(a==='riskgo'){const good=Math.random()<.6;
+      if(good){const c=15+A.leg*10;A.coins+=c;A.xp+=5;SFX.play('coin');panel(`It paid off! ${me().name} grabs <b>${c} coins</b> and 5 XP.`,[['map','Onward']]);}
+      else{const d=Math.round(A.max*.25);A.hp=Math.max(1,A.hp-d);SFX.play('hurt');panel(`Ouch! It was a trap. ${me().name} loses <b>${d} HP</b>.`,[['map','Onward']]);}return;}
+    if(a==='fight'){const {foe,boss}=pending;$('advSheet').hidden=true;A.panel=null;
+      startBattle(foe,false,{adv:true,hp:A.hp,atk:A.atk,def:A.def,extra:A.extra,buddy:A.buddy,foeMul:foeMul(boss),boss});return;}
+    if(a==='bank'){finish(true);return;}
+    if(a==='push'){panel(`<b>Push on!</b> Choose a bonus for the next leg. If ${me().name} loses from here on, you lose everything you've earned.`,[['b-heal','Full heal'],['b-str','Strength +20%'],['b-move','Extra move'],['b-buddy','Buddy pet']]);return;}
+    if(a.startsWith('b-')){A.pushed=true;
+      if(a==='b-heal')A.hp=A.max;if(a==='b-str')A.atk+=.2;
+      if(a==='b-move'){const e=pick(ORDER.filter(x=>!(me().el||[]).includes(x)));A.extra={...SPECIALS[e],el:e,n:SPECIALS[e].n};}
+      if(a==='b-buddy'){const o=W.pets.filter((p,i)=>i!==A.pet);A.buddy=o.length?{name:pick(o).name}:{name:pick(['Pebble','Sprout','Ziggy','Nib'])};}
+      A.leg++;A.map=genMap();A.at=[0,0];A.panel=null;SFX.play('round');render();return;}
+    if(a==='home'){finish(false);return;}
+    if(a==='quitok'){finish(!A.pushed,true);return;}
+  }
+  function after(won,hp,boss){
+    A.hp=Math.max(0,hp);$('advSheet').hidden=false;
+    if(!won){const keep=!A.pushed;const c=keep?Math.round(A.coins/2):0,x=keep?Math.round(A.xp/2):0;A.coins=c;A.xp=x;
+      panel(`${me().name} was beaten and limps home.${keep?` You keep half: <b>● ${c}</b> and <b>${x} XP</b>.`:' Everything earned on this adventure is lost!'}`,[['home','Head home']]);return;}
+    const c=(boss?30:12)+A.leg*6,x=(boss?30:10)+A.leg*4;A.coins+=c;A.xp+=x;
+    if(boss)panel(`<b>Checkpoint!</b> The boss is beaten. +${c} coins, +${x} XP.<p>Total so far: <b>● ${A.coins}</b> and <b>${A.xp} XP</b>.</p><p class="sub">Bank it and go home, or push on for a bonus and bigger rewards?</p>`,[['bank','Bank it'],['push','Push on','warn']]);
+    else panel(`Victory! +${c} coins and +${x} XP.`,[['map','Onward']]);
+  }
+  function finish(keep,quit){const p=me();
+    if(keep&&(A.coins||A.xp)){addCoins(A.coins);giveXP(p,A.xp);toast(`Adventure over: +${A.coins} coins, +${A.xp} XP`);}
+    else if(quit)toast(A.pushed?'You left the adventure and lost your winnings':'You headed home');
+    A=null;$('advSheet').hidden=true;save();renderAll();returnHome();}
+  $('advQuit').onclick=()=>{if(!A)return;if(A.panel&&/Head home|Checkpoint/.test(A.panel))return;
+    panel(`Leave the adventure? ${A.pushed?'You pushed on, so you will lose everything earned.':`You'll keep <b>● ${A.coins}</b> and <b>${A.xp} XP</b>.`}`,[['quitok','Leave','warn'],['map','Keep going','alt']]);};
+  return {start,after,get on(){return !!A;},get state(){return A;}};
+})();
+// experience: speeds up evolving, and once grown up it trains moves
+function giveXP(p,x){if(!x)return;p.xp=(p.xp||0)+x;if(p.stage<3){p.stageStart-=x*90e3;}save();}
+const trainCost=l=>25+l*25;
+function renderTraining(){const box=$('training');if(!box)return;const xp=S.xp||0;
+  if(S.stage<3){box.innerHTML=`<div class="row"><span class="k">EXPERIENCE</span><span>${xp} XP</span></div><p class="sub">XP from adventures speeds up evolving (each XP takes 1½ minutes off). Once grown up, spend XP to train moves.</p>`;return;}
+  S.mlv=S.mlv||{};const moves=[{k:'atk',n:moveNames(S)[0]},...specialsOf(S).map(s=>({k:s.el||'flail',n:s.n}))];
+  box.innerHTML=`<div class="row"><span class="k">TRAINING</span><span>${xp} XP</span></div><div class="trains">${moves.map(m=>{const l=S.mlv[m.k]||0,c=trainCost(l),max=l>=5;
+    return `<button class="item" type="button" data-tr="${m.k}" ${max||xp<c?'disabled':''}>${m.n} Lv${l+1}${max?' MAX':` → ${c} XP`}</button>`;}).join('')}</div><p class="sub">Each level adds 8% power to that move.</p>`;
+  box.querySelectorAll('[data-tr]').forEach(b=>b.onclick=()=>{const k=b.dataset.tr,l=S.mlv[k]||0,c=trainCost(l);if((S.xp||0)<c)return;S.xp-=c;S.mlv[k]=l+1;SFX.play('unlock');save();renderTraining();toast('Move trained!');});}
 const awayAtLoad=S.last?Date.now()-S.last:0, hm=(location.hash||'').match(/^#(fl[A-Za-z0-9_-]+)$/);
 tick();renderAll();requestAnimationFrame(frame);
 // what happens when the monitor first comes on: a new player picks a pet, a returning one may find a gift or a battle link
