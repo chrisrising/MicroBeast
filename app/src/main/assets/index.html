@@ -975,6 +975,30 @@ body:not(.v-kb) .kbsel{outline:none!important;box-shadow:none!important}
 @keyframes stbyglow{0%,100%{filter:drop-shadow(0 0 4px rgba(255,60,40,.6))}50%{filter:drop-shadow(0 0 14px rgba(255,60,40,1)) drop-shadow(0 0 26px rgba(255,40,20,.6))}}
 .tv-off #led,.tv-off .led{background:#FF3A2A!important;box-shadow:0 0 6px #FF3A2A,0 0 0 2px #7A705C!important}
 @media (prefers-reduced-motion: reduce){.tv-off .pwrkey,.tv-off .mk.pwr{animation:none!important;filter:drop-shadow(0 0 10px rgba(255,60,40,.9))}}
+
+/* shops: just arrows, Enter and Back */
+.kb.shopmode .navcat,.kb.shopmode [data-nav=pgprev],.kb.shopmode [data-nav=pgnext],.kb.shopmode [data-nav=tab]{display:none!important}
+.kb.shopmode .navpad.tpad{grid-template-areas:"b . . u . e" "b . l d r e"}
+.kb.shopmode .navpad.tpad .back{height:100%}
+/* pet shop home */
+.stiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.crt>.sheet .stiles{grid-template-columns:repeat(2,minmax(0,1fr));gap:5px}
+.crt>.sheet .stile{flex-direction:row;gap:6px;padding:4px 6px}.crt>.sheet .stile i{width:30px;height:22px;flex:none}.crt>.sheet .stile small{margin-left:auto}
+.crt>.sheet .shophome .sub{display:none}
+.stile{display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 4px;background:none;border:2px solid var(--ph-dim);color:var(--ph)}
+.stile i{width:44px;height:34px;display:block;box-shadow:0 0 0 2px #000}
+.stile b{font-weight:400;font-size:19px;color:var(--sel)}.stile small{font-size:14px;color:var(--ph-dim)}
+.stile:hover,.stile.kbsel{border-color:var(--ph);background:rgba(141,255,168,.07)}
+.shopback{align-self:flex-start;padding:1px 8px!important;font-size:14px!important}
+.crt>.sheet .stile{padding:5px 3px}.crt>.sheet .stile b{font-size:16px}.crt>.sheet .stile small{font-size:12px}
+/* office material tiles fit one screen */
+.crt>.office .ofgrid.tiles.n4 .otile,.crt>.office .ofgrid.tiles.n2 .otile{flex-direction:row;justify-content:flex-start;gap:6px;text-align:left;padding:3px 5px}
+.crt>.office .ofgrid.tiles.n4 .otile small,.crt>.office .ofgrid.tiles.n2 .otile small{margin-left:auto}
+/* keyboard view: everything sits a little lower so the window peeps out above the monitor */
+.v-kb .room{display:block!important}
+.v-kb :is(.poster,.calendar,.wallnote){display:none!important}
+.v-kb .desk{padding-top:calc(6vh + env(safe-area-inset-top, 0px))}
+.v-kb .rig{width:min(calc(100cqw - 4px), calc((58cqh - 52px) * 1.333 + 52px))!important}
 </style>
 
 <main class="desk" id="desk">
@@ -1198,7 +1222,7 @@ body:not(.v-kb) .kbsel{outline:none!important;box-shadow:none!important}
       <div class="row"><span>RECORD</span><span class="k" id="record">0W – 0L</span></div>
     </div>
     <div class="tab" id="tab-items" role="tabpanel" hidden><div id="itemsBox" class="tab"></div></div>
-    <div class="tab" id="tab-shop" role="tabpanel" hidden><div id="shopBox" class="tab"></div><div class="isec"><span class="k">OFFICE SUPPLIES</span><p class="sub">Customise your desk, monitor and keyboard at the MegaOffice website.</p><div class="btnrow"><button class="btn alt" id="ofOpen2" type="button">Visit megaoffice.biz ›</button></div></div></div>
+    <div class="tab" id="tab-shop" role="tabpanel" hidden><div id="shopBox" class="tab"></div><button id="ofOpen2" type="button" hidden></button></div>
     <div class="tab" id="tab-system" role="tabpanel" hidden>
       <p><span class="k">PALWARDENS</span> v1.4 · CRT-14</p>
       <p class="sub">Pets evolve from baby to toddler in about 10 minutes, toddler to teen in 3 hours, and teen to adult in a day. Your pet keeps ageing while the screen is off.</p>
@@ -2512,7 +2536,7 @@ $('hatchBtn').onclick=()=>{
   save();$('nameSheet').hidden=true;renderAll();toast(migrating?`${n} is now a ${spOf(S).n.toLowerCase()}!`:`Say hello to ${n} the ${spOf(S).n.toLowerCase()}!`);
 };
 let curTab='status';
-function showTab(t){curTab=t;document.querySelectorAll('.tabs [role=tab]').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.tab===t)));['status','stats','items','shop','system'].forEach(n=>$('tab-'+n).hidden=n!==t);}
+function showTab(t){if(t!==curTab&&t==='shop'){shopPath='';renderShop();}curTab=t;document.querySelectorAll('.tabs [role=tab]').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.tab===t)));['status','stats','items','shop','system'].forEach(n=>$('tab-'+n).hidden=n!==t);}
 document.querySelectorAll('.tabs [role=tab]').forEach(b=>b.onclick=()=>showTab(b.dataset.tab));
 $('menuBtn').onclick=()=>{showTab(curTab);$('menuSheet').hidden=false;};
 $('menuClose').onclick=()=>{$('menuSheet').hidden=true;};
@@ -3378,19 +3402,33 @@ function drawCoins(c,t){
   px(c,x0,y+bump,5,5,'#E8B923');px(c,x0+1,y-1+bump,3,1,'#FFE27A');px(c,x0+1,y+5+bump,3,1,'#A87A12');px(c,x0+1,y+1+bump,1,2,'#FFF2B0');px(c,x0+2,y+1+bump,1,3,'#A87A12');
   pixText(c,txt,x1-w/2,y,t-coinFlash<.6?'#FFE27A':'#FFFFFF');
 }
+// the pet shop: a home page of departments (Food, Accessories, Dyes); pick one, press Back to come home
+let shopPath='';const ACC_PRICE=60;
 function renderShop(){
   const box=$('shopBox');if(!box)return;
-  const coins=W.coins|0;
-  const foods=Object.keys(FOODS).filter(k=>FOODS[k].price);
-  box.innerHTML=`<div class="row"><span class="k">YOUR COINS</span><span class="coins">● ${coins}</span></div>
-    <p class="sub">Earn coins from battles and Play. Basic chow and water are always free.</p>
-    <div class="isec"><span class="k">FOOD · packs of ${PACK}</span><div class="shop">${foods.map(k=>{const F=FOODS[k],v=foodVerdict(k),have=W.pantry[k]||0;
-      return `<button class="ware" type="button" data-food="${k}" ${coins<F.price?'disabled':''}><canvas width="30" height="24" aria-hidden="true"></canvas><b>${F.n}</b><small>${F.price}c${have?` · have ${have}`:''}${v==='fav'?' · ♥':''}</small></button>`;}).join('')}</div></div>
-    <div class="isec"><span class="k">DYES · ${DYE_PRICE}c each, for ${S.name}</span><div class="items">${Object.keys(DYES).map(k=>`<button class="item${S.dye===k?' on':''}" type="button" data-dye="${k}" ${coins<DYE_PRICE&&S.dye!==k?'disabled':''}><i style="background:${DYES[k].c}"></i>${DYES[k].n}</button>`).join('')}${S.dye?`<button class="item" type="button" data-dye="">Remove dye</button>`:''}</div></div>`;
+  const coins=W.coins|0,foods=Object.keys(FOODS).filter(k=>FOODS[k].price),accs=COSMETICS.filter(c=>c.type==='acc');
+  const head=`<div class="row"><span class="k">${shopPath?{food:'FOOD · packs of '+PACK,acc:'ACCESSORIES · '+ACC_PRICE+'c each',dye:'DYES · '+DYE_PRICE+'c, for '+S.name}[shopPath]:'PET SHOP'}</span><span class="coins">● ${coins}</span></div>`;
+  let body;
+  if(!shopPath){
+    const t=(k,n,sub,sw)=>`<button class="stile" type="button" data-sp="${k}"><i style="${sw}"></i><b>${n}</b><small>${sub}</small></button>`;
+    body=`<div class="isec shophome"><div class="stiles">${t('food','Food','tasty treats','background:radial-gradient(circle at 40% 40%,#FF6A5A 0 30%,#B8302A 31% 60%,transparent 61%),#081008')}${t('acc','Accessories','hats & collars','background:linear-gradient(#2A2228 0 0) 50% 30%/50% 40% no-repeat,linear-gradient(#2A2228 0 0) 50% 66%/80% 12% no-repeat,#081008')}${t('dye','Dyes','new colours','background:conic-gradient(#FF5A5A,#FFE85A,#5AE07A,#5AB4FF,#B07AFF,#FF5A5A)')}${t('office','Office','desk & PC','background:linear-gradient(#000080 0 25%,#C0C0C0 25%)')}</div><p class="sub">Earn coins from battles and Play. Basic chow and water are always free.</p></div>`;
+  }else if(shopPath==='food'){
+    body=`<div class="isec"><div class="shop">${foods.map(k=>{const F=FOODS[k],v=foodVerdict(k),have=W.pantry[k]||0;
+      return `<button class="ware" type="button" data-food="${k}" ${coins<F.price?'disabled':''}><canvas width="30" height="24" aria-hidden="true"></canvas><b>${F.n}</b><small>${F.price}c${have?` · have ${have}`:''}${v==='fav'?' · ♥':''}</small></button>`;}).join('')}</div></div>`;
+  }else if(shopPath==='acc'){
+    body=`<div class="isec"><div class="shop">${accs.map(c=>{const own=W.own[c.id]||0;return `<button class="ware" type="button" data-acc="${c.id}" ${coins<ACC_PRICE?'disabled':''}><canvas width="30" height="24" aria-hidden="true"></canvas><b>${c.n}</b><small>${ACC_PRICE}c${own?` · have ${own}`:''}</small></button>`;}).join('')}</div></div>`;
+  }else{
+    body=`<div class="isec"><div class="items">${Object.keys(DYES).map(k=>`<button class="item${S.dye===k?' on':''}" type="button" data-dye="${k}" ${coins<DYE_PRICE&&S.dye!==k?'disabled':''}><i style="background:${DYES[k].c}"></i>${DYES[k].n}</button>`).join('')}${S.dye?`<button class="item" type="button" data-dye="">Remove dye</button>`:''}</div></div>`;
+  }
+  box.innerHTML=head+(shopPath?`<button class="btn alt shopback" type="button" data-sp="">‹ Shop</button>`:'')+body;
+  box.querySelectorAll('[data-sp]').forEach(b=>b.onclick=()=>{if(b.dataset.sp==='office'){$('ofOpen2').click();return;}shopPath=b.dataset.sp;renderShop();});
   box.querySelectorAll('[data-food]').forEach(b=>{b.querySelector('canvas').getContext('2d').drawImage(foodSprite(b.dataset.food),0,0);b.onclick=()=>buyFood(b.dataset.food);});
+  box.querySelectorAll('[data-acc]').forEach(b=>{const cv=b.querySelector('canvas'),g=cv.getContext('2d');cv.width=60;cv.height=48;g.imageSmoothingEnabled=false;
+    drawPetAt(g,{sp:S.sp,stage:Math.max(1,S.stage),el:S.el,mat:S.mat,dye:S.dye,equip:{[ACC_SLOT[b.dataset.acc]]:b.dataset.acc}},22,46,0,{pose:{mode:'idle',f:0},mood:'happy',seed:1});b.onclick=()=>buyAcc(b.dataset.acc);});
   box.querySelectorAll('[data-dye]').forEach(b=>b.onclick=()=>buyDye(b.dataset.dye));
-  carousel(box.querySelector('.shop'));
+  const sh=box.querySelector('.shop');if(sh)carousel(sh);
 }
+function buyAcc(id){if((W.coins|0)<ACC_PRICE){toast('Not enough coins');return;}W.coins-=ACC_PRICE;W.own[id]=(W.own[id]||0)+1;SFX.play('coin');save();renderShop();renderItems();toast(`Bought a ${COSBY[id].n.toLowerCase()}! Wear it from Cosmetics.`);}
 function buyFood(k){const F=FOODS[k];if((W.coins|0)<F.price){toast('Not enough coins');return;}W.coins-=F.price;W.pantry[k]=(W.pantry[k]||0)+PACK;SFX.play('coin');save();renderShop();toast(`Bought ${PACK} × ${F.n.toLowerCase()}`);}
 function buyDye(k){
   if(!k){S.dye=null;save();renderShop();renderStats();toast(`${S.name}'s natural colours are back`);return;}
@@ -3501,7 +3539,7 @@ const VIEW=(()=>{
     const a=k.dataset.act;if(a==='power')$('pwrKey').click();else if(a==='pet')$('petBtn').click();else if(a==='snd'){$('sndBtn').click();syncKeys();}else if(a==='desk')set('desk');else if(a==='back')goBack();else if(a==='office')OFFICE.open();});
   // BACK closes whatever is open on screen, using its own close/cancel button where it has one
   const BACKORDER=['eggSheet','officeSheet','resetSheet','pickSheet','giftSheet','unlockSheet','feedSheet','qrSheet','challengeSheet','evoSheet','battleSheet','menuSheet'];
-  function goBack(){const id=BACKORDER.find(i=>$(i)&&!$(i).hidden);if(!id)return;if(id==='officeSheet'&&OFFICE.up())return;const sh=$(id);
+  function goBack(){const id=BACKORDER.find(i=>$(i)&&!$(i).hidden);if(!id)return;if(id==='officeSheet'&&OFFICE.up())return;if(id==='menuSheet'&&curTab==='shop'&&shopPath){shopPath='';renderShop();return;}const sh=$(id);
     const c=sh.querySelector('.x')||[...sh.querySelectorAll('button[id]')].find(b=>/(Close|No|Later|Keep|Cancel)$/.test(b.id));if(c)c.click();else sh.hidden=true;}
   const sheets=[...document.querySelectorAll('.sheet')];
   new MutationObserver(()=>$('mkBack').classList.toggle('lit',sheets.some(s=>!s.hidden))).observe(document.body,{attributes:true,subtree:true,attributeFilter:['hidden']});
@@ -3587,6 +3625,7 @@ const VIEW=(()=>{
     if(PG.secs.length>1)items=PG.secs.slice(0,6).map((s,i)=>{const t=(s.querySelector('.k')||{}).textContent||'';const k=t.split(' ·')[0].trim();return {label:SHORT[k]||k.charAt(0)+k.slice(1).toLowerCase(),sec:i};});
     else if(sh.id==='menuSheet')items=[...sh.querySelectorAll('[role=tab]')].map(b=>({label:{ITEMS:'Cosmetics',SYSTEM:'Settings'}[b.textContent.trim()]||b.textContent.trim(),tab:b.dataset.tab,on:b.dataset.tab===curTab}));
     else items=selectables().slice(0,5).map(e=>({label:(e.querySelector('b,strong,.mv')||e).textContent.replace(/[>×]/g,'').trim()||e.placeholder||'Type',el:e}));
+    kb.classList.toggle('shopmode',sh.id==='officeSheet'||(sh.id==='menuSheet'&&curTab==='shop'));
     const key=(sh.id+':'+(PG.tab&&PG.tab.id)+':'+items.map(i=>i.label+(i.on?'*':'')).join('|'));if(key===catKey){paintCatsOn();return;}catKey=key;
     navcat.innerHTML='';
     items.forEach((it,i)=>{const k=document.createElement('button');k.type='button';k.className='mk cat';k._sec=it.sec;k._on=it.on;k.innerHTML=`<span>${it.label.replace(/</g,'&lt;')}</span>`;
@@ -3605,6 +3644,7 @@ const VIEW=(()=>{
   let modeQ=0,lastSheet=null,lastTab=null,relayQ=0;
   function updateMode(){
     const sh=openSheet(),want=cur==='kb'&&!!sh,tab=sh&&rootOf(sh);
+    kb.classList.toggle('shopmode',!!sh&&(sh.id==='officeSheet'||(sh.id==='menuSheet'&&curTab==='shop')));
     if(want&&!menuMode){menuMode=true;SFX.play('click');flipKeys(realKeys(),()=>{kb.classList.add('menumode');$('navkeys').hidden=false;catKey='';layout();buildCats(false);},navKeys);}
     else if(!want&&menuMode){menuMode=false;if(selEl)selEl.classList.remove('kbsel');selEl=null;if(lastSheet)clearMarks(lastSheet);flipKeys(navKeys(),()=>{kb.classList.remove('menumode');$('navkeys').hidden=true;},realKeys);}
     else if(want&&(sh!==lastSheet||tab!==lastTab)){layout();buildCats(true);}
