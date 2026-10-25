@@ -845,6 +845,61 @@ body:not(.v-kb) .office .ofsec:not(.cur){display:none}
 @media (prefers-reduced-motion: reduce){.knob.kbview{animation:none}}
 .strip .model{white-space:nowrap}
 @media (max-width:700px){.strip .model{display:none}}
+
+/* arrow keys in the usual inverted T */
+.navpad.tpad{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));grid-template-rows:repeat(2,auto);grid-template-areas:"b pp . u . e" "t pn l d r e";gap:7px}
+.tpad .mk{min-height:42px}
+.tpad .mk.enter{min-height:0;height:100%}
+.tpad .mk.enter svg{width:22px;height:22px}
+/* menus on the screen: keep them to one page where possible */
+.crt>.sheet p.sub{font-size:13.5px;line-height:1.1}
+.crt>#nameSheet #nsSub{display:none}
+.crt>#nameSheet .species{grid-template-columns:repeat(6,minmax(0,1fr));gap:3px}
+.crt>#nameSheet .sp{font-size:11px;padding:1px 1px 2px;gap:1px}
+.crt>#nameSheet .spinfo{font-size:13px;min-height:0}
+.crt>#nameSheet .box{gap:5px}
+.crt>#nameSheet input[type=text]{padding:2px 8px}
+.crt>#nameSheet .fieldlab{display:none}
+.crt>#evoSheet .choice{padding:4px 6px}
+.crt>#evoSheet .choice .d{font-size:13px}
+
+/* the shop's breadcrumb trail and department tiles */
+.oftabs{align-items:center;gap:3px;padding:3px 4px;background:#E8E8E8;box-shadow:inset 0 -1px #808080;color:#000}
+.ofcrumb{border:0;background:none;padding:0;color:#00008B;text-decoration:underline;font:inherit;cursor:pointer}
+.ofsep{color:#555}.ofhere{color:#C00}
+.ofgrid.tiles{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.otile{display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 4px 5px;border:0;background:#F4F4EA;color:#000;cursor:pointer;font-family:"Times New Roman",serif;text-align:center;
+  box-shadow:inset -1px -1px #000,inset 1px 1px #fff,inset -2px -2px #808080,inset 2px 2px #DFDFDF}
+.otile b{font:700 13px/1.1 "Comic Sans MS","Comic Sans",cursive;color:#00008B;text-decoration:underline}
+.otile small{font:11px/1.1 "Courier New",monospace;color:#8B6B00;font-weight:700}
+.otile:active{box-shadow:inset 1px 1px #000,inset -1px -1px #fff}
+.osw.big{width:46px;height:30px}
+.osw.sw-plastic{background:linear-gradient(180deg,color-mix(in srgb,var(--sc) 70%,#fff),var(--sc))}
+.crt>.office .ofsub{display:block;font-size:11px;margin:0 0 4px}
+.crt>.office .otile{padding:4px 3px 3px}.crt>.office .otile b{font-size:11.5px}.crt>.office .otile small{font-size:10px}
+.crt>.office .osw.big{width:36px;height:22px}
+.office .ofsec .k::after{content:none}
+
+.crt>.office .ofmarq{display:none}
+.crt>.office .ofsub{display:none}
+.crt>.office .otile{gap:1px;padding:3px 2px 2px}
+.crt>.office .ofgrid.tiles{gap:4px}
+.crt>.office .osw.big{width:30px;height:18px}
+.crt>#nameSheet .spinfo{display:none}
+.crt>#nameSheet .sp canvas{max-height:34px;object-fit:contain}
+
+.crt>.office .w95tools .w95b,.crt>.office .w95tools .w95addr{display:none}
+.crt>.office .w95tools{justify-content:flex-end;padding:1px}
+.crt>.office .osw.big{height:15px}
+.crt>.office .otile{padding:2px 2px 2px}
+.crt>.office .oitem{padding:2px 2px 1px;gap:1px}
+.crt>.office .oitem .osw{height:13px;width:26px}
+.crt>.office .ofgrid{gap:3px}
+.crt>.office .page{padding:4px 5px 2px}
+
+.ofgrid.tiles.n2,.ofgrid.tiles.n4{grid-template-columns:repeat(2,minmax(0,1fr))}
+.crt>.office .ofgrid:not(.tiles){grid-template-columns:repeat(4,minmax(0,1fr))}
+.crt>.office .oitem b{font-size:11px}
 </style>
 
 <main class="desk" id="desk">
@@ -990,21 +1045,16 @@ body:not(.v-kb) .office .ofsec:not(.cur){display:none}
         </div>
         <div class="navkeys" id="navkeys" hidden>
           <div class="navcat" id="navcat"></div>
-          <div class="navpad">
-            <div class="mrow">
-              <button class="mk nk" type="button" data-nav="left" aria-label="Left"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button>
-              <button class="mk nk" type="button" data-nav="up" aria-label="Up"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 15l7-7 7 7"/></svg></button>
-              <button class="mk nk" type="button" data-nav="down" id="nkDown" aria-label="Down"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 9l7 7 7-7"/></svg></button>
-              <button class="mk nk" type="button" data-nav="right" aria-label="Right"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></button>
-              <button class="mk nk enter" type="button" data-nav="enter"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 5v7a3 3 0 0 1-3 3H6M10 11l-4 4 4 4"/></svg><span>Enter</span></button>
-            </div>
-            <div class="mrow">
-              <button class="mk nk" type="button" data-nav="pgprev" id="nkPrev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 6l-6 6 6 6M19 6l-6 6 6 6"/></svg><span>Page</span></button>
-              <button class="mk nk" type="button" data-nav="pgnext" id="nkNext"><span>Page</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 6l6 6-6 6M5 6l6 6-6 6"/></svg></button>
-              <button class="mk nk" type="button" data-nav="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12h13M13 7l5 5-5 5M20 5v14"/></svg><span>Tab</span></button>
-              <button class="mk back lit noflip" type="button" data-nav="back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 6l-6 6 6 6M4 12h11a5 5 0 0 1 0 10h-2"/></svg><span>Back</span></button>
-              <button class="mk dark nk" type="button" data-nav="desk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg><span>Desk</span></button>
-            </div>
+          <div class="navpad tpad">
+            <button style="grid-area:b" class="mk back lit noflip" type="button" data-nav="back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 6l-6 6 6 6M4 12h11a5 5 0 0 1 0 10h-2"/></svg><span>Back</span></button>
+            <button style="grid-area:pp" class="mk nk" type="button" data-nav="pgprev" id="nkPrev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 6l-6 6 6 6M19 6l-6 6 6 6"/></svg><span>Page</span></button>
+            <button style="grid-area:u" class="mk nk" type="button" data-nav="up" aria-label="Up"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 15l7-7 7 7"/></svg></button>
+            <button style="grid-area:e" class="mk nk enter" type="button" data-nav="enter"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 5v7a3 3 0 0 1-3 3H6M10 11l-4 4 4 4"/></svg><span>Enter</span></button>
+            <button style="grid-area:t" class="mk nk" type="button" data-nav="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12h13M13 7l5 5-5 5M20 5v14"/></svg><span>Tab</span></button>
+            <button style="grid-area:pn" class="mk nk" type="button" data-nav="pgnext" id="nkNext"><span>Page</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 6l6 6-6 6M5 6l6 6-6 6"/></svg></button>
+            <button style="grid-area:l" class="mk nk" type="button" data-nav="left" aria-label="Left"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button>
+            <button style="grid-area:d" class="mk nk" type="button" data-nav="down" id="nkDown" aria-label="Down"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 9l7 7 7-7"/></svg></button>
+            <button style="grid-area:r" class="mk nk" type="button" data-nav="right" aria-label="Right"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></button>
           </div>
         </div>
       </div>
@@ -3368,7 +3418,7 @@ const VIEW=(()=>{
     const a=k.dataset.act;if(a==='power')$('pwrKey').click();else if(a==='pet')$('petBtn').click();else if(a==='snd'){$('sndBtn').click();syncKeys();}else if(a==='desk')set('desk');else if(a==='back')goBack();else if(a==='office')OFFICE.open();});
   // BACK closes whatever is open on screen, using its own close/cancel button where it has one
   const BACKORDER=['eggSheet','officeSheet','resetSheet','pickSheet','giftSheet','unlockSheet','feedSheet','qrSheet','challengeSheet','evoSheet','battleSheet','menuSheet'];
-  function goBack(){const id=BACKORDER.find(i=>$(i)&&!$(i).hidden);if(!id)return;const sh=$(id);
+  function goBack(){const id=BACKORDER.find(i=>$(i)&&!$(i).hidden);if(!id)return;if(id==='officeSheet'&&OFFICE.up())return;const sh=$(id);
     const c=sh.querySelector('.x')||[...sh.querySelectorAll('button[id]')].find(b=>/(Close|No|Later|Keep|Cancel)$/.test(b.id));if(c)c.click();else sh.hidden=true;}
   const sheets=[...document.querySelectorAll('.sheet')];
   new MutationObserver(()=>$('mkBack').classList.toggle('lit',sheets.some(s=>!s.hidden))).observe(document.body,{attributes:true,subtree:true,attributeFilter:['hidden']});
@@ -3380,13 +3430,13 @@ const VIEW=(()=>{
   const openSheet=()=>{const id=NAVORDER.find(i=>$(i)&&!$(i).hidden);return id?$(id):null;};
   const boxOf=sh=>sh&&(sh.querySelector('.page')||sh.querySelector('.box'));
   const vis=el=>el.offsetParent!==null&&!el.closest('[hidden],[data-pg]');
-  const selectables=()=>{const sh=openSheet();if(!sh)return[];return [...sh.querySelectorAll('button,input')].filter(e=>vis(e)&&!e.disabled&&!e.classList.contains('x')&&e.getAttribute('role')!=='tab'&&!e.closest('.w95task,.w95bar,.oftabs'));};
+  const selectables=()=>{const sh=openSheet();if(!sh)return[];return [...sh.querySelectorAll('button,input')].filter(e=>vis(e)&&!e.disabled&&!e.classList.contains('x')&&e.getAttribute('role')!=='tab'&&!e.closest('.w95task,.w95bar,.oftabs,.ofcrumbs'));};
   let menuMode=false,selEl=null,catKey='';
   const SHORT={'TREASURES FOUND':'Finds','ACCESSORIES':'Accessories','GADGETS':'Gadgets','BACKGROUNDS':'Scenes','LIGHTING':'Lights','FOOD':'Food','DYES':'Dyes',
     'FAIRY LIGHTS':'Lights','WALLS & WINDOWS':'Walls','MUGS':'Mugs','TIDY UP':'Tidy up','DESK WOOD':'Desk','MONITOR':'Monitor','KEYBOARD':'Keyboard'};
   // ---- pages: nothing scrolls. Each category key shows one section; whatever doesn't fit goes on the next page ----
   const PG={sheet:null,tab:null,sec:0,page:0,pages:[[0,0]],units:[],secs:[]};
-  const keyOf=e=>e&&(e.id||e.dataset.id||e.dataset.food||e.dataset.dye||e.dataset.of||e.dataset.sp||null);
+  const keyOf=e=>e&&(e.id||e.dataset.id||e.dataset.food||e.dataset.dye||e.dataset.of||e.dataset.go||e.dataset.sp||null);
   const pagerOf=sh=>{let p=sh.querySelector('.pager');if(!p){p=document.createElement('div');p.className='pager';p.setAttribute('aria-hidden','true');(sh.querySelector('.box')).appendChild(p);}return p;};
   const rootOf=sh=>sh.id==='menuSheet'?[...sh.querySelectorAll('[role=tabpanel]')].find(t=>!t.hidden):boxOf(sh);
   const clearMarks=sh=>sh&&sh.querySelectorAll('[data-pg]').forEach(e=>e.removeAttribute('data-pg'));
@@ -3400,7 +3450,7 @@ const VIEW=(()=>{
     clearMarks(sh);box.scrollTop=0;
     PG.secs=[...root.querySelectorAll('.isec')].filter(s=>!s.parentElement.closest('.isec'));
     let units;
-    if(PG.secs.length>1){PG.sec=clamp(PG.sec,0,PG.secs.length-1);const s=PG.secs[PG.sec];hideAllBut(root,s);const g=gridOf(s);units=g?[...g.children]:[];}
+    if(PG.secs.length>1||(PG.secs.length===1&&sh.id==='officeSheet')){PG.sec=clamp(PG.sec,0,PG.secs.length-1);const s=PG.secs[PG.sec];hideAllBut(root,s);const g=gridOf(s);units=g?[...g.children]:[];}
     else units=[...root.children].filter(c=>!c.matches('.tbar,h3,.tabs,.pager,.w95bar,.w95tools,.w95task'));
     PG.units=units;units.forEach(hide);
     const pages=[];let i=0;
@@ -3745,29 +3795,46 @@ document.documentElement.style.setProperty('--circuit',CIRCUIT);
     const tag=on?'<small class="in">✓ IN USE</small>':own?'<small class="ow">OWNED</small>':price(t.p);
     return `<button class="oitem${on?' on':''}" type="button" data-of="${kind}:${id}"><i class="osw ${sw.cls||''}" style="${sw.st||''}"></i><b>${t.n}</b>${tag}</button>`;}
   const skinSw=s=>({cls:'sw-'+s.m,st:`--sc:${s.c}`});
+  // the shop is a little website of pages: Home > a department > (a category) > the things to buy, with a breadcrumb trail along the top
+  let path=[];
+  const MATS={plastic:['Plastic','#D9D0BB'],metal:['Metal','#C6CBD1'],wood:['Wood veneer','#7A5232'],clear:['See-through','#7446BE']};
+  const tile=(go,title,sub,sw)=>`<button class="otile" type="button" data-go="${go}"><i class="osw big ${sw.cls||''}" style="${sw.st||''}"></i><b>${title}</b><small>${sub}</small></button>`;
+  const from=list=>{const ps=list.map(v=>v.p).filter(p=>p>0);return ps.length?`from ● ${Math.min(...ps)}`:'free';};
   function render(){
     const o=O(),box=$('ofPage');$('ofCoins').textContent=`● ${W.coins|0} coins`;
-    const sec=(title,sub,body)=>`<div class="isec ofsec"><span class="k">${title}</span><p class="ofsub">${sub}</p><div class="ofgrid">${body}</div></div>`;
+    const [a,b,c]=path,crumbs=[['','Home']];let title,sub,body,tiles=false;
     const t=o.set.tidyAt,junk=t?Math.min(JUNK.length,Math.floor((Date.now()-t)/(3*3600e3))):JUNK.length;
-    box.innerHTML=
-      sec('FAIRY LIGHTS','String them over your desk! Press again to take them down.',Object.entries(LIGHTS).map(([k,v])=>card('lights',k,v,{cls:'sw-lights',st:`--l1:${v.c[0]};--l2:${v.c[1]};--l3:${v.c[2%v.c.length]}`})).join(''))+
-      sec('MUGS','A fresh mug for your coffee.',Object.entries(MUGS).map(([k,v])=>card('mug',k,v,{cls:'sw-mug',st:`--sc:${v.c[1]};--se:${v.c[3]}`})).join(''))+
-      sec('TIDY UP','Our cleaner clears the rubbish off your desk. It builds up again over the day!',`<button class="oitem" type="button" data-of="tidy:now"><i class="osw sw-tidy"></i><b>${junk?'Tidy my desk':'Desk is tidy'}</b>${junk?price(TIDY):'<small class="in">✓ SPARKLING</small>'}</button>`)+
-      sec('WALLS & WINDOWS','New wallpaper, a window with a view, or knock the wall down and join the office!',Object.entries(WALLS).map(([k,v])=>card('wall',k,v,{cls:'sw-wall',st:`background:${v.sw}`})).join(''))+
-      sec('DESK WOOD','Re-top your desk in a new wood.',Object.entries(WOODS).map(([k,v])=>card('wood',k,v,{cls:'sw-wood',st:`--w1:${v.c[1]};--w2:${v.c[3]}`})).join(''))+
-      sec('MONITOR','New casings for your CRT. See-through ones show the circuits inside!',Object.entries(SKINS).map(([k,v])=>card('mon',k,v,skinSw(v))).join(''))+
-      sec('KEYBOARD','Matching (or clashing) keyboard cases.',Object.entries(SKINS).map(([k,v])=>card('kb',k,v,skinSw(v))).join(''));
-    box.querySelectorAll('[data-of]').forEach(b=>b.onclick=()=>buy(b.dataset.of));
-    const secs=[...box.querySelectorAll('.ofsec')],names=['Lights','Mugs','Tidy up','Walls','Desk','Monitor','Keyboard'];osec=clamp(osec,0,secs.length-1);
-    secs.forEach((s,i)=>s.classList.toggle('cur',i===osec));
-    $('ofTabs').innerHTML=names.map((n,i)=>`<button class="oftab${i===osec?' on':''}" type="button" role="tab" aria-selected="${i===osec}" data-i="${i}">${n}</button>`).join('');
+    if(!a){title='WELCOME TO MEGA OFFICE!!';sub='Pick a department.';tiles=true;
+      const ms=SKINS[o.set.mon]||SKINS.beige;
+      body=tile('lights','Fairy lights',from(Object.values(LIGHTS)),{cls:'sw-lights',st:'--l1:#FF5A5A;--l2:#FFE85A;--l3:#5AB4FF'})+tile('mugs','Mugs',from(Object.values(MUGS)),{cls:'sw-mug',st:'--sc:#D8463A;--se:#FFF2E6'})+
+        tile('walls','Walls & windows',from(Object.values(WALLS)),{cls:'sw-wall',st:`background:${WALLS.city.sw}`})+tile('tidy','Tidy up',junk?`● ${TIDY}`:'sparkling!',{cls:'sw-tidy'})+
+        tile('desk','Desk wood',from(Object.values(WOODS)),{cls:'sw-wood',st:'--w1:#A07A46;--w2:#C89C60'})+tile('pc','Custom PCs',from(Object.values(SKINS)),{cls:'sw-'+ms.m,st:`--sc:${ms.c}`});}
+    else if(a==='lights'){crumbs.push(['lights','Fairy lights']);title='FAIRY LIGHTS';sub='Drape them over your monitor! Press again to take them down.';body=Object.entries(LIGHTS).map(([k,v])=>card('lights',k,v,{cls:'sw-lights',st:`--l1:${v.c[0]};--l2:${v.c[1]};--l3:${v.c[2%v.c.length]}`})).join('');}
+    else if(a==='mugs'){crumbs.push(['mugs','Mugs']);title='MUGS';sub='A fresh mug for your coffee.';body=Object.entries(MUGS).map(([k,v])=>card('mug',k,v,{cls:'sw-mug',st:`--sc:${v.c[1]};--se:${v.c[3]}`})).join('');}
+    else if(a==='tidy'){crumbs.push(['tidy','Tidy up']);title='TIDY UP';sub='Our cleaner clears the rubbish off your desk. It builds up again over the day!';
+      body=`<button class="oitem" type="button" data-of="tidy:now"><i class="osw sw-tidy"></i><b>${junk?'Tidy my desk':'Desk is tidy'}</b>${junk?price(TIDY):'<small class="in">✓ SPARKLING</small>'}</button>`;}
+    else if(a==='desk'){crumbs.push(['desk','Desk wood']);title='DESK WOOD';sub='Re-top your desk in a new wood.';body=Object.entries(WOODS).map(([k,v])=>card('wood',k,v,{cls:'sw-wood',st:`--w1:${v.c[1]};--w2:${v.c[3]}`})).join('');}
+    else if(a==='walls'){crumbs.push(['walls','Walls']);
+      const groups={paper:['Wallpapers',k=>!WALLS[k].win&&k!=='office'],win:['Windows',k=>!!WALLS[k].win],office:['Open-plan office',k=>k==='office']};
+      if(!b){title='WALLS & WINDOWS';sub='New wallpaper, a window with a view, or knock the wall down!';tiles=true;
+        body=Object.entries(groups).map(([g,[n,f]])=>{const ks=Object.keys(WALLS).filter(f);return tile('walls/'+g,n,from(ks.map(k=>WALLS[k])),{cls:'sw-wall',st:`background:${WALLS[ks[0]].sw}`});}).join('');}
+      else{const [n,f]=groups[b];crumbs.push(['walls/'+b,n]);title=n.toUpperCase();sub=b==='win'?'Every window comes with a view.':b==='office'?'No wall at all, just the office behind you.':'Fresh paper for the wall behind your desk.';
+        body=Object.entries(WALLS).filter(([k])=>f(k)).map(([k,v])=>card('wall',k,v,{cls:'sw-wall',st:`background:${v.sw}`})).join('');}}
+    else if(a==='pc'){crumbs.push(['pc','Custom PCs']);
+      if(!b){title='CUSTOM PCs';sub='Which part would you like to customise?';tiles=true;
+        body=['mon','kb'].map(k=>{const s=SKINS[o.set[k]]||SKINS.beige;return tile('pc/'+k,k==='mon'?'Monitor':'Keyboard',`now: ${s.n}`,{cls:'sw-'+s.m,st:`--sc:${s.c}`});}).join('');}
+      else if(!c){crumbs.push(['pc/'+b,b==='mon'?'Monitor':'Keyboard']);title=(b==='mon'?'MONITOR':'KEYBOARD')+' CASES';sub='Choose a material.';tiles=true;
+        body=Object.entries(MATS).map(([m,[n,col]])=>{const ks=Object.values(SKINS).filter(s=>s.m===m);return tile(`pc/${b}/${m}`,n,`${ks.length} colour${ks.length>1?'s':''} · ${from(ks)}`,{cls:'sw-'+m,st:`--sc:${col}`});}).join('');}
+      else{crumbs.push(['pc/'+b,b==='mon'?'Monitor':'Keyboard']);crumbs.push([`pc/${b}/${c}`,MATS[c][0]]);title=MATS[c][0].toUpperCase();sub=c==='clear'?'See the circuits inside!':'Pick a colour.';
+        body=Object.entries(SKINS).filter(([,v])=>v.m===c).map(([k,v])=>card(b,k,v,skinSw(v))).join('');}}
+    box.innerHTML=`<div class="isec ofsec"><span class="k">${title}</span><p class="ofsub">${sub}</p><div class="ofgrid${tiles?' tiles n'+(body.match(/class="otile"/g)||[]).length:''}">${body}</div></div>`;
+    box.querySelectorAll('[data-of]').forEach(x=>x.onclick=()=>buy(x.dataset.of));
+    box.querySelectorAll('[data-go]').forEach(x=>x.onclick=()=>{SFX.play('click');path=x.dataset.go.split('/');render();});
+    $('ofTabs').innerHTML=crumbs.map((cr,i)=>i<crumbs.length-1?`<button class="ofcrumb" type="button" data-path="${cr[0]}">${i?cr[1]:'⌂ Home'}</button><span class="ofsep">›</span>`:`<b class="ofhere">${i?cr[1]:'⌂ Home'}</b>`).join('');
+    $('ofPage').scrollTop=0;
   }
-  let osec=0;
-  // the tabs along the top of the site: one section at a time (in keyboard view they turn the screen's pages too)
-  $('ofTabs').addEventListener('click',e=>{const t=e.target.closest('.oftab');if(!t)return;SFX.play('click');osec=+t.dataset.i;
-    $('ofPage').querySelectorAll('.ofsec').forEach((s,i)=>s.classList.toggle('cur',i===osec));tabsOn(osec);$('ofPage').scrollTop=0;if(window.__pgSec)window.__pgSec(osec);});
-  function tabsOn(i){osec=i;$('ofTabs').querySelectorAll('.oftab').forEach((t,k)=>{t.classList.toggle('on',k===i);t.setAttribute('aria-selected',String(k===i));});}
-  window.__ofTab=tabsOn;
+  $('ofTabs').addEventListener('click',e=>{const t=e.target.closest('.ofcrumb');if(!t)return;SFX.play('click');path=t.dataset.path?t.dataset.path.split('/'):[];render();});
+  function up(){if(!path.length)return false;path.pop();SFX.play('click');render();return true;}
   let msgT=0;
   function say(txt){const c=$('ofCoins');c.textContent=txt;c.classList.add('msg');clearTimeout(msgT);msgT=setTimeout(()=>{c.classList.remove('msg');c.textContent=`● ${W.coins|0} coins`;},1500);}
   function buy(key){
@@ -3786,7 +3853,7 @@ document.documentElement.style.setProperty('--circuit',CIRCUIT);
   function open(){
     if(document.body.classList.contains('tv-off'))return;
     ['menuSheet','feedSheet','battleSheet'].forEach(i=>$(i).hidden=true);
-    render();crt.classList.add('mini');SFX.play('swipe');
+    path=[];render();crt.classList.add('mini');SFX.play('swipe');
     const tick=()=>{const d=new Date();$('ofClock').textContent=`${d.getHours()%12||12}:${String(d.getMinutes()).padStart(2,'0')} ${d.getHours()<12?'AM':'PM'}`;};tick();clearInterval(clk);clk=setInterval(tick,10000);
     setTimeout(()=>{$('officeSheet').hidden=false;},VIEW.get()==='kb'?330:0);
   }
@@ -3794,7 +3861,7 @@ document.documentElement.style.setProperty('--circuit',CIRCUIT);
   $('ofClose').onclick=close;$('ofGame').onclick=close;$('ofOpen2').onclick=()=>{$('menuSheet').hidden=true;open();};
   setInterval(tidy,60e3);addEventListener('resize',()=>{wallTop();if(O().set.lights)apply();});addEventListener('viewchange',()=>setTimeout(apply,420));
   apply();
-  return {open,close,apply,render};
+  return {open,close,apply,render,up};
 })();
 
 // ---------- test mode: 9999 coins and an Evolve now button while building; your real coins come back when it's off ----------
