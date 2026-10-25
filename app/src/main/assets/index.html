@@ -1012,6 +1012,11 @@ body:not(.v-kb) .kbsel{outline:none!important;box-shadow:none!important}
 .tabs button{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .crt>.sheet .row .k,.crt>.sheet .row{min-width:0}
 .crt>.sheet .stile b{font-size:13.5px;letter-spacing:0}.crt>.sheet .stile i{width:26px;height:20px}
+
+/* menu keys: just the top row, arrows, Enter and Back */
+.kb [data-nav=pgprev],.kb [data-nav=pgnext],.kb [data-nav=tab]{display:none!important}
+.kb .navpad.tpad{grid-template-areas:"b . . u . e" "b . l d r e"}
+.kb .navpad.tpad .back{height:100%}
 </style>
 
 <main class="desk" id="desk">
@@ -3648,10 +3653,10 @@ const VIEW=(()=>{
   function buildCats(animate){
     const sh=openSheet();if(!sh)return;
     let items;
-    if(PG.secs.length>1)items=PG.secs.slice(0,6).map((s,i)=>{const t=(s.querySelector('.k')||{}).textContent||'';const k=t.split(' ·')[0].trim();return {label:SHORT[k]||k.charAt(0)+k.slice(1).toLowerCase(),sec:i};});
+    if(PG.secs.length>1&&sh.id!=='menuSheet')items=PG.secs.slice(0,6).map((s,i)=>{const t=(s.querySelector('.k')||{}).textContent||'';const k=t.split(' ·')[0].trim();return {label:SHORT[k]||k.charAt(0)+k.slice(1).toLowerCase(),sec:i};});
     else if(sh.id==='menuSheet')items=[...sh.querySelectorAll('[role=tab]')].map(b=>({label:{INVENTORY:'Inventory',SYSTEM:'Settings'}[b.textContent.trim()]||b.textContent.trim(),tab:b.dataset.tab,on:b.dataset.tab===curTab}));
     else items=selectables().slice(0,5).map(e=>({label:(e.querySelector('b,strong,.mv')||e).textContent.replace(/[>×]/g,'').trim()||e.placeholder||'Type',el:e}));
-    kb.classList.toggle('shopmode',sh.id==='officeSheet'||(sh.id==='menuSheet'&&(curTab==='shop'||curTab==='items')));
+    kb.classList.toggle('shopmode',sh.id==='officeSheet'||false);
     const key=(sh.id+':'+(PG.tab&&PG.tab.id)+':'+items.map(i=>i.label+(i.on?'*':'')).join('|'));if(key===catKey){paintCatsOn();return;}catKey=key;
     navcat.innerHTML='';
     items.forEach((it,i)=>{const k=document.createElement('button');k.type='button';k.className='mk cat';k._sec=it.sec;k._on=it.on;k.innerHTML=`<span>${it.label.replace(/</g,'&lt;')}</span>`;
@@ -3670,7 +3675,7 @@ const VIEW=(()=>{
   let modeQ=0,lastSheet=null,lastTab=null,relayQ=0;
   function updateMode(){
     const sh=openSheet(),want=cur==='kb'&&!!sh,tab=sh&&rootOf(sh);
-    kb.classList.toggle('shopmode',!!sh&&(sh.id==='officeSheet'||(sh.id==='menuSheet'&&(curTab==='shop'||curTab==='items'))));
+    kb.classList.toggle('shopmode',!!sh&&(sh.id==='officeSheet'||false));
     if(want&&!menuMode){menuMode=true;SFX.play('click');flipKeys(realKeys(),()=>{kb.classList.add('menumode');$('navkeys').hidden=false;catKey='';layout();buildCats(false);},navKeys);}
     else if(!want&&menuMode){menuMode=false;if(selEl)selEl.classList.remove('kbsel');selEl=null;if(lastSheet)clearMarks(lastSheet);flipKeys(navKeys(),()=>{kb.classList.remove('menumode');$('navkeys').hidden=true;},realKeys);}
     else if(want&&(sh!==lastSheet||tab!==lastTab)){layout();buildCats(true);}
