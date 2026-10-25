@@ -1528,7 +1528,7 @@ function texAt(kind,x,y,seed){
 // ---------- creature builders ----------
 const QUAD={
   capybara:{len:50,h:27,leg:11,lw:4.6,fx:.32,bx:.3,tex:'fur',tail:null,hr:9.6,hw:1.2,hh:.88,hox:.55,hoy:.32,sx:.95,sy:.12,sl:.72,sh:.72,ex:.28,ey:.3,ear:'tiny'},
-  bear:{len:52,h:30,leg:16,lw:6.2,fx:.3,bx:.3,tex:'fur',tail:'stub',hump:true,hr:12,hw:1,hh:.95,hox:.42,hoy:.12,sx:.78,sy:.3,sl:.6,sh:.48,ex:.46,ey:.14,ear:'round',muzzle:true,claws:true},
+  bear:{len:52,h:30,leg:16,lw:6.2,legStyle:'bear',fx:.3,bx:.3,tex:'fur',tail:'stub',hump:true,hr:12,hw:1,hh:.95,hox:.42,hoy:.12,sx:.78,sy:.3,sl:.6,sh:.48,ex:.46,ey:.14,ear:'round',muzzle:true,claws:true},
   wolf:{len:46,h:19,leg:21,lw:4.2,fx:.34,bx:.32,tex:'fur',tail:'bushy',chest:true,hr:10,hw:1.05,hh:.9,hox:.3,hoy:.8,sx:.95,sy:.3,sl:.88,sh:.42,ex:.3,ey:.25,ear:'point',earIn:'#4A3C3C',muzzle:true,claws:true},
   serval:{len:40,h:15,leg:23,lw:3.2,fx:.35,bx:.33,tex:'servalspots',tail:'short',chest:true,hr:8.5,hw:1.05,hh:.92,hox:.28,hoy:1.0,sx:.72,sy:.3,sl:.45,sh:.38,ex:.36,ey:.16,ear:'big',muzzle:true},
   lizard:{len:38,h:11,leg:7,lw:2.8,fx:.33,bx:.33,tex:'scale',tail:'long',hr:7.5,hw:1.3,hh:.72,hox:.7,hoy:.3,sx:.9,sy:.12,sl:.62,sh:.46,ex:.35,ey:.35,spines:true,claws:true},
@@ -1549,11 +1549,17 @@ function quadBuild(k,st,pose,col){
     if(sit){if(x>0){out.push(Cp(x,by,lw*1.2,x+lw*.4,lw*.9,lw*.85));out.push(E(x+lw*.9,lw*.62,lw*1.1,lw*.62));if(claws&&q.claws)A.claws.push([x+lw*1.7,1.3,'body']);}
       else{out.push(E(x+bl*.05,lw*1.2+bh*.18,bl*.19,bh*.4,.3));out.push(E(x+bl*.1+lw,lw*.62,lw*1.35,lw*.62));}continue;}
     const top=by-bh*.08;
+    if(q.legStyle==='bear'){
+      if(x>0){out.push(Cp(x,top,lw*1.32,x+ph*.85,lw*1.6,lw*1.1));out.push(E(x+ph*.85,lw*2.2,lw*1.18,lw*1.3));out.push(E(x+ph+lw*.55,lw*.7,lw*1.5,lw*.72));}
+      else{out.push(E(x-lw*.2,top+lw*.15,lw*2,lw*2.4,.15));out.push(Cp(x+lw*.45,top-lw*1.2,lw*1.2,x+ph+lw*.1,lw*1.5,lw*1.05));out.push(E(x+ph+lw*.15,lw*1.7,lw*1.1,lw*1.05));out.push(E(x+ph+lw*.6,lw*.7,lw*1.55,lw*.72));}
+      if(claws&&q.claws) A.claws.push([x+ph+lw*1.75,1.3,'body']);
+      continue;
+    }
     out.push(Cp(x,top,lw*1.25,x+ph,lw*.9,lw*.85));
     out.push(E(x+ph+lw*.5,lw*.62,lw*1.1,lw*.62));
     if(claws&&q.claws) A.claws.push([x+ph+lw*1.25,1.3,'body']);
   }return out;};
-  L.push({shapes:legs(-3,-sw,sw),col:far,tex:q.tex});
+  L.push({shapes:legs(-3,-sw,sw),col:far,tex:q.tex,join:1});
   const rx0=sit?-bl*.42:-bl*.5, ry0=sit?lw*1.4+bh*.1:by+bh*.05;
   let tip=null;
   if(q.tail==='stub') L.push({shapes:[E(rx0+1,ry0+bh*(q.shell?-.1:.2),lw*.9,lw*.8)],col:skin,tex:q.tex});
@@ -1576,11 +1582,11 @@ function quadBuild(k,st,pose,col){
     const bs=sit?[E(-bl*.03,by+bh*.2+breath*.3,bl*.46,bh*.52+breath*.35,.36),neck]:[E(0,by+breath*.3,bl/2,bh/2+breath*.35),neck];
     if(q.hump) bs.push(sit?E(bl*.14,by+bh*.55,bl*.28,bh*.42,.36):E(bl*.2,by+bh*.28,bl*.3,bh*.42));
     if(q.chest) bs.push(sit?E(bl*.3,by+bh*.32,bl*.2,bh*.52):E(bl*.32,by+bh*.02,bl*.2,bh*.5));
-    L.push({shapes:bs,col:skin,tex:q.tex,cap:6});
+    L.push({shapes:bs,col:skin,tex:q.tex,cap:6,join:2});
     if(q.chest) L.push({shapes:[E(bl*.4,by-bh*.02,bl*.12,bh*.36)],col:col.belly,tex:q.tex,edge:false});
   }
   if(q.spines){const sp=[];for(let i=0;i<5;i++){const x=-bl*.35+i*bl*.17,y=by+bh*.45;sp.push(Pg(x-2.2,y-1,x+.5,y+4.5,x+2.2,y-1));}L.push({shapes:sp,col:shade(col.belly,-.12),tex:'smooth'});}
-  L.push({shapes:legs(0,sw,-sw,true),col:skin,tex:q.tex});
+  L.push({shapes:legs(0,sw,-sw,true),col:skin,tex:q.tex,join:1});
   // head
   const farEar=shade(skin,-.3);
   if(q.ear==='round'){H.push({shapes:[E(hx+hr*.15,hy+hr*.88,hr*.3,hr*.3)],col:farEar,tex:q.tex});H.push({shapes:[E(hx-hr*.38,hy+hr*.86,hr*.34,hr*.34)],col:skin,tex:q.tex});}
@@ -1668,14 +1674,14 @@ function dinoBuild(st,pose,col){
   const by=sit?11:hip+6;
   // far leg, tail, body, near leg
   const legShapes=(x,ph)=>sit?[E(x,8,7,6.5,.2),E(x+5,1.4,6,1.6)]:[E(x,hip,6,7.2),Cp(x+1,hip-4,4,x+2+ph,2.2,3.1),E(x+4.4+ph,1.3,5,1.5)];
-  L.push({shapes:legShapes(1,-sw),col:far,tex:'scale'});
+  L.push({shapes:legShapes(1,-sw),col:far,tex:'scale',join:1});
   const tsw=walk?[0,1,0,-1][pose.f]*1.6:(pose.f%2?.8:0);
   L.push({shapes:[sit?Bz([-8,8],[-24,4],[-36,2.4+tsw],6.5,1.2):Bz([-9,by+1],[-26,by-2+tsw],[-40,by-10+tsw*1.4],7,1.2)],col:skin,tex:'scale'});
   const rot=sit?.7:.38;
-  L.push({shapes:[E(0,by+br*.3,15,11+br*.3,rot),Cp(6,by+5,7,11,by+12,5.2)],col:skin,tex:'scale',cap:6});
+  L.push({shapes:[E(0,by+br*.3,15,11+br*.3,rot),Cp(6,by+5,7,11,by+12,5.2)],col:skin,tex:'scale',cap:6,join:2});
   L.push({shapes:[E(4,by-3,9,6.2,rot)],col:col.belly,tex:'smooth',edge:false});
   L.push(plates(sit?[[-9,by+9,.8],[-3,by+12.5,1],[3,by+15,1]]:[[-14,by+6.5,.75],[-7,by+9.5,1],[0,by+11.5,1.05],[-21,by+2.5,.6]],shade(col.belly,-.18)));
-  L.push({shapes:legShapes(-4,sw),col:skin,tex:'scale'});
+  L.push({shapes:legShapes(-4,sw),col:skin,tex:'scale',join:1});
   // tiny arms
   L.push({shapes:[Cp(10,by+1,1.7,13.5,by-2.6,1.2),Cp(13.5,by-2.6,1.1,15.2,by-2,.7)],col:shade(skin,-.08),tex:'scale'});
   A.claws=sit?[[7.5,1.3,'body'],[11,1.3,'body']]:[[1+5+(-sw)+4.4,1.3,'body'],[-4+5+sw+4.4,1.3,'body']];
@@ -1759,7 +1765,7 @@ function layerMask(shapes){
   for(let i=0;i<m.length;i++) m[i]=d[i*4+3]>=128?1:0;
   return m;
 }
-function shadeLayer(out,m,l,seed,F,gm,hm){
+function shadeLayer(out,m,l,seed,F,gm,hm,om){
   if(!l.fin) F=null;
   let x0=SW,x1=-1,y0=SH,y1=-1;
   for(let y=0;y<SH;y++)for(let x=0;x<SW;x++)if(m[y*SW+x]){if(x<x0)x0=x;if(x>x1)x1=x;if(y<y0)y0=y;if(y>y1)y1=y;}
@@ -1775,7 +1781,7 @@ function shadeLayer(out,m,l,seed,F,gm,hm){
   const hAt=(x,y)=>(x<0||y<0||x>=SW||y>=SH)?0:Hh[y*SW+x];
   for(let y=y0;y<=y1;y++)for(let x=x0;x<=x1;x++){
     const i=y*SW+x;if(!m[i])continue;
-    const nb=[[x-1,y],[x+1,y],[x,y-1],[x,y+1]].filter(([a,b])=>!isIn(a,b));
+    const nb=[[x-1,y],[x+1,y],[x,y-1],[x,y+1]].filter(([a,b])=>!isIn(a,b)&&!(l.join&&om&&a>=0&&b>=0&&a<SW&&b<SH&&(om[b*SW+a]===1||om[b*SW+a]===2)&&om[b*SW+a]!==l.join));
     const edge=nb.length>0, sil=nb.some(([a,b])=>a<0||b<0||a>=SW||b>=SH||out[(b*SW+a)*4+3]===0);
     let c, alpha=255;
     if(flat) c=edge&&l.edge!==false?flat.map(v=>v*.55):flat;
@@ -1805,7 +1811,7 @@ function shadeLayer(out,m,l,seed,F,gm,hm){
         if(shine) alpha=Math.max(alpha,220);
       }
     }
-    const o=i*4;out[o]=c[0];out[o+1]=c[1];out[o+2]=c[2];out[o+3]=alpha;if(gm)gm[i]=F&&l.fin&&l.g!=='head'?1:0;if(hm)hm[i]=l.g==='head'?1:0;
+    const o=i*4;out[o]=c[0];out[o+1]=c[1];out[o+2]=c[2];out[o+3]=alpha;if(om)om[i]=l.join||3;if(gm)gm[i]=F&&l.fin&&l.g!=='head'?1:0;if(hm)hm[i]=l.g==='head'?1:0;
   }
 }
 
@@ -1899,10 +1905,10 @@ function buildSprite(p,pose){
   for(const n in A) AA[n]=(n==='back'||n==='claws'||n==='spots'||n==='belly')?A[n].map(T):T(A[n]);
   const img=rctx.createImageData(SW,SH), out=img.data, seed=ORDER.length+Object.keys(SPECIES).indexOf(k)*17;
   const hb={x0:SW,x1:-1,y1:-1};
-  const gm=new Uint8Array(SW*SH),hm=new Uint8Array(SW*SH);
+  const gm=new Uint8Array(SW*SH),hm=new Uint8Array(SW*SH),om=new Uint8Array(SW*SH);
   layers.forEach((l,i)=>{const m=layerMask(l.shapes);
     if(l.g==='head') for(let y=0;y<SH;y++)for(let x=0;x<SW;x++)if(m[y*SW+x]){if(x<hb.x0)hb.x0=x;if(x>hb.x1)hb.x1=x;if(y>hb.y1)hb.y1=y;}
-    shadeLayer(out,m,l,seed+i,F,gm,hm);});
+    shadeLayer(out,m,l,seed+i,F,gm,hm,om);});
   (AA.claws||[]).forEach(([cx,cy])=>{const x=Math.round(cx),y=Math.round(cy)-1;for(const dx of [0,-2]){const i=(y*SW+x+dx)*4;if(x+dx>=0&&x+dx<SW&&out[i+3]){out[i]=238;out[i+1]=228;out[i+2]=208;}}});
   let l=SW,r=0,tp=SH;
   for(let y=0;y<SH;y++)for(let x=0;x<SW;x++)if(out[(y*SW+x)*4+3]){if(x<l)l=x;if(x>r)r=x;if(y<tp)tp=y;}
