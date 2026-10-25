@@ -928,6 +928,42 @@ body:not(.v-kb) .office .box{height:min(600px,calc(100% / var(--sz,1)))}
 .kb .tb{min-height:clamp(52px,9cqh,84px)}
 .kbrand,.kbleds{font-size:clamp(8px,1.1cqw,13px)!important}
 .kb .lcd .mm{font-size:clamp(15px,2cqw,24px)}
+
+/* desk view now uses the same on-screen pages as the keyboard view */
+body:not(.v-kb) .sheet .box{zoom:normal!important;max-height:100%!important}
+body:not(.v-kb) .sheet .box.tall,body:not(.v-kb) .office .box{height:100%!important}
+body:not(.v-kb) .kbsel{outline:none!important;box-shadow:none!important}
+.pager{pointer-events:auto}
+.pager button{border:0;background:none;padding:0 4px;font:inherit;color:var(--ph-dim);opacity:.35;cursor:pointer;pointer-events:auto}
+.pager button.on{opacity:1;color:var(--ph)}
+.w95status button{color:#000!important}
+/* carousels */
+.carwrap{position:relative;display:block;padding:0 0 9px}
+.carousel{display:flex!important;gap:8px;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;scrollbar-width:none;padding:3px 22%;touch-action:pan-x;overscroll-behavior-x:contain}
+.carousel::-webkit-scrollbar{display:none}
+.carousel>*{flex:0 0 56%;scroll-snap-align:center;transition:transform .25s,opacity .25s,filter .25s;transform:scale(.84);opacity:.5;filter:saturate(.6)}
+.carousel>.cur{transform:none;opacity:1;filter:none;border-color:var(--ph)!important;background:rgba(141,255,168,.07)}
+.carousel .food canvas,.carousel .ware canvas{width:72px;height:58px}
+.cbtn{position:absolute;top:calc(50% - 6px);transform:translateY(-50%);z-index:2;width:22px;height:34px;border:1px solid var(--ph-dim);background:rgba(4,12,7,.85);color:var(--ph);font:20px/1 var(--term-font);padding:0;cursor:pointer}
+.cbtn:disabled{opacity:.25;cursor:default}
+.cprev{left:0}.cnext{right:0}
+.cdots{position:absolute;left:0;right:0;bottom:0;display:flex;justify-content:center;gap:4px}
+.cdots i{width:5px;height:5px;background:var(--ph-faint)}.cdots i.on{background:var(--ph)}
+.crt>.sheet .carousel .food canvas,.crt>.sheet .carousel .ware canvas{width:60px;height:48px}
+.crt>.sheet .carousel>*{padding:4px 2px 4px}
+
+/* main menu tabs compact enough to fit on the screen */
+.crt>#menuSheet .box{gap:5px}
+.crt>#menuSheet .tab{gap:5px}
+.crt>#menuSheet .meters{gap:2px 8px;font-size:14px}
+.crt>#menuSheet .cells span{height:8px}
+.crt>#menuSheet .track{display:none}
+.crt>#menuSheet .count{font-size:20px}
+.crt>#menuSheet #tab-status .row{font-size:14px}
+.crt>#menuSheet #tab-system p.sub{display:none}
+.crt>#menuSheet #tab-system p{font-size:14px}
+.crt>#menuSheet .btn{font-size:14px;padding:2px 8px}
+.crt>#menuSheet .stats .stat b{font-size:20px}
 </style>
 
 <main class="desk" id="desk">
@@ -1151,7 +1187,7 @@ body:not(.v-kb) .office .box{height:min(600px,calc(100% / var(--sz,1)))}
       <div class="row"><span>RECORD</span><span class="k" id="record">0W – 0L</span></div>
     </div>
     <div class="tab" id="tab-items" role="tabpanel" hidden><div id="itemsBox" class="tab"></div></div>
-    <div class="tab" id="tab-shop" role="tabpanel" hidden><div id="shopBox" class="tab"></div><button class="btn alt" id="ofOpen2" type="button">Office supplies › megaoffice.biz</button></div>
+    <div class="tab" id="tab-shop" role="tabpanel" hidden><div id="shopBox" class="tab"></div><div class="isec"><span class="k">OFFICE SUPPLIES</span><p class="sub">Customise your desk, monitor and keyboard at the MegaOffice website.</p><div class="btnrow"><button class="btn alt" id="ofOpen2" type="button">Visit megaoffice.biz ›</button></div></div></div>
     <div class="tab" id="tab-system" role="tabpanel" hidden>
       <p><span class="k">PALWARDENS</span> v1.4 · CRT-14</p>
       <p class="sub">Pets evolve from baby to toddler in about 10 minutes, toddler to teen in 3 hours, and teen to adult in a day. Your pet keeps ageing while the screen is off.</p>
@@ -2866,8 +2902,10 @@ function openFeed(){
   const box=$('foodGrid'), list=Object.keys(FOODS).filter(k=>FOODS[k].free||(W.pantry[k]||0)>0);
   box.innerHTML=list.map(k=>{const v=foodVerdict(k),F=FOODS[k],n=W.pantry[k]||0;
     return `<button class="food" type="button" data-k="${k}"><canvas width="30" height="24" aria-hidden="true"></canvas><b>${F.n}</b><small class="${v}">${F.free?(k==='water'?'drink · free':'free'):`×${n}`}${v==='fav'?' · ♥':v==='meh'?' · not keen':''}</small></button>`;}).join('')+
-    (list.length<=2?`<p class="sub" style="grid-column:1/-1">Earn coins from battles and Play, then buy tastier food in the Shop.</p>`:'');
+    '';
+  $('feedSub').textContent='';
   box.querySelectorAll('.food').forEach(b=>{b.querySelector('canvas').getContext('2d').drawImage(foodSprite(b.dataset.k),0,0);b.onclick=()=>{$('feedSheet').hidden=true;feed(b.dataset.k);};});
+  carousel(box);
   $('feedSub').textContent=`${S.name} is ${S.m.hunger<35?'hungry':S.m.hunger<70?'a bit peckish':'fairly full'} and ${S.m.thirst<35?'thirsty':S.m.thirst<70?'could use a drink':'not thirsty'}.`;
   $('feedSheet').hidden=false;
 }
@@ -3335,6 +3373,7 @@ function renderShop(){
     <div class="isec"><span class="k">DYES · ${DYE_PRICE}c each, for ${S.name}</span><div class="items">${Object.keys(DYES).map(k=>`<button class="item${S.dye===k?' on':''}" type="button" data-dye="${k}" ${coins<DYE_PRICE&&S.dye!==k?'disabled':''}><i style="background:${DYES[k].c}"></i>${DYES[k].n}</button>`).join('')}${S.dye?`<button class="item" type="button" data-dye="">Remove dye</button>`:''}</div></div>`;
   box.querySelectorAll('[data-food]').forEach(b=>{b.querySelector('canvas').getContext('2d').drawImage(foodSprite(b.dataset.food),0,0);b.onclick=()=>buyFood(b.dataset.food);});
   box.querySelectorAll('[data-dye]').forEach(b=>b.onclick=()=>buyDye(b.dataset.dye));
+  carousel(box.querySelector('.shop'));
 }
 function buyFood(k){const F=FOODS[k];if((W.coins|0)<F.price){toast('Not enough coins');return;}W.coins-=F.price;W.pantry[k]=(W.pantry[k]||0)+PACK;SFX.play('coin');save();renderShop();toast(`Bought ${PACK} × ${F.n.toLowerCase()}`);}
 function buyDye(k){
@@ -3460,7 +3499,7 @@ const VIEW=(()=>{
   const vis=el=>el.offsetParent!==null&&!el.closest('[hidden],[data-pg]');
   const selectables=()=>{const sh=openSheet();if(!sh)return[];return [...sh.querySelectorAll('button,input')].filter(e=>vis(e)&&!e.disabled&&!e.classList.contains('x')&&e.getAttribute('role')!=='tab'&&!e.closest('.w95task,.w95bar,.oftabs,.ofcrumbs'));};
   let menuMode=false,selEl=null,catKey='';
-  const SHORT={'TREASURES FOUND':'Finds','ACCESSORIES':'Accessories','GADGETS':'Gadgets','BACKGROUNDS':'Scenes','LIGHTING':'Lights','FOOD':'Food','DYES':'Dyes',
+  const SHORT={'TREASURES FOUND':'Finds','ACCESSORIES':'Accessories','GADGETS':'Gadgets','BACKGROUNDS':'Scenes','LIGHTING':'Lights','FOOD':'Food','DYES':'Dyes','OFFICE SUPPLIES':'Office',
     'FAIRY LIGHTS':'Lights','WALLS & WINDOWS':'Walls','MUGS':'Mugs','TIDY UP':'Tidy up','DESK WOOD':'Desk','MONITOR':'Monitor','KEYBOARD':'Keyboard'};
   // ---- pages: nothing scrolls. Each category key shows one section; whatever doesn't fit goes on the next page ----
   const PG={sheet:null,tab:null,sec:0,page:0,pages:[[0,0]],units:[],secs:[]};
@@ -3472,13 +3511,14 @@ const VIEW=(()=>{
   function gridOf(s){return [...s.children].reverse().find(c=>c.children.length>0&&!c.classList.contains('k')&&!c.matches('p,.sub'));}
   function hideAllBut(root,keep){[...root.children].forEach(c=>{if(c===keep||c.matches('.pager'))return;if(c.contains(keep))hideAllBut(c,keep);else hide(c);});}
   function layout(keepSel){
-    const sh=openSheet();if(!sh||cur!=='kb'){if(sh)clearMarks(sh);return;}
+    const sh=openSheet();if(!sh)return;
     const box=boxOf(sh),root=rootOf(sh);if(!box||!root)return;
     if(PG.sheet!==sh||PG.tab!==root){PG.sheet=sh;PG.tab=root;PG.sec=0;PG.page=0;}
     clearMarks(sh);box.scrollTop=0;
     PG.secs=[...root.querySelectorAll('.isec')].filter(s=>!s.parentElement.closest('.isec'));
     let units;
-    if(PG.secs.length>1||(PG.secs.length===1&&sh.id==='officeSheet')){PG.sec=clamp(PG.sec,0,PG.secs.length-1);const s=PG.secs[PG.sec];hideAllBut(root,s);const g=gridOf(s);units=g?[...g.children]:[];}
+    if(PG.secs.length>1||(PG.secs.length===1&&sh.id==='officeSheet')){PG.sec=clamp(PG.sec,0,PG.secs.length-1);const s=PG.secs[PG.sec];hideAllBut(root,s);const g=gridOf(s),isCar=g&&(g.classList.contains('carwrap')||g.classList.contains('carousel'));units=g&&!isCar?[...g.children]:[];
+      if(isCar&&box.scrollHeight>box.clientHeight+1){for(const z of [.9,.82,.74,.66]){s.style.zoom=z;s.setAttribute('data-fz','1');if(box.scrollHeight<=box.clientHeight+1)break;}}}
     else{units=[...root.children].filter(c=>!c.matches('.tbar,h3,.tabs,.pager,.w95bar,.w95tools,.w95task'));
       if(box.scrollHeight>box.clientHeight+1){const kids=[...root.children].filter(c=>!c.matches('.pager'));
         for(const z of [.92,.85,.78,.72,.66,.6]){kids.forEach(k=>{k.style.zoom=z;k.setAttribute('data-fz','1');});if(box.scrollHeight<=box.clientHeight+1)break;}}}
@@ -3489,9 +3529,10 @@ const VIEW=(()=>{
     const [a,b]=PG.pages[PG.page];for(let k=a;k<b;k++)unhide(units[k]);box.scrollTop=0;
     const pg=pagerOf(sh),np=PG.pages.length,ns=PG.secs.length>1?PG.secs.length:0;
     const secName=ns?(SHORT[(PG.secs[PG.sec].querySelector('.k')||{}).textContent?.split(' ·')[0].trim()]||''):'';
-    pg.innerHTML=(ns?`<b>${secName}</b>`:'')+(np>1?`<span class="${PG.page>0?'on':''}">◀</span> PAGE ${PG.page+1}/${np} <span class="${PG.page<np-1?'on':''}">▶</span>`:'');
+    const canB=PG.page>0||PG.sec>0,canF=PG.page<np-1||(ns&&PG.sec<ns-1);
+    pg.innerHTML=(ns?`<b>${secName}</b>`:'')+((np>1||ns)?`<button type="button" data-pd="-1" class="${canB?'on':''}" aria-label="Previous page">◀</button>${np>1?` PAGE ${PG.page+1}/${np} `:' '}<button type="button" data-pd="1" class="${canF?'on':''}" aria-label="Next page">▶</button>`:'');
     pg.hidden=!(np>1||ns);
-    if(keepSel!==false){const k=keyOf(selEl),l=selectables();select((selEl&&selEl.isConnected&&l.includes(selEl))?selEl:(k&&l.find(e=>keyOf(e)===k))||l[0]||null);}
+    if(keepSel!==false){const k=keyOf(selEl),l=selectables(),cc=root.querySelector('.carousel>.cur');select((selEl&&selEl.isConnected&&l.includes(selEl))?selEl:(k&&l.find(e=>keyOf(e)===k))||cc||l[0]||null,true);}
     if(sh.id==='officeSheet'&&window.__ofTab)window.__ofTab(PG.sec);
     paintCatsOn();
   }
@@ -3503,9 +3544,12 @@ const VIEW=(()=>{
     else{SFX.play('meh');return false;}
     layout(false);const l=selectables();select((d<0&&toEnd)?l[l.length-1]:l[0]||null);SFX.play('flip');return true;
   }
-  function select(el){if(selEl)selEl.classList.remove('kbsel');selEl=el;if(el)el.classList.add('kbsel');}
+  function select(el,noc){if(selEl)selEl.classList.remove('kbsel');selEl=el;if(el){el.classList.add('kbsel');if(!noc&&el.parentElement&&el.parentElement.classList.contains('carousel')&&!el.classList.contains('cur'))carCenter(el);}}
   function nav(dir){
     const sh=openSheet();if(!sh)return;const els=selectables();
+    const car=selEl&&selEl.parentElement&&selEl.parentElement.classList.contains('carousel')?selEl.parentElement:null;
+    if(car){const cur=car.querySelector('.cur');if(cur&&cur!==selEl)select(cur,true);
+      if(dir==='left'||dir==='right'){const items=[...car.children],i=items.indexOf(car.querySelector('.cur'));if((dir==='right'&&i<items.length-1)||(dir==='left'&&i>0)){carStep(car,dir==='right'?1:-1);select(car.querySelector('.cur'),true);return;}}}
     if(dir==='enter'){if(!selEl||!selEl.isConnected){select(els[0]||null);return;}if(selEl.tagName==='INPUT'){selEl.focus();return;}const k=keyOf(selEl);selEl.click();
       setTimeout(()=>{if(!selEl||!selEl.isConnected){const l=selectables();select((k&&l.find(e=>keyOf(e)===k))||l[0]||null);}},80);return;}
     if(dir==='pgprev'||dir==='pgnext'){goPage(dir==='pgnext'?1:-1);return;}
@@ -3548,14 +3592,18 @@ const VIEW=(()=>{
     if(want&&!menuMode){menuMode=true;SFX.play('click');flipKeys(realKeys(),()=>{kb.classList.add('menumode');$('navkeys').hidden=false;catKey='';layout();buildCats(false);},navKeys);}
     else if(!want&&menuMode){menuMode=false;if(selEl)selEl.classList.remove('kbsel');selEl=null;if(lastSheet)clearMarks(lastSheet);flipKeys(navKeys(),()=>{kb.classList.remove('menumode');$('navkeys').hidden=true;},realKeys);}
     else if(want&&(sh!==lastSheet||tab!==lastTab)){layout();buildCats(true);}
-    if(!want&&sh)clearMarks(sh);
+    else if(!want&&sh&&(sh!==lastSheet||tab!==lastTab))layout();
     lastSheet=sh;lastTab=tab;
   }
   new MutationObserver(()=>{cancelAnimationFrame(modeQ);modeQ=requestAnimationFrame(updateMode);}).observe(document.body,{attributes:true,subtree:true,attributeFilter:['hidden']});
   // when a page's contents are redrawn (equipping a hat, buying something) lay it out again on the same page
-  sheets.forEach(s=>new MutationObserver(ms=>{if(!menuMode||openSheet()!==s)return;if(ms.every(m=>m.target.classList&&m.target.classList.contains('pager')))return;
-    cancelAnimationFrame(relayQ);relayQ=requestAnimationFrame(()=>{layout();buildCats(false);});}).observe(s,{childList:true,subtree:true}));
-  addEventListener('resize',()=>{if(menuMode)layout();});
+  sheets.forEach(s=>new MutationObserver(ms=>{if(openSheet()!==s)return;if(ms.every(m=>m.target.closest&&m.target.closest('.pager,.carwrap')))return;
+    cancelAnimationFrame(relayQ);relayQ=requestAnimationFrame(()=>{layout();if(menuMode)buildCats(false);});}).observe(s,{childList:true,subtree:true}));
+  addEventListener('resize',()=>{if(openSheet())layout();});
+  addEventListener('viewchange',()=>setTimeout(()=>{if(openSheet())layout();},60));
+  sheets.forEach(s=>$('crt').appendChild(s));if($('officeSheet'))$('crt').appendChild($('officeSheet'));
+  // the little ◀ ▶ on each screen's page counter can be tapped too (that's how you turn pages in desk view)
+  document.addEventListener('click',e=>{const b=e.target.closest('.pager button');if(!b)return;e.stopPropagation();SFX.play('click');goPage(+b.dataset.pd);},true);
   $('navkeys').addEventListener('click',e=>{const k=e.target.closest('[data-nav]');if(!k||k.disabled)return;SFX.play('click');const d=k.dataset.nav;
     if(d==='back')goBack();else if(d==='desk')set('desk');else nav(d);});
   document.addEventListener('keydown',e=>{if(!menuMode||e.ctrlKey||e.metaKey||e.altKey)return;const a=document.activeElement;if(a&&a.tagName==='INPUT'&&e.key!=='Enter')return;
@@ -3566,7 +3614,7 @@ const VIEW=(()=>{
     if(v===cur)return;const rig=document.querySelector('.rig'),toKb=v==='kb',r1=rig.getBoundingClientRect(),still=matchMedia('(prefers-reduced-motion: reduce)').matches;
     let low;if(toKb){const a=mini.getBoundingClientRect(),b=well.getBoundingClientRect();low={x:Math.min(a.left,b.left),y:a.top,w:Math.max(a.width,b.width),h:b.bottom-a.top};}
     cur=v;document.body.classList.toggle('v-kb',toKb);$('kbwrap').hidden=!toKb;
-    if(toKb){slot.appendChild(mini);slot.appendChild(well);sheets.forEach(s=>$('crt').appendChild(s));}else{mon.appendChild(mini);mon.appendChild(well);sheets.forEach(s=>document.body.appendChild(s));}
+    if(toKb){slot.appendChild(mini);slot.appendChild(well);}else{mon.appendChild(mini);mon.appendChild(well);}
     window.dispatchEvent(new Event('viewchange'));
     if(still)return;
     const r2=rig.getBoundingClientRect(),ease='cubic-bezier(.3,.7,.2,1)';
@@ -3944,6 +3992,23 @@ $('eggLater').onclick=()=>{$('eggSheet').hidden=true;toast('You can hatch an egg
 function fitSheets(){const crt=$('crt');if(crt.clientWidth)crt.style.setProperty('--zc',(crt.clientWidth/340).toFixed(3));
   document.documentElement.style.setProperty('--sz',clamp(Math.min(innerWidth/600,innerHeight/760),1,1.8).toFixed(3));}
 addEventListener('resize',fitSheets);addEventListener('viewchange',()=>{fitSheets();setTimeout(fitSheets,700);});fitSheets();
+
+// ---------- carousels: one option in the middle, the next ones peeping in at the sides ----------
+function carCenter(it,smooth=true){const c=it.parentElement,x=Math.max(0,it.offsetLeft-(c.clientWidth-it.offsetWidth)/2);carMark(c,it);
+  if(!smooth||matchMedia('(prefers-reduced-motion: reduce)').matches){c.scrollLeft=x;return;}
+  const x0=c.scrollLeft,t0=performance.now(),id=(c._anim=(c._anim||0)+1);c.style.scrollSnapType='none';c._busy=true;
+  const step=t=>{if(c._anim!==id)return;const k=Math.min(1,(t-t0)/260),e=1-Math.pow(1-k,3);c.scrollLeft=x0+(x-x0)*e;if(k<1)requestAnimationFrame(step);else{c.style.scrollSnapType='';setTimeout(()=>{c._busy=false;},120);}};requestAnimationFrame(step);}
+function carMark(c,it){[...c.children].forEach(x=>x.classList.toggle('cur',x===it));if(document.querySelector('.kbsel')&&c.contains(document.querySelector('.kbsel'))){document.querySelector('.kbsel').classList.remove('kbsel');it.classList.add('kbsel');}const w=c.parentElement;if(w&&w.classList.contains('carwrap')){const i=[...c.children].indexOf(it);w.querySelector('.cprev').disabled=i<=0;w.querySelector('.cnext').disabled=i>=c.children.length-1;w.querySelector('.cdots').innerHTML=[...c.children].map((_,k)=>`<i class="${k===i?'on':''}"></i>`).join('');}}
+function carSync(c){const mid=c.scrollLeft+c.clientWidth/2;let best=null,bd=1e9;[...c.children].forEach(x=>{const d=Math.abs(x.offsetLeft+x.offsetWidth/2-mid);if(d<bd){bd=d;best=x;}});if(best&&!best.classList.contains('cur'))carMark(c,best);}
+function carStep(c,d){const items=[...c.children],i=items.findIndex(x=>x.classList.contains('cur'));const n=items[clamp(i+d,0,items.length-1)];if(n){SFX.play('swipe');carCenter(n);}}
+function carousel(c){if(!c)return;c.classList.add('carousel');
+  if(!c.parentElement.classList.contains('carwrap')){const w=document.createElement('div');w.className='carwrap';c.before(w);
+    w.innerHTML='<button class="cbtn cprev" type="button" aria-label="Previous">‹</button><button class="cbtn cnext" type="button" aria-label="Next">›</button><div class="cdots" aria-hidden="true"></div>';
+    w.insertBefore(c,w.querySelector('.cnext'));w.querySelector('.cprev').onclick=()=>carStep(c,-1);w.querySelector('.cnext').onclick=()=>carStep(c,1);
+    let st=0;c.addEventListener('scroll',()=>{if(c._busy)return;clearTimeout(st);st=setTimeout(()=>carSync(c),90);});}
+  requestAnimationFrame(()=>{const f=c.querySelector('.cur')||c.firstElementChild;if(f)carCenter(f,false);});}
+// tapping a food at the side slides it to the middle instead of choosing it
+document.addEventListener('click',e=>{const it=e.target.closest('.carousel>*');if(!it||it.classList.contains('cur'))return;e.preventDefault();e.stopPropagation();SFX.play('swipe');carCenter(it);},true);
 const awayAtLoad=S.last?Date.now()-S.last:0, hm=(location.hash||'').match(/^#(fl[A-Za-z0-9_-]+)$/);
 tick();renderAll();requestAnimationFrame(frame);
 // what happens when the monitor first comes on: a new player picks a pet, a returning one may find a gift or a battle link
