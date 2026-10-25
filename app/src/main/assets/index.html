@@ -834,6 +834,17 @@ body:not(.v-kb) .office .ofsec:not(.cur){display:none}
 .bblcd{margin:0 0 7px;min-height:44px}
 .bblcd .lcdb{display:grid}
 .kbwrap.battling .bblcd{animation:lcdflick .55s steps(1) .5s}
+
+/* the keyboard-view button: a labelled green key on the monitor */
+.knob.kbview{width:auto;height:26px;padding:0 10px 0 8px;gap:5px;display:inline-flex;align-items:center;border-radius:13px;color:#123A20;font-family:var(--pixel);font-weight:700;font-size:10px;letter-spacing:.1em;
+  background:radial-gradient(ellipse 80% 70% at 45% 30%,#D8FFE2,#7FD6A0 60%,#4FA870);box-shadow:0 2px 0 #2E7A48,0 3px 4px rgba(0,0,0,.4),inset 0 -1px 1px rgba(0,0,0,.2),0 0 0 2px rgba(40,90,50,.3);animation:kbglow 2.6s ease-in-out infinite}
+.knob.kbview svg{width:16px;height:16px}
+.knob.kbview:active{transform:translateY(2px);box-shadow:0 0 0 #2E7A48,0 1px 2px rgba(0,0,0,.4)}
+@keyframes kbglow{0%,100%{filter:none}50%{filter:drop-shadow(0 0 5px rgba(120,255,170,.75)) brightness(1.06)}}
+@media (max-width:420px){.strip .grille{display:none}.knob.kbview span{font-size:9px}}
+@media (prefers-reduced-motion: reduce){.knob.kbview{animation:none}}
+.strip .model{white-space:nowrap}
+@media (max-width:700px){.strip .model{display:none}}
 </style>
 
 <main class="desk" id="desk">
@@ -891,7 +902,7 @@ body:not(.v-kb) .office .ofsec:not(.cur){display:none}
         <span class="model">CRT-14 · 1994</span>
         <span class="grille" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
         <button class="knob" id="petBtn" type="button" aria-label="Switch pet" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M4 8h13l-3-3M20 16H7l3 3"/></svg></button>
-        <button class="knob kbview" id="kbBtn" type="button" aria-label="Keyboard view"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><rect x="2" y="7" width="20" height="11" rx="2"/><path d="M6 11h1M9.5 11h1M13 11h1M16.5 11h1M7 14.5h10"/></svg></button>
+        <button class="knob kbview" id="kbBtn" type="button" aria-label="Keyboard view"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><rect x="2" y="7" width="20" height="11" rx="2"/><path d="M6 11h1M9.5 11h1M13 11h1M16.5 11h1M7 14.5h10"/></svg><span>KEYBOARD</span></button>
         <button class="knob" id="sndBtn" type="button" aria-label="Sound on" aria-pressed="true"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3 9h4l5-4v14l-5-4H3z"/><path class="w" d="M15 8.5a5 5 0 0 1 0 7M17.5 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2"/><path class="m" d="M15 9l6 6M21 9l-6 6" fill="none" stroke="currentColor" stroke-width="2"/></svg></button>
         <button class="pwrkey" id="pwrKey" type="button" aria-label="Switch the monitor on" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M12 3v8"/><path d="M6.6 6.6a8 8 0 1 0 10.8 0"/></svg></button><span class="power"><i class="led off" id="led"></i>PWR</span>
       </div>
