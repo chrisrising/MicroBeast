@@ -10,7 +10,7 @@ import android.webkit.WebViewClient;
 
 import androidx.webkit.WebViewAssetLoader;
 
-/** Hosts the Palwardens game page from the app's bundled assets. */
+/** Hosts the Palward game page from the app's bundled assets. */
 public class MainActivity extends Activity {
     private static final String START_URL = "https://appassets.androidplatform.net/assets/index.html";
     private WebView web;
