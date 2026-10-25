@@ -3657,7 +3657,7 @@ const VIEW=(()=>{
     else if(sh.id==='menuSheet')items=[...sh.querySelectorAll('[role=tab]')].map(b=>({label:{INVENTORY:'Inventory',SYSTEM:'Settings'}[b.textContent.trim()]||b.textContent.trim(),tab:b.dataset.tab,on:b.dataset.tab===curTab}));
     else items=selectables().slice(0,5).map(e=>({label:(e.querySelector('b,strong,.mv')||e).textContent.replace(/[>×]/g,'').trim()||e.placeholder||'Type',el:e}));
     kb.classList.toggle('shopmode',sh.id==='officeSheet'||false);
-    const key=(sh.id+':'+(PG.tab&&PG.tab.id)+':'+items.map(i=>i.label+(i.on?'*':'')).join('|'));if(key===catKey){paintCatsOn();return;}catKey=key;
+    const key=(sh.id+':'+(sh.id==='menuSheet'?'':(PG.tab&&PG.tab.id))+':'+items.map(i=>i.label).join('|'));if(key===catKey){[...navcat.querySelectorAll('.cat')].forEach((c,i)=>{if(items[i])c._on=items[i].on;});paintCatsOn();return;}catKey=key;
     navcat.innerHTML='';
     items.forEach((it,i)=>{const k=document.createElement('button');k.type='button';k.className='mk cat';k._sec=it.sec;k._on=it.on;k.innerHTML=`<span>${it.label.replace(/</g,'&lt;')}</span>`;
       k.onclick=()=>{SFX.play('click');
