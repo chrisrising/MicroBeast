@@ -1017,7 +1017,7 @@ body:not(.v-kb) .kbsel{outline:none!important;box-shadow:none!important}
 .kb [data-nav=pgprev],.kb [data-nav=pgnext],.kb [data-nav=tab]{display:none!important}
 .kb .navpad.tpad{grid-template-areas:"b . . u . e" "b . l d r e"}
 .kb .navpad.tpad .back{height:100%}
-.v-kb .clutter .mug{width:clamp(44px,13cqw,110px)!important;left:5%!important;top:4px!important;z-index:0}
+
 @media (max-width:479px){.mrow .mk span{letter-spacing:-.02em;font-size:7.6px}}
 </style>
 
@@ -4106,6 +4106,16 @@ document.addEventListener('click',e=>{const it=e.target.closest('.carousel>*');i
   const place=()=>{const k=tgt();if(!k||!k.offsetParent)return;const r=k.getBoundingClientRect();d.style.setProperty('--x',(r.left+r.width/2)+'px');d.style.setProperty('--y',(r.top+r.height/2)+'px');d.style.setProperty('--r',Math.max(r.width,r.height)*.9+'px');};
   const loop=()=>{if(document.body.classList.contains('tv-off'))place();requestAnimationFrame(loop);};loop();
 })();
+
+// keyboard view: find the mug a clear spot on the desk (beside the keyboard if there's room, otherwise in the gap behind it)
+function placeMug(){const m=$('mugSvg');if(!m)return;const P=['width','left','top','bottom'];
+  if(VIEW.get()!=='kb'){P.forEach(k=>m.style.removeProperty(k));return;}
+  const sf=$('surface').getBoundingClientRect(),kb=$('kb').getBoundingClientRect(),cl=m.parentElement.getBoundingClientRect();if(!kb.width)return;
+  const side=kb.left-sf.left,gap=kb.top-sf.top;let w,x,y;
+  if(side>140){w=Math.min(150,side*.55);x=kb.left-cl.left-w-Math.max(36,side*.2);y=kb.top-cl.top+kb.height*.08;}
+  else{w=Math.max(30,Math.min(gap*.75,sf.width*.13));x=sf.width*.05;y=kb.top-cl.top-w*1.55;}
+  m.style.width=w+'px';m.style.left=x+'px';m.style.top=y+'px';m.style.bottom='auto';}
+addEventListener('resize',()=>setTimeout(placeMug,50));addEventListener('viewchange',()=>{setTimeout(placeMug,900);setTimeout(placeMug,1600);});
 const awayAtLoad=S.last?Date.now()-S.last:0, hm=(location.hash||'').match(/^#(fl[A-Za-z0-9_-]+)$/);
 tick();renderAll();requestAnimationFrame(frame);
 // what happens when the monitor first comes on: a new player picks a pet, a returning one may find a gift or a battle link
