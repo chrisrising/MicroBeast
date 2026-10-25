@@ -177,7 +177,7 @@ input[type=text]::placeholder{color:var(--ph-dim);opacity:.8}
 .roll{position:absolute;left:0;right:0;top:0;height:28%;z-index:6;pointer-events:none;background:linear-gradient(to bottom,transparent,rgba(255,255,255,.035) 40%,rgba(255,255,255,.075) 50%,rgba(255,255,255,.035) 60%,transparent);animation:roll 8s linear infinite}
 @keyframes roll{0%{transform:translateY(-110%)}100%{transform:translateY(400%)}}
 .glass{position:absolute;inset:0;z-index:7;pointer-events:none;border-radius:inherit;
-  background:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 300' preserveAspectRatio='none'><g stroke='white' fill='none' stroke-linecap='round'><path d='M40 214 C120 192 180 204 262 172' stroke-opacity='.13' stroke-width='.8'/><path d='M302 38 L362 98' stroke-opacity='.1' stroke-width='.6'/><path d='M88 62 L132 52' stroke-opacity='.16' stroke-width='.5'/><path d='M206 252 C232 240 252 246 284 236' stroke-opacity='.08' stroke-width='1.3'/><path d='M20 120 L34 160' stroke-opacity='.08' stroke-width='.5'/></g><g fill='white'><circle cx='72' cy='120' r='1.3' fill-opacity='.2'/><circle cx='330' cy='212' r='.9' fill-opacity='.22'/><circle cx='252' cy='78' r='.7' fill-opacity='.22'/><circle cx='150' cy='262' r='1' fill-opacity='.18'/><circle cx='188' cy='34' r='.6' fill-opacity='.25'/></g><rect x='318' y='150' width='1.4' height='1.4' fill='rgb(255,40,40)' fill-opacity='.8'/></svg>") center/100% 100% no-repeat,
+  background:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 300' preserveAspectRatio='none'><g stroke='white' fill='none' stroke-linecap='round'><path d='M40 214 C120 192 180 204 262 172' stroke-opacity='.13' stroke-width='.8'/><path d='M302 38 L362 98' stroke-opacity='.1' stroke-width='.6'/><path d='M88 62 L132 52' stroke-opacity='.16' stroke-width='.5'/><path d='M206 252 C232 240 252 246 284 236' stroke-opacity='.08' stroke-width='1.3'/><path d='M20 120 L34 160' stroke-opacity='.08' stroke-width='.5'/></g><g fill='white'><circle cx='72' cy='120' r='1.3' fill-opacity='.2'/><circle cx='330' cy='212' r='.9' fill-opacity='.22'/><circle cx='252' cy='78' r='.7' fill-opacity='.22'/><circle cx='150' cy='262' r='1' fill-opacity='.18'/><circle cx='188' cy='34' r='.6' fill-opacity='.25'/></g></svg>") center/100% 100% no-repeat,
   radial-gradient(ellipse 30% 22% at 32% 24%,rgba(255,255,255,.09),transparent 70%),
   radial-gradient(ellipse 26% 30% at 24% 72%,rgba(255,255,255,.03),transparent 70%),
   radial-gradient(ellipse 34% 30% at 92% 10%,rgba(255,40,190,.08),transparent 70%),
@@ -829,7 +829,7 @@ body.v-kb{--wall:0px}
 .oftab{border:0;padding:2px 6px 3px;background:#C0C0C0;color:#00008B;text-decoration:underline;font:inherit;cursor:pointer;box-shadow:inset -1px -1px #808080,inset 1px 1px #fff;border-radius:3px 3px 0 0}
 .oftab.on{background:#FFFFF4;color:#C00;text-decoration:none;font-weight:700;box-shadow:inset -1px 0 #808080,inset 1px 1px #fff;position:relative;top:1px}
 .oftab:hover{color:#C00}
-body:not(.v-kb) .office .ofsec:not(.cur){display:none}
+
 .crt>.office .oftabs{padding-top:2px;font-size:10px}.crt>.office .oftab{padding:1px 4px 2px}
 .bblcd{margin:0 0 7px;min-height:44px}
 .bblcd .lcdb{display:grid}
@@ -900,6 +900,34 @@ body:not(.v-kb) .office .ofsec:not(.cur){display:none}
 .ofgrid.tiles.n2,.ofgrid.tiles.n4{grid-template-columns:repeat(2,minmax(0,1fr))}
 .crt>.office .ofgrid:not(.tiles){grid-template-columns:repeat(4,minmax(0,1fr))}
 .crt>.office .oitem b{font-size:11px}
+
+/* pop-ups on the CRT: a fixed phone-sized layout, scaled to the screen */
+.crt>.sheet{inset:0 auto auto 0!important;width:340px;height:255px;transform:scale(var(--zc,1));transform-origin:0 0}
+/* full-page pop-ups (desk view) grow on big displays */
+body:not(.v-kb) .sheet .box{zoom:var(--sz,1);max-height:calc(100% / var(--sz,1))}
+body:not(.v-kb) .sheet .box.tall{height:min(620px,calc(100% / var(--sz,1)))}
+body:not(.v-kb) .office .box{height:min(600px,calc(100% / var(--sz,1)))}
+.crt>.sheet .gfc{width:80px!important;height:64px!important}
+.crt>#giftSheet .box{gap:5px}
+.crt>#giftSheet .note{font-size:15px;line-height:17px;padding:7px 10px;background-image:repeating-linear-gradient(to bottom,transparent 0 16px,rgba(120,100,70,.18) 16px 17px)}
+.crt>.sheet .pick canvas{max-height:70px;width:auto}
+
+/* the monitor's control strip always fits: the vents go first, then the badge shrinks */
+.strip{flex-wrap:nowrap;min-width:0}
+.strip .brand{flex:0 1 auto;min-width:0;overflow:hidden;white-space:nowrap;text-overflow:clip}
+.strip .knob,.strip .pwrkey,.strip .power{flex:none}
+@media (max-width:520px){.strip .grille{display:none}.strip{gap:6px}}
+@media (max-width:400px){.strip .brand{font-size:12px;letter-spacing:.12em}.knob.kbview{padding:0 8px 0 6px}}
+
+@media (max-width:440px){.strip .power{font-size:0;gap:0}.strip .brand{font-size:11px;letter-spacing:.08em}}
+
+/* keyboard keys grow with the keyboard on big displays */
+.kb .mk,.kb .tb{font-size:clamp(8.5px,1.25cqw,15px)!important}
+.kb .mk svg,.kb .tb svg{width:clamp(16px,2.2cqw,26px);height:clamp(16px,2.2cqw,26px)}
+.kb .mk{min-height:clamp(42px,7cqh,72px)}
+.kb .tb{min-height:clamp(52px,9cqh,84px)}
+.kbrand,.kbleds{font-size:clamp(8px,1.1cqw,13px)!important}
+.kb .lcd .mm{font-size:clamp(15px,2cqw,24px)}
 </style>
 
 <main class="desk" id="desk">
@@ -3439,7 +3467,7 @@ const VIEW=(()=>{
   const keyOf=e=>e&&(e.id||e.dataset.id||e.dataset.food||e.dataset.dye||e.dataset.of||e.dataset.go||e.dataset.sp||null);
   const pagerOf=sh=>{let p=sh.querySelector('.pager');if(!p){p=document.createElement('div');p.className='pager';p.setAttribute('aria-hidden','true');(sh.querySelector('.box')).appendChild(p);}return p;};
   const rootOf=sh=>sh.id==='menuSheet'?[...sh.querySelectorAll('[role=tabpanel]')].find(t=>!t.hidden):boxOf(sh);
-  const clearMarks=sh=>sh&&sh.querySelectorAll('[data-pg]').forEach(e=>e.removeAttribute('data-pg'));
+  const clearMarks=sh=>{if(!sh)return;sh.querySelectorAll('[data-pg]').forEach(e=>e.removeAttribute('data-pg'));sh.querySelectorAll('[data-fz]').forEach(e=>{e.style.zoom='';e.removeAttribute('data-fz');});};
   const hide=e=>e.setAttribute('data-pg','1'),unhide=e=>e.removeAttribute('data-pg');
   function gridOf(s){return [...s.children].reverse().find(c=>c.children.length>0&&!c.classList.contains('k')&&!c.matches('p,.sub'));}
   function hideAllBut(root,keep){[...root.children].forEach(c=>{if(c===keep||c.matches('.pager'))return;if(c.contains(keep))hideAllBut(c,keep);else hide(c);});}
@@ -3451,7 +3479,9 @@ const VIEW=(()=>{
     PG.secs=[...root.querySelectorAll('.isec')].filter(s=>!s.parentElement.closest('.isec'));
     let units;
     if(PG.secs.length>1||(PG.secs.length===1&&sh.id==='officeSheet')){PG.sec=clamp(PG.sec,0,PG.secs.length-1);const s=PG.secs[PG.sec];hideAllBut(root,s);const g=gridOf(s);units=g?[...g.children]:[];}
-    else units=[...root.children].filter(c=>!c.matches('.tbar,h3,.tabs,.pager,.w95bar,.w95tools,.w95task'));
+    else{units=[...root.children].filter(c=>!c.matches('.tbar,h3,.tabs,.pager,.w95bar,.w95tools,.w95task'));
+      if(box.scrollHeight>box.clientHeight+1){const kids=[...root.children].filter(c=>!c.matches('.pager'));
+        for(const z of [.92,.85,.78,.72,.66,.6]){kids.forEach(k=>{k.style.zoom=z;k.setAttribute('data-fz','1');});if(box.scrollHeight<=box.clientHeight+1)break;}}}
     PG.units=units;units.forEach(hide);
     const pages=[];let i=0;
     while(i<units.length){let j=i;while(j<units.length){unhide(units[j]);if(box.scrollHeight>box.clientHeight+1&&j>i){hide(units[j]);break;}j++;}pages.push([i,j]);for(let k=i;k<j;k++)hide(units[k]);i=j;}
@@ -3909,6 +3939,11 @@ $('eggLater').onclick=()=>{$('eggSheet').hidden=true;toast('You can hatch an egg
   addEventListener('viewchange',render);
   window.__bb=render;
 })();
+
+// pop-ups scale with the display: on the monitor they're laid out at phone size and scaled up to fill a big screen; full-page ones grow on big monitors
+function fitSheets(){const crt=$('crt');if(crt.clientWidth)crt.style.setProperty('--zc',(crt.clientWidth/340).toFixed(3));
+  document.documentElement.style.setProperty('--sz',clamp(Math.min(innerWidth/600,innerHeight/760),1,1.8).toFixed(3));}
+addEventListener('resize',fitSheets);addEventListener('viewchange',()=>{fitSheets();setTimeout(fitSheets,700);});fitSheets();
 const awayAtLoad=S.last?Date.now()-S.last:0, hm=(location.hash||'').match(/^#(fl[A-Za-z0-9_-]+)$/);
 tick();renderAll();requestAnimationFrame(frame);
 // what happens when the monitor first comes on: a new player picks a pet, a returning one may find a gift or a battle link
