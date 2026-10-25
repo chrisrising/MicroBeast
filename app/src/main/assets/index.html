@@ -999,6 +999,19 @@ body:not(.v-kb) .kbsel{outline:none!important;box-shadow:none!important}
 .v-kb :is(.poster,.calendar,.wallnote){display:none!important}
 .v-kb .desk{padding-top:calc(6vh + env(safe-area-inset-top, 0px))}
 .v-kb .rig{width:min(calc(100cqw - 4px), calc((58cqh - 52px) * 1.333 + 52px))!important}
+
+/* text fits on every tile and tab */
+.stile b,.stile small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.crt>.sheet .stile{display:grid;grid-template-columns:auto 1fr;grid-template-rows:auto auto;column-gap:6px;row-gap:0;align-items:center;text-align:left;min-width:0}
+.crt>.sheet .stile i{grid-row:1/3}
+.crt>.sheet .stile b{font-size:15px;line-height:1}.crt>.sheet .stile small{margin-left:0;font-size:11.5px;line-height:1}
+.stiles.inv{grid-template-columns:repeat(3,minmax(0,1fr))}
+.crt>.sheet .stiles.inv{grid-template-columns:repeat(2,minmax(0,1fr))}
+.crt>#menuSheet .tabs{grid-template-columns:repeat(5,auto);justify-content:space-between;gap:2px}
+.crt>#menuSheet .tabs button{font-size:13px;letter-spacing:.02em;padding:2px 3px}
+.tabs button{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.crt>.sheet .row .k,.crt>.sheet .row{min-width:0}
+.crt>.sheet .stile b{font-size:13.5px;letter-spacing:0}.crt>.sheet .stile i{width:26px;height:20px}
 </style>
 
 <main class="desk" id="desk">
@@ -1129,7 +1142,7 @@ body:not(.v-kb) .kbsel{outline:none!important;box-shadow:none!important}
           <div class="mrow r0">
             <button class="mk" type="button" data-tab="status"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12h4l3-7 4 14 3-7h4"/></svg><span>Status</span></button>
             <button class="mk" type="button" data-tab="stats"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 20V10M12 20V4M19 20v-7"/></svg><span>Stats</span></button>
-            <button class="mk" type="button" data-tab="items"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 4h8l-1 5h3l-2 11H8L6 9h3z"/></svg><span>Cosmetics</span></button>
+            <button class="mk" type="button" data-tab="items"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 4h8l-1 5h3l-2 11H8L6 9h3z"/></svg><span>Inventory</span></button>
             <button class="mk" type="button" data-tab="shop"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M12 8v8M9.5 10a2.5 2 0 0 1 5 0c0 2.5-5 1.5-5 4a2.5 2 0 0 0 5 0"/></svg><span>Shop</span></button>
             <button class="mk office" type="button" data-act="office"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="13" rx="1"/><path d="M3 8h18M7 21h10M12 17v4"/><circle cx="6" cy="6" r=".6"/></svg><span>Office</span></button>
             <button class="mk" type="button" data-tab="system"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"/></svg><span>Settings</span></button>
@@ -1198,7 +1211,7 @@ body:not(.v-kb) .kbsel{outline:none!important;box-shadow:none!important}
     <div class="tabs" role="tablist">
       <button type="button" role="tab" data-tab="status" aria-selected="true">STATUS</button>
       <button type="button" role="tab" data-tab="stats" aria-selected="false">STATS</button>
-      <button type="button" role="tab" data-tab="items" aria-selected="false">ITEMS</button>
+      <button type="button" role="tab" data-tab="items" aria-selected="false">INVENTORY</button>
       <button type="button" role="tab" data-tab="shop" aria-selected="false">SHOP</button>
       <button type="button" role="tab" data-tab="system" aria-selected="false">SYSTEM</button>
     </div>
@@ -2536,7 +2549,7 @@ $('hatchBtn').onclick=()=>{
   save();$('nameSheet').hidden=true;renderAll();toast(migrating?`${n} is now a ${spOf(S).n.toLowerCase()}!`:`Say hello to ${n} the ${spOf(S).n.toLowerCase()}!`);
 };
 let curTab='status';
-function showTab(t){if(t!==curTab&&t==='shop'){shopPath='';renderShop();}curTab=t;document.querySelectorAll('.tabs [role=tab]').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.tab===t)));['status','stats','items','shop','system'].forEach(n=>$('tab-'+n).hidden=n!==t);}
+function showTab(t){if(t!==curTab&&t==='shop'){shopPath='';renderShop();}if(t!==curTab&&t==='items'){invPath='';renderItems();}curTab=t;document.querySelectorAll('.tabs [role=tab]').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.tab===t)));['status','stats','items','shop','system'].forEach(n=>$('tab-'+n).hidden=n!==t);}
 document.querySelectorAll('.tabs [role=tab]').forEach(b=>b.onclick=()=>showTab(b.dataset.tab));
 $('menuBtn').onclick=()=>{showTab(curTab);$('menuSheet').hidden=false;};
 $('menuClose').onclick=()=>{$('menuSheet').hidden=true;};
@@ -3366,6 +3379,7 @@ function equip(it,quiet){
   else if(it.type==='light') e.light=it.id;
   save();renderItems();
 }
+let invPath='';
 function renderItems(){
   ensureCos();const e=S.equip, box=$('itemsBox');
   const btn=c=>{
@@ -3382,7 +3396,19 @@ function renderItems(){
   const def=(type,id,n,c)=>{const on=type==='bg'?e.bg===id:e.light===id;return `<button class="item${on?' on':''}" type="button" data-def="${type}:${id}" aria-pressed="${on}"><i style="background:${c}"></i>${n}</button>`;};
   const sec=(type,label,extra,hint)=>`<div class="isec"><span class="k">${label}</span>${hint?`<p class="sub">${hint}</p>`:''}<div class="items">${extra||''}${COSMETICS.filter(c=>c.type===type).map(btn).join('')}</div></div>`;
   const found=Object.keys(W.finds||{}).length;
-  box.innerHTML=`<p class="sub">Win a battle or beat the Play boss to win a random item. Wins can give you extra copies, so more than one pet can wear the same thing.</p>`+
+  const cnt=t=>COSMETICS.filter(c=>c.type===t&&(COUNTABLE(t)?W.own[c.id]:W.unlocked.includes(c.id))).length+'/'+COSMETICS.filter(c=>c.type===t).length;
+  if(!invPath){const t=(k,n,sub,sw)=>`<button class="stile" type="button" data-ip="${k}"><i style="${sw}"></i><b>${n}</b><small>${sub}</small></button>`;
+    box.innerHTML=`<div class="row"><span class="k">INVENTORY</span><span class="sub">${S.name}</span></div><div class="isec shophome"><div class="stiles inv">`+
+      t('finds','Finds',found+' found','background:radial-gradient(circle at 50% 55%,#5AD8F0 0 25%,#B48CFF 26% 45%,transparent 46%),#081008')+t('acc','Wear',cnt('acc'),'background:linear-gradient(#2A2228 0 0) 50% 30%/50% 40% no-repeat,linear-gradient(#D8392F 0 0) 50% 70%/80% 14% no-repeat,#081008')+
+      t('gadget','Gadgets',cnt('gadget'),'background:linear-gradient(#A9B4BE 0 0) 30% 50%/30% 70% no-repeat,linear-gradient(#4FA8F0 0 0) 75% 60%/30% 50% no-repeat,#081008')+t('bg','Scenes',cnt('bg'),'background:linear-gradient(#7EC4EC 55%,#62A04E 55%)')+
+      t('light','Lights',cnt('light'),'background:radial-gradient(circle,#FFF4C8 0 30%,#FF8A3A 31% 50%,transparent 51%),#081008')+`</div><p class="sub">Win battles or beat the Play boss to earn items. Extra copies let more pets wear the same thing.</p></div>`;
+    box.querySelectorAll('[data-ip]').forEach(b=>b.onclick=()=>{invPath=b.dataset.ip;renderItems();});return;}
+  const back='<button class="btn alt shopback" type="button" data-ip="">‹ Inventory</button>';
+  const parts={finds:`<div class="isec"><span class="k">TREASURES FOUND</span><p class="sub">${found?GIFTS.filter(g=>W.finds[g.id]).map(g=>`${g.n.replace(/^(a|an) /,'')} ×${W.finds[g.id]}`).join(' · '):'Nothing yet. Leave your pet for half an hour and it may bring you something.'}</p></div>`,
+    acc:sec('acc','ACCESSORIES','',`${S.name} can wear one thing on its head and one round its neck.`),gadget:sec('gadget','GADGETS'),bg:sec('bg','BACKGROUNDS',def('bg','meadow','Meadow','#62A04E')),light:sec('light','LIGHTING',def('light','day','Daylight','#FFF4C8'))};
+  box.innerHTML=back+parts[invPath];
+  box.querySelectorAll('[data-ip]').forEach(b=>b.onclick=()=>{invPath=b.dataset.ip;renderItems();});
+  if(false)box.innerHTML=`<p class="sub">Win a battle or beat the Play boss to win a random item. Wins can give you extra copies, so more than one pet can wear the same thing.</p>`+
     `<div class="isec"><span class="k">TREASURES FOUND</span><p class="sub">${found?GIFTS.filter(g=>W.finds[g.id]).map(g=>`${g.n.replace(/^(a|an) /,'')} ×${W.finds[g.id]}`).join(' · '):'Nothing yet. Leave your pet for half an hour and it may bring you something.'}</p></div>`+
     sec('acc','ACCESSORIES','',`${S.name} can wear one thing on its head and one round its neck.`)+sec('gadget','GADGETS')+sec('bg','BACKGROUNDS',def('bg','meadow','Meadow','#62A04E'))+sec('light','LIGHTING',def('light','day','Daylight','#FFF4C8'));
   box.querySelectorAll('[data-id]').forEach(b=>b.onclick=()=>equip(COSBY[b.dataset.id]));
@@ -3539,7 +3565,7 @@ const VIEW=(()=>{
     const a=k.dataset.act;if(a==='power')$('pwrKey').click();else if(a==='pet')$('petBtn').click();else if(a==='snd'){$('sndBtn').click();syncKeys();}else if(a==='desk')set('desk');else if(a==='back')goBack();else if(a==='office')OFFICE.open();});
   // BACK closes whatever is open on screen, using its own close/cancel button where it has one
   const BACKORDER=['eggSheet','officeSheet','resetSheet','pickSheet','giftSheet','unlockSheet','feedSheet','qrSheet','challengeSheet','evoSheet','battleSheet','menuSheet'];
-  function goBack(){const id=BACKORDER.find(i=>$(i)&&!$(i).hidden);if(!id)return;if(id==='officeSheet'&&OFFICE.up())return;if(id==='menuSheet'&&curTab==='shop'&&shopPath){shopPath='';renderShop();return;}const sh=$(id);
+  function goBack(){const id=BACKORDER.find(i=>$(i)&&!$(i).hidden);if(!id)return;if(id==='officeSheet'&&OFFICE.up())return;if(id==='menuSheet'&&curTab==='shop'&&shopPath){shopPath='';renderShop();return;}if(id==='menuSheet'&&curTab==='items'&&invPath){invPath='';renderItems();return;}const sh=$(id);
     const c=sh.querySelector('.x')||[...sh.querySelectorAll('button[id]')].find(b=>/(Close|No|Later|Keep|Cancel)$/.test(b.id));if(c)c.click();else sh.hidden=true;}
   const sheets=[...document.querySelectorAll('.sheet')];
   new MutationObserver(()=>$('mkBack').classList.toggle('lit',sheets.some(s=>!s.hidden))).observe(document.body,{attributes:true,subtree:true,attributeFilter:['hidden']});
@@ -3623,9 +3649,9 @@ const VIEW=(()=>{
     const sh=openSheet();if(!sh)return;
     let items;
     if(PG.secs.length>1)items=PG.secs.slice(0,6).map((s,i)=>{const t=(s.querySelector('.k')||{}).textContent||'';const k=t.split(' ·')[0].trim();return {label:SHORT[k]||k.charAt(0)+k.slice(1).toLowerCase(),sec:i};});
-    else if(sh.id==='menuSheet')items=[...sh.querySelectorAll('[role=tab]')].map(b=>({label:{ITEMS:'Cosmetics',SYSTEM:'Settings'}[b.textContent.trim()]||b.textContent.trim(),tab:b.dataset.tab,on:b.dataset.tab===curTab}));
+    else if(sh.id==='menuSheet')items=[...sh.querySelectorAll('[role=tab]')].map(b=>({label:{INVENTORY:'Inventory',SYSTEM:'Settings'}[b.textContent.trim()]||b.textContent.trim(),tab:b.dataset.tab,on:b.dataset.tab===curTab}));
     else items=selectables().slice(0,5).map(e=>({label:(e.querySelector('b,strong,.mv')||e).textContent.replace(/[>×]/g,'').trim()||e.placeholder||'Type',el:e}));
-    kb.classList.toggle('shopmode',sh.id==='officeSheet'||(sh.id==='menuSheet'&&curTab==='shop'));
+    kb.classList.toggle('shopmode',sh.id==='officeSheet'||(sh.id==='menuSheet'&&(curTab==='shop'||curTab==='items')));
     const key=(sh.id+':'+(PG.tab&&PG.tab.id)+':'+items.map(i=>i.label+(i.on?'*':'')).join('|'));if(key===catKey){paintCatsOn();return;}catKey=key;
     navcat.innerHTML='';
     items.forEach((it,i)=>{const k=document.createElement('button');k.type='button';k.className='mk cat';k._sec=it.sec;k._on=it.on;k.innerHTML=`<span>${it.label.replace(/</g,'&lt;')}</span>`;
@@ -3644,7 +3670,7 @@ const VIEW=(()=>{
   let modeQ=0,lastSheet=null,lastTab=null,relayQ=0;
   function updateMode(){
     const sh=openSheet(),want=cur==='kb'&&!!sh,tab=sh&&rootOf(sh);
-    kb.classList.toggle('shopmode',!!sh&&(sh.id==='officeSheet'||(sh.id==='menuSheet'&&curTab==='shop')));
+    kb.classList.toggle('shopmode',!!sh&&(sh.id==='officeSheet'||(sh.id==='menuSheet'&&(curTab==='shop'||curTab==='items'))));
     if(want&&!menuMode){menuMode=true;SFX.play('click');flipKeys(realKeys(),()=>{kb.classList.add('menumode');$('navkeys').hidden=false;catKey='';layout();buildCats(false);},navKeys);}
     else if(!want&&menuMode){menuMode=false;if(selEl)selEl.classList.remove('kbsel');selEl=null;if(lastSheet)clearMarks(lastSheet);flipKeys(navKeys(),()=>{kb.classList.remove('menumode');$('navkeys').hidden=true;},realKeys);}
     else if(want&&(sh!==lastSheet||tab!==lastTab)){layout();buildCats(true);}
