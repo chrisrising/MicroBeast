@@ -685,6 +685,14 @@ body.v-kb{--wall:0px}
 .w95t i{width:10px;height:10px;flex:none}.w95t .tg{background:#2E7A44}.w95t .tw{background:#1A6AD8;border-radius:50%}
 .w95clock{margin-left:auto;padding:2px 5px;box-shadow:inset 1px 1px #808080,inset -1px -1px #fff;font-weight:400;white-space:nowrap}
 .crt>.office .ofsub{display:none}.crt>.office .osw{height:16px;width:28px}.crt>.office .oitem{padding:3px 2px 2px;font-size:11px}.crt>.office .ofsec .k{font-size:13px;margin-bottom:3px}.crt>.office .ofgrid{grid-template-columns:repeat(auto-fill,minmax(76px,1fr));gap:4px}
+
+/* test mode tag, monitor shake during evolution */
+.testtag{display:none;position:absolute;z-index:3;left:50%;bottom:-6px;transform:translateX(-50%) rotate(-2deg);padding:2px 8px;font-family:var(--pixel);font-weight:700;font-size:10px;letter-spacing:.16em;color:#fff;
+  background:repeating-linear-gradient(45deg,#C8302A 0 8px,#9A1E18 8px 16px);box-shadow:0 2px 3px rgba(0,0,0,.4)}
+.testmode .testtag{display:block}
+.rig.shake{animation:evshake .09s linear infinite}
+@keyframes evshake{0%{transform:translate(0,0) rotate(0)}25%{transform:translate(-2px,1px) rotate(-.4deg)}50%{transform:translate(2px,-1px) rotate(.3deg)}75%{transform:translate(-1px,-2px) rotate(-.2deg)}100%{transform:translate(1px,2px) rotate(.4deg)}}
+@media (prefers-reduced-motion: reduce){.rig.shake{animation:none}}
 </style>
 
 <main class="desk" id="desk">
@@ -714,6 +722,7 @@ body.v-kb{--wall:0px}
       <div class="wear" aria-hidden="true"></div>
       <i class="screw l" aria-hidden="true"></i><i class="screw r" aria-hidden="true"></i>
       <span class="sticker" aria-hidden="true">PROPERTY OF ROOM 12</span>
+      <span class="testtag" aria-hidden="true">TEST MODE</span>
       <span class="postit" aria-hidden="true">BACK IN 5</span>
       <div class="bezel">
         <div class="crt" id="crt">
@@ -900,6 +909,8 @@ body.v-kb{--wall:0px}
       <p class="sub">Each evolution offers 3 elements. Two elements fuse into a new type, and the adult picks a material that sets rarity, attack and defence.</p>
       <button class="btn" id="eggBtn" type="button" hidden>Hatch a new egg</button>
       <p class="sub">Once every pet is grown up, you can hatch another egg (up to 4 pets). Grown-ups look after themselves and wander in the distance. Use the ⇄ button on the monitor to switch between them.</p>
+      <button class="btn test" id="testBtn" type="button" aria-pressed="false">Test mode: off</button>
+      <p class="sub">Test mode is for building and testing: it gives 9999 coins and adds an "Evolve now" button. Turning it off puts your real coins back.</p>
       <button class="btn warn" id="resetBtn" type="button">Start over</button>
     </div>
   </div>
@@ -1183,6 +1194,7 @@ const SFX=(()=>{
     crit(){tone(1500,.1,'square',.08,.5);noise(.12,.2,500);},
     faint(){tone(520,.7,'triangle',.11,.25);},
     flee(){seq([700,500,300],'square',.06,.06,.08);},
+    charge(){tone(160,2.9,'sawtooth',.045,6);tone(240,2.9,'square',.025,5);noise(2.9,.05,800,0,3000);for(let i=0;i<3;i++)tone(900,.08,'square',.06,1.5,2.3+i*.28);},
     thunk(){noise(.05,.22,0,0,700);tone(95,.1,'square',.09,.5);},
     hum(){tone(15700,.7,'sine',.012);tone(60,.9,'sine',.07,1);noise(.25,.05,3000,.05);},
     notice(){tone(600,.08,'square',.06);tone(900,.12,'square',.06,1.15,.09);},
@@ -1992,7 +2004,7 @@ function renderEvo(){
   $('countdown').textContent=S.offer?'Ready!':fmt(left);
   $('evoHint').textContent=S.offer?'':'until it evolves';
   $('evoProg').style.width=clamp(100*(1-left/DUR[S.stage]),0,100)+'%';
-  $('chooseBtn').hidden=!S.offer;$('evolveBtn').hidden=!!S.offer;
+  $('chooseBtn').hidden=!S.offer;$('evolveBtn').hidden=!!S.offer||!W.test;
 }
 function biasText(b){return ['HP','ATK','DEF','SPD'].map((l,i)=>b[i]?`${l} ${b[i]>0?'+':'−'}${Math.abs(b[i])}`:'').filter(Boolean).join(' · ');}
 function chip(color,label){return `<span class="chip"><i style="background:${color}"></i>${label}</span>`;}
@@ -2020,6 +2032,7 @@ function renderAll(){renderHead();renderMeters();renderEvo();renderStats();rende
 
 // actions
 function act(type){
+  if(EVO)return;
   const now=performance.now()/1000;
   if(type==='feed'){openFeed();return;}
   else if(type==='play'){if(W.pets.length<2){startPlay();return;}choosePet('play',startPlay);return;}
@@ -2059,12 +2072,54 @@ function openEvo(){
   $('evoSheet').hidden=false;
 }
 let flashT0=-10;
+// evolving is a little show: the screen darkens round the pet, it eats an elemental berry (or a lump of its new material),
+// charges up while the screen flashes the element's colour and the monitor shakes, then bursts into its new form
+let EVO=null;
 function evolve(k){
+  if(EVO)return;
+  const old={...S,el:S.el.slice()},col=S.stage<2?EL[k].c:MAT[k].c,item=S.stage<2?'berry':'gem';
   if(S.stage<2) S.el.push(k); else S.mat=k;
   const cs=care(),cb=careBonus(cs);S.evoCare=(S.evoCare||[]).concat(cs);
-  S.stage++;S.stageStart=Date.now();S.offer=null;
-  $('evoSheet').hidden=true;flashT0=performance.now()/1000;SFX.play('evolve');
-  save();renderAll();if(S.stage===3)setTimeout(()=>toast(`${S.name} is fully grown! You can now hatch a new egg from the menu.`),3500);toast(`${S.name} evolved into a ${fullName(S)} ${STAGES[S.stage].toLowerCase()}! ${cb>.5?'Great care: big stat boost!':cb>0?'Good care: stat boost.':'Low care: weaker stats this time.'}`);
+  S.stage++;S.stageStart=Date.now();S.offer=null;save();
+  ['evoSheet','menuSheet'].forEach(i=>$(i).hidden=true);
+  const t0=now();EVO={t0,old,col,item,parts:[],swapped:false};SFX.play('charge');
+  const rig=document.querySelector('.rig');
+  setTimeout(()=>rig.classList.add('shake'),2200);
+  setTimeout(()=>{EVO.swapped=true;flashT0=now();SFX.play('evolve');
+    save();renderAll();if(S.stage===3)setTimeout(()=>toast(`${S.name} is fully grown! You can now hatch a new egg from the menu.`),3500);toast(`${S.name} evolved into a ${fullName(S)} ${STAGES[S.stage].toLowerCase()}! ${cb>.5?'Great care: big stat boost!':cb>0?'Good care: stat boost.':'Low care: weaker stats this time.'}`);
+  },3000);
+  setTimeout(()=>rig.classList.remove('shake'),3450);
+  setTimeout(()=>{EVO=null;},4700);
+}
+const EVO_SWAP=3;
+function evoK(t){return EVO?t-EVO.t0:99;}
+function evoUnder(c,t){
+  const k=evoK(t),a=k<.6?k/.6:k>3.9?Math.max(0,1-(k-3.9)/.8):1,cx=WANDER.x,cy=80;
+  const g=c.createRadialGradient(cx,cy,14,cx,cy,95);g.addColorStop(0,'rgba(0,0,0,0)');g.addColorStop(.35,`rgba(4,2,10,${.55*a})`);g.addColorStop(1,`rgba(2,0,6,${.92*a})`);
+  c.fillStyle=`rgba(0,0,0,${.35*a})`;c.fillRect(0,0,160,120);c.fillStyle=g;c.fillRect(0,0,160,120);
+  if(k>1.9&&k<EVO_SWAP+.4){const p=Math.min(1,(k-1.9)/1.1),r=10+p*26+Math.sin(t*20)*2;const g2=c.createRadialGradient(cx,cy+4,2,cx,cy+4,r);g2.addColorStop(0,EVO.col+'AA');g2.addColorStop(1,EVO.col+'00');c.fillStyle=g2;c.fillRect(0,0,160,120);}
+}
+function evoPet(t){const k=evoK(t);return (EVO&&!EVO.swapped)?EVO.old:S;}
+function evoTint(t){const k=evoK(t);if(!EVO||k<2||k>EVO_SWAP)return null;const a=(.25+.35*(Math.sin(t*18)*.5+.5))*Math.min(1,(k-2)/.6);return EVO.col+Math.round(a*255).toString(16).padStart(2,'0');}
+function evoChomp(t){const k=evoK(t);return !!EVO&&k>1.35&&k<2;}
+function evoOver(c,t,info,dt){
+  const k=evoK(t),E=EVO,col=E.col,[mx,my]=info.mouth;
+  // the berry (or material) drops in and gets eaten
+  if(k>.45&&k<2){let x=mx+WANDER.dir*3,y,s=1;
+    if(k<1.35){const u=(k-.45)/.9,e=1-(1-u)*(1-u);y=-8+(my-1+8)*e+(u>.9?Math.sin((u-.9)*30)*-2:0);}else{y=my-1;s=Math.max(0,1-(k-1.35)/.5);}
+    const r=Math.max(0,Math.round(4.4*s));
+    if(r>0){x=Math.round(x);y=Math.round(y);
+      if(E.item==='berry'){for(let yy=-r;yy<=r;yy++)for(let xx=-r;xx<=r;xx++){const d=xx*xx+yy*yy;if(d<=r*r)px(c,x+xx,y+yy,1,1,d>=(r-1)*(r-1)+1?'#1A0E08':col);}
+        px(c,x-1,y-1,1,1,'#FFFFFF');px(c,x,y-r-2,1,2,'#3F8A38');px(c,x+1,y-r-2,2,1,'#5AC24A');}
+      else{for(let i=0;i<=r;i++){px(c,x-i,y-r+i,i*2+1,1,col);px(c,x-i,y+r-i,i*2+1,1,col);}px(c,x-1,y-r+1,1,2,'#FFFFFF');}}}
+  // charging: sparks of the element rise off the pet
+  if(k>1.9&&k<EVO_SWAP){if(Math.random()<.9)E.parts.push({x:info.bx0+Math.random()*(info.bx1-info.bx0),y:104-Math.random()*8,vx:(Math.random()-.5)*6,vy:-18-Math.random()*22,life:.9,col:Math.random()<.25?'#FFFFFF':col});}
+  if(E.swapped&&!E.burst){E.burst=1;for(let i=0;i<46;i++){const a=i/46*Math.PI*2,s=40+Math.random()*50;E.parts.push({x:WANDER.x,y:84,vx:Math.cos(a)*s,vy:Math.sin(a)*s-10,life:1.1,col:i%3?col:'#FFFFFF'});}}
+  E.parts=E.parts.filter(p=>(p.life-=dt)>0);E.parts.forEach(p=>{p.x+=p.vx*dt;p.y+=p.vy*dt;p.vy+=10*dt;const s=p.life>.5?2:1;px(c,Math.round(p.x),Math.round(p.y),s,s,p.col);});
+  // the screen flashes the element's colour a few times, then a big flash as it transforms
+  const fl=[2.3,2.62,2.86].map(f=>Math.max(0,1-Math.abs(k-f)/.07)).reduce((a,b)=>Math.max(a,b),0),big=Math.max(0,1-Math.abs(k-EVO_SWAP)/.22);
+  if(fl>0){c.fillStyle=col+Math.round(fl*.55*255).toString(16).padStart(2,'0');c.fillRect(0,0,160,120);}
+  if(big>0){c.fillStyle=`rgba(255,255,255,${big*.85})`;c.fillRect(0,0,160,120);c.fillStyle=col+Math.round(big*.4*255).toString(16).padStart(2,'0');c.fillRect(0,0,160,120);}
 }
 $('evoLater').onclick=()=>{$('evoSheet').hidden=true;renderEvo();};
 $('chooseBtn').onclick=openEvo;
@@ -3030,7 +3085,7 @@ function frame(ms){
     else if(anim.type==='clean'){bubbles=k;poop=0;}
   }
   const restless=isRestless(), noticing=(WANDER.notice||0)>t;
-  if(S.asleep||anim.type||noticing){WANDER.moving=false;if(S.asleep||anim.type)WANDER.sit=false;}
+  if(S.asleep||anim.type||noticing||EVO){WANDER.moving=false;WANDER.sit=WANDER.sit&&!EVO;if(S.asleep||anim.type)WANDER.sit=false;}
   else if(t>WANDER.next){
     WANDER.sit=false;
     if(WANDER.moving||Math.random()<(restless?.25:.45)){WANDER.moving=false;WANDER.sit=!restless&&Math.random()<.4;WANDER.next=t+(WANDER.sit?rnd(3,7):rnd(1.5,4.5));}
@@ -3044,7 +3099,8 @@ function frame(ms){
   drawBackPets(c,t,dt);
   for(let i=0;i<poop;i++) drawPoop(c,[30,132][i],103,t);
   const fk=(t-flashT0)/1.2, fl=fk>=0&&fk<1?Math.sin(fk*Math.PI):0;
-  const info=drawPetAt(c,S,WANDER.x,104,t,{pose,flip:WANDER.dir<0,mood:mo,asleep:S.asleep,chomp,dy,tint:fl?`rgba(255,255,255,${fl})`:null});
+  if(EVO)evoUnder(c,t);
+  const info=drawPetAt(c,EVO?evoPet(t):S,WANDER.x,104,t,{pose:EVO?{mode:'idle',f:Math.floor(t*1.6)%2}:pose,flip:WANDER.dir<0,mood:EVO?'happy':mo,asleep:S.asleep&&!EVO,chomp:chomp||evoChomp(t),dy,tint:EVO&&evoTint(t)?evoTint(t):fl?`rgba(255,255,255,${fl})`:null});
   if(food!=null&&anim.food){const k=food,sc=Math.max(0,.6*(1-Math.max(0,k-.15)/.85)),spr=foodSprite(anim.food),w=Math.round(30*sc),h=Math.round(24*sc);
     if(w>2){c.imageSmoothingEnabled=false;const fx=Math.round(info.mouth[0]+WANDER.dir*(4+w*.4)-w/2),fy=Math.round(info.mouth[1]-h*.6+(k<.15?(1-k/.15)*-10:0));c.drawImage(spr,fx,fy,w,h);}
     if(k>.2&&k<.9&&Math.floor(k*14)%3===0)px(c,info.mouth[0]+WANDER.dir*3,info.mouth[1]+3+((k*30)%6),1,1,anim.food==='water'?'#6EC2FF':'#C9A070');
@@ -3055,6 +3111,7 @@ function frame(ms){
   if(S.asleep){for(let i=0;i<3;i++){const ph=(t*.3+i/3)%1,zx=Math.round(info.headX+6+ph*10),zy=Math.round(info.top-2-ph*16),zc='#C9D3FF';if(ph>.9)continue;px(c,zx,zy,3,1,zc);px(c,zx+1,zy+1,1,1,zc);px(c,zx,zy+2,3,1,zc);}}
   if(bubbles!=null){for(let i=0;i<10;i++){const ph=(bubbles*1.4+i/10)%1,x=Math.round(info.body[0]-30+i*6+Math.sin(i+ph*6)*3),y=Math.round(104-ph*60);c.strokeStyle='#FFFFFF';c.lineWidth=1;c.strokeRect(x+.5,y+.5,3,3);px(c,x+1,y+1,1,1,'#FFFFFF');}}
   applyLight(c,160,120,t);
+  if(EVO)evoOver(c,t,info,dt);
   drawNeeds(c,t);drawCoins(c,t);
   if(fl){c.fillStyle=`rgba(255,255,255,${fl*.45})`;c.fillRect(0,0,160,120);}
   if(!$('nameSheet').hidden){const ks=Object.keys(SPECIES);$('speciesGrid').querySelectorAll('canvas').forEach((cv,i)=>{const g=cv.getContext('2d');drawScene(g,96,72,false,t);drawPetAt(g,{sp:ks[i],stage:1,el:[]},48,56,t,{pose:{mode:'idle',f:Math.floor(t*1.6+i*.3)%2},mood:'happy',seed:i});});}
@@ -3063,7 +3120,7 @@ function frame(ms){
 window.addEventListener('pagehide',()=>{try{tick();save();}catch(e){}});
 document.addEventListener('visibilitychange',()=>{if(document.hidden){try{tick();save();}catch(e){}}});
 let lastSave=0;
-setInterval(()=>{tick();if(!G&&!B&&!S.asleep&&S.m.energy>50&&!isRestless()&&Math.random()<1/900)setRestless();renderMeters();renderEvo();renderHead();if(Date.now()-lastSave>5000){save();lastSave=Date.now();}},1000);
+setInterval(()=>{tick();if(!G&&!B&&!S.asleep&&S.m.energy>50&&!isRestless()&&Math.random()<1/900)setRestless();renderMeters();renderEvo();if(!EVO||EVO.swapped)renderHead();if(Date.now()-lastSave>5000){save();lastSave=Date.now();}},1000);
 
 // ---------- views: the monitor on a messy desk, or zoomed in over a keyboard ----------
 const VIEW=(()=>{
@@ -3383,6 +3440,12 @@ const OFFICE=(()=>{
   apply();
   return {open,close,apply,render};
 })();
+
+// ---------- test mode: 9999 coins and an Evolve now button while building; your real coins come back when it's off ----------
+function syncTest(){const on=!!W.test;document.body.classList.toggle('testmode',on);const b=$('testBtn');b.textContent=`Test mode: ${on?'ON':'off'}`;b.setAttribute('aria-pressed',String(on));renderEvo();if(typeof renderShop==='function')renderShop();}
+$('testBtn').onclick=()=>{if(!W.test){W.realCoins=W.coins|0;W.test=true;W.coins=9999;toast('Test mode on: 9999 coins and Evolve now');}else{W.coins=W.realCoins|0;delete W.realCoins;W.test=false;toast('Test mode off: real coins are back');}save();syncTest();};
+setInterval(()=>{if(W.test&&W.coins!==9999){W.coins=9999;}},1000);
+syncTest();
 const awayAtLoad=S.last?Date.now()-S.last:0, hm=(location.hash||'').match(/^#(fl[A-Za-z0-9_-]+)$/);
 tick();renderAll();requestAnimationFrame(frame);
 // what happens when the monitor first comes on: a new player picks a pet, a returning one may find a gift or a battle link
