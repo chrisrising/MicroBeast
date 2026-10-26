@@ -1,15 +1,17 @@
 <!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><style>body{padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}</style></head><body><meta charset="utf-8">
-<title>Palward</title>
+<title>MicroBeast</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;600;700&family=VT323&display=swap">
 <style>
+/* Pixelify's capital C looks like an O, so borrow a clearer C from Silkscreen */
+@font-face{font-family:"PixC";src:url(data:font/woff;base64,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) format("woff");unicode-range:U+0043;font-weight:100 900}
 /* Layout: one screen, no scroll. A beige 90s CRT sits on a dark desk; every extra option lives in green-phosphor terminal windows opened from the MENU key. */
 :root{
   --desk:#121019; --desk-hi:#272233;
   --case:#D9D0BB; --case-hi:#ECE5D4; --case-lo:#B3A88F; --case-ink:#5B5244; --key:#E7DFCC; --key-lo:#9C9179; --bezel:#2B2823;
   --term:#060D08; --ph:#8DFFA8; --ph-dim:#4C9A62; --ph-faint:#123220; --amber:#FFB347; --amber-bg:#160E05; --red:#FF6A5C; --sel:#D8FFE2;
-  --pixel:"Pixelify Sans", "Courier New", monospace;
+  --pixel:"PixC","Pixelify Sans", "Courier New", monospace;
   --term-font:"VT323", ui-monospace, "Courier New", monospace;
   color-scheme:dark;
 }
@@ -1121,6 +1123,29 @@ body:not(.v-kb) .kbsel{outline:none!important;box-shadow:none!important}
 .crt>#trainSheet .choice{padding:4px 6px;grid-template-columns:20px 1fr;gap:7px}.crt>#trainSheet .choice .sw{width:20px;height:20px}
 .crt>#trainSheet .choice strong{font-size:13px}.crt>#trainSheet .choice .d{font-size:12px}
 .crt>#trainSheet .tbar .k{margin-left:auto;margin-right:8px;font-size:15px}
+
+/* desk toys */
+.clutter.play .it{pointer-events:auto;cursor:pointer;transition:transform .35s cubic-bezier(.3,1.4,.5,1),translate .5s cubic-bezier(.2,.8,.3,1),rotate .5s cubic-bezier(.2,.8,.3,1),opacity .4s}
+.clutter.play .ring,.clutter.play .crumbs{pointer-events:none}
+.mug{transform-origin:85% 92%}
+.mug.over{transform:rotate(80deg) translate(-8%,-6%)}
+.mug.over .steam{display:none}
+.spill{position:absolute;display:block;border-radius:50%;background:radial-gradient(ellipse at 40% 40%,#6A3A18,#3E200C 70%);opacity:.9;transform-origin:0 50%;animation:spill .9s ease-out both;pointer-events:none;z-index:0}
+.spill.dry{opacity:0;transition:opacity 4s}
+@keyframes spill{from{transform:scale(.1)}to{transform:none}}
+.pencil.half{position:absolute}
+.pencil.h1,.it.h1{clip-path:inset(-20% 52% -20% 0);transform:rotate(-14deg)!important}
+.it.h2{clip-path:inset(-20% 0 -20% 48%);transform:rotate(9deg) translate(8%,6%)!important;pointer-events:none}
+.can.crushed{transform:scaleY(.55) scaleX(1.15) rotate(8deg)!important;transform-origin:50% 100%}
+.floppy.spin{animation:fspin .7s cubic-bezier(.3,.7,.3,1)}
+@keyframes fspin{50%{transform:rotate(200deg) scale(1.1)}100%{transform:rotate(360deg)}}
+.wrap.gone{opacity:0;transform:scale(.3)!important}
+/* adventure legend stays put on one line */
+.abody .amap{min-height:0}
+.akey{flex:none;flex-wrap:nowrap;white-space:nowrap;overflow:hidden;justify-content:space-between;font-size:10.5px;gap:0 4px}
+@media (max-width:400px){.strip .brand{font-size:10.5px!important;letter-spacing:.06em!important}}
+#aPlay{font-size:8px!important;letter-spacing:0!important}
+@media (min-width:480px){#aPlay{font-size:9.5px!important}}
 </style>
 
 <main class="desk" id="desk">
@@ -1146,7 +1171,7 @@ body:not(.v-kb) .kbsel{outline:none!important;box-shadow:none!important}
   <div class="wallgap"></div>
   <div class="rig">
     <i class="mhump" aria-hidden="true"></i><i class="mtop" aria-hidden="true"></i><i class="mside" aria-hidden="true"></i>
-    <section class="monitor" aria-label="Palward">
+    <section class="monitor" aria-label="MicroBeast">
       <div class="grain" id="grain" aria-hidden="true"></div>
       <div class="wear" aria-hidden="true"></div>
       <i class="screw l" aria-hidden="true"></i><i class="screw r" aria-hidden="true"></i>
@@ -1158,7 +1183,7 @@ body:not(.v-kb) .kbsel{outline:none!important;box-shadow:none!important}
         <div class="crt" id="crt">
           <canvas id="screen" width="160" height="120" aria-label="Your pet on the monitor"></canvas>
           <div class="hud glow"><span id="petName">Pip</span><span id="petStage">Baby</span></div>
-          <div class="burn" aria-hidden="true">PALWARD</div>
+          <div class="burn" aria-hidden="true">MICROBEAST</div>
           <div class="noise" id="noise" aria-hidden="true"></div>
           <div class="roll" aria-hidden="true"></div>
           <div class="bulge" aria-hidden="true"></div>
@@ -1175,7 +1200,7 @@ body:not(.v-kb) .kbsel{outline:none!important;box-shadow:none!important}
         </div>
       </div>
       <div class="strip">
-        <span class="brand">PALWARD</span>
+        <span class="brand">MICROBEAST</span>
         <span class="model">CRT-14 · 1994</span>
         <span class="grille" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
         <button class="knob" id="petBtn" type="button" aria-label="Switch pet" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M4 8h13l-3-3M20 16H7l3 3"/></svg></button>
@@ -1247,7 +1272,7 @@ body:not(.v-kb) .kbsel{outline:none!important;box-shadow:none!important}
     </div>
     <div class="kbwrap" id="kbwrap" hidden>
       <div class="kb" id="kb">
-        <div class="kbhead"><span class="kbrand">PALWARD · KB-101</span><span class="kbleds"><i id="kbPwr"></i>PWR<i id="kbCaps"></i>CAPS<i></i>SCRL</span></div>
+        <div class="kbhead"><span class="kbrand">MICROBEAST · KB-101</span><span class="kbleds"><i id="kbPwr"></i>PWR<i id="kbCaps"></i>CAPS<i></i>SCRL</span></div>
         <div class="kbslot" id="kbslot"></div>
         <div class="mkeys" id="mkeys">
           <div class="mrow r0">
@@ -1296,12 +1321,12 @@ body:not(.v-kb) .kbsel{outline:none!important;box-shadow:none!important}
     <div class="win">
       <div class="w95bar"><i class="w95ico" aria-hidden="true"></i><span id="ofTitle">WebSurfer 2.0 - [MegaOffice Supply]</span><button class="x w95x" id="ofClose" type="button" aria-label="Close the website">×</button></div>
       <div class="w95tools"><span class="w95b" aria-hidden="true">◂ Back</span><span class="w95b" aria-hidden="true">⌂</span><span class="w95addr">http://www.megaoffice.biz/~shop/</span><span class="w95coins" id="ofCoins">● 0</span></div>
-      <div class="ofmarq" aria-hidden="true"><span>★ WELCOME TO MEGA OFFICE SUPPLY ★ THE BEST DESK STUFF ON THE WORLD WIDE WEB ★ NEW!! SEE-THROUGH PLASTIC CASES ★ PAY IN PALWARD COINS ★</span></div>
+      <div class="ofmarq" aria-hidden="true"><span>★ WELCOME TO MEGA OFFICE SUPPLY ★ THE BEST DESK STUFF ON THE WORLD WIDE WEB ★ NEW!! SEE-THROUGH PLASTIC CASES ★ PAY IN MICROBEAST COINS ★</span></div>
       <div class="oftabs" id="ofTabs" role="tablist" aria-label="Shop sections"></div>
       <div class="page" id="ofPage"></div>
       <div class="pager w95status" aria-hidden="true"></div>
     </div>
-    <div class="w95task"><span class="w95start" aria-hidden="true"><i></i>Start</span><button class="w95t" id="ofGame" type="button" aria-label="Back to Palward"><i class="tg"></i>Palward</button><span class="w95t on" aria-hidden="true"><i class="tw"></i>WebSurfer</span><span class="w95clock" id="ofClock"></span></div>
+    <div class="w95task"><span class="w95start" aria-hidden="true"><i></i>Start</span><button class="w95t" id="ofGame" type="button" aria-label="Back to MicroBeast"><i class="tg"></i>MicroBeast</button><span class="w95t on" aria-hidden="true"><i class="tw"></i>WebSurfer</span><span class="w95clock" id="ofClock"></span></div>
   </div>
 </div>
 
@@ -1367,7 +1392,7 @@ body:not(.v-kb) .kbsel{outline:none!important;box-shadow:none!important}
     <div class="tab" id="tab-items" role="tabpanel" hidden><div id="itemsBox" class="tab"></div></div>
     <div class="tab" id="tab-shop" role="tabpanel" hidden><div id="shopBox" class="tab"></div><button id="ofOpen2" type="button" hidden></button></div>
     <div class="tab" id="tab-system" role="tabpanel" hidden>
-      <p><span class="k">PALWARD</span> v1.4 · CRT-14</p>
+      <p><span class="k">MICROBEAST</span> v1.4 · CRT-14</p>
       <p class="sub">Pets evolve from baby to toddler in about 10 minutes, toddler to teen in 3 hours, and teen to adult in a day. Your pet keeps ageing while the screen is off.</p>
       <p class="sub">Each evolution offers 3 elements. Two elements fuse into a new type, and the adult picks a material that sets rarity, attack and defence.</p>
       <button class="btn" id="eggBtn" type="button" hidden>Hatch a new egg</button>
@@ -1467,7 +1492,7 @@ body:not(.v-kb) .kbsel{outline:none!important;box-shadow:none!important}
 <div class="sheet" id="qrSheet" hidden>
   <div class="box" role="dialog" aria-labelledby="qrTitle">
     <h3 id="qrTitle">Your battle code</h3>
-    <p class="sub" id="qrSub">Ask your friend to open their phone's camera and point it at this code, then tap the link that pops up. Palward opens with a battle against a copy of your pet. Their result doesn't change your pet.</p>
+    <p class="sub" id="qrSub">Ask your friend to open their phone's camera and point it at this code, then tap the link that pops up. MicroBeast opens with a battle against a copy of your pet. Their result doesn't change your pet.</p>
     <p class="sub">No camera handy? Copy the code below and send it to them to paste in.</p>
     <div class="qr" id="qrBox"></div>
     <div class="code" id="codeText"></div>
@@ -2619,7 +2644,7 @@ function evolve(k){
   const t0=now();EVO={t0,old,col,item,parts:[],swapped:false};SFX.play('charge');
   const rig=document.querySelector('.rig');
   setTimeout(()=>rig.classList.add('shake'),2200);
-  setTimeout(()=>{EVO.swapped=true;flashT0=now();SFX.play('evolve');
+  setTimeout(()=>{EVO.swapped=true;flashT0=now();SFX.play('evolve');buzz([80,60,160]);
     save();renderAll();if(S.stage===3)setTimeout(()=>{if(canHatch()){$('egName').textContent=S.name;$('eggSheet').hidden=false;SFX.play('unlock');}else toast(`${S.name} is fully grown!`);},2600);toast(`${S.name} evolved into a ${fullName(S)} ${STAGES[S.stage].toLowerCase()}! ${cb>.5?'Great care: big stat boost!':cb>0?'Good care: stat boost.':'Low care: weaker stats this time.'}`);
   },3000);
   setTimeout(()=>rig.classList.remove('shake'),3450);
@@ -2830,7 +2855,7 @@ function calc(att,def,pow,el){
   if(def.guard) dmg=Math.max(1,Math.round(dmg*.4));
   return {dmg,eff,crit};
 }
-function hurt(f,dmg,col){f.hp=Math.max(0,f.hp-dmg);f.hit=1;pop(f,'-'+dmg,col||'#FFFFFF');renderBattle();}
+function hurt(f,dmg,col){f.hp=Math.max(0,f.hp-dmg);f.hit=1;buzz(f.isMe?(dmg>f.st.hp*.2?[60,40,90]:45):(dmg>f.st.hp*.2?35:18));pop(f,'-'+dmg,col||'#FFFFFF');renderBattle();}
 function heal(f,n){SFX.play('heal');f.hp=Math.min(f.st.hp,f.hp+n);pop(f,'+'+n,'#8DFFA8');renderBattle();}
 function applyStatus(f,st,src){
   if(MAJOR.includes(st)&&MAJOR.some(m=>f.sx[m])) return false;
@@ -3768,6 +3793,7 @@ const VIEW=(()=>{
     pg.hidden=!(np>1||ns);
     if(keepSel!==false){const k=keyOf(selEl),l=selectables(),cc=root.querySelector('.carousel>.cur');select((selEl&&selEl.isConnected&&l.includes(selEl))?selEl:(k&&l.find(e=>keyOf(e)===k))||cc||l[0]||null,true);}
     if(sh.id==='officeSheet'&&window.__ofTab)window.__ofTab(PG.sec);
+    sh.querySelectorAll('.carousel').forEach(c=>{const cur=c.querySelector('.cur');if(cur){c._busy=true;carCenter(cur,false);setTimeout(()=>{c._busy=false;},150);}});
     paintCatsOn();
   }
   window.__pgSec=i=>{if(!menuMode||openSheet()!==$('officeSheet'))return;PG.sec=i;PG.page=0;layout(false);select(selectables()[0]||null);};
@@ -4397,6 +4423,32 @@ function vScroll(el,smooth){const p=el.parentElement,r=p.getBoundingClientRect()
   const f=p.scrollTop,t0=performance.now(),id=(p._a=(p._a||0)+1);p.style.scrollSnapType='none';
   const st=t=>{if(p._a!==id)return;const q=Math.min(1,(t-t0)/240),e=1-Math.pow(1-q,3);p.scrollTop=f+(to-f)*e;if(q<1)requestAnimationFrame(st);else p.style.scrollSnapType='';};requestAnimationFrame(st);}
 $('trClose').onclick=()=>{$('trainSheet').hidden=true;showTab('stats');$('menuSheet').hidden=false;};
+
+// a little rumble on phones that support it (Android): hits in battle, knockouts and evolutions
+function buzz(p){try{if(!SFX.muted&&navigator.vibrate)navigator.vibrate(p);}catch(e){}}
+// ---------- desk toys: knock over the mug, unwrap the chocolate, snap the pencil... ----------
+(()=>{const cl=document.querySelector('.clutter');cl.classList.add('play');
+  const q=s=>cl.querySelector(s),later=(f,ms)=>setTimeout(f,ms);
+  const NOISE={knock:()=>SFX.play('thunk'),crinkle:()=>SFX.play('swipe'),snap:()=>SFX.play('crit'),crunch:()=>SFX.play('stomp'),roll:()=>SFX.play('jump'),slurp:()=>SFX.play('gulp')};
+  const mug=q('.mug');let spill=null;
+  mug.addEventListener('click',()=>{if(mug.classList.toggle('over')){NOISE.knock();buzz(30);
+      const r=mug.getBoundingClientRect(),c=cl.getBoundingClientRect();spill=document.createElement('i');spill.className='spill';
+      spill.style.cssText=`left:${r.right-c.left-r.width*.15}px;top:${r.bottom-c.top-r.height*.32}px;width:${r.width*1.3}px;height:${r.width*.36}px`;cl.appendChild(spill);}
+    else{NOISE.knock();if(spill){spill.classList.add('dry');const s=spill;later(()=>s.remove(),4000);spill=null;}}});
+  const wrap=q('.wrap'),wrapHTML=wrap.innerHTML;let wstate=0;
+  wrap.addEventListener('click',()=>{wstate++;
+    if(wstate===1){NOISE.crinkle();wrap.innerHTML='<ellipse cx="20" cy="17" rx="16" ry="2.4" fill="#000" opacity=".3"/><path d="M4 6 L1 2 L5 4 Z M36 6 L39 2 L35 4 Z" fill="#7A3CC0"/><rect x="5" y="5" width="30" height="10" rx="1.5" fill="#4A2412"/><g fill="#6A3418">'+[0,1,2,3,4].map(i=>`<rect x="${6.5+i*5.6}" y="6.4" width="4.6" height="3.4"/><rect x="${6.5+i*5.6}" y="10.6" width="4.6" height="3.4"/>`).join('')+'</g><path d="M5 5 h30 v3 h-30z" fill="#C8C8D8" opacity=".55"/>';}
+    else if(wstate<6){NOISE.crunch();wrap.querySelectorAll('g rect').forEach((r,i)=>{if(i>=10-(wstate-1)*2)r.remove();});const bar=wrap.querySelector('rect[width="30"]');if(bar)bar.setAttribute('width',Math.max(2,30-(wstate-1)*6));if(wstate===5){toast('Mmm, chocolate');}}
+    else{wrap.classList.add('gone');later(()=>{wrap.innerHTML=wrapHTML;wrap.classList.remove('gone');wstate=0;},60000);}});
+  const pen=q('.pencil');
+  pen.addEventListener('click',()=>{if(pen.classList.contains('snapped'))return;NOISE.snap();buzz(25);
+    const a=pen.cloneNode(true);a.classList.add('half','h2');pen.after(a);pen.classList.add('snapped','half','h1');
+    later(()=>{a.remove();pen.classList.remove('snapped','half','h1');},90000);});
+  const can=q('.can');
+  can.addEventListener('click',()=>{if(can.classList.contains('crushed'))return;NOISE.crunch();buzz(40);can.classList.add('crushed');later(()=>can.classList.remove('crushed'),60000);});
+  const flop=q('.floppy');flop.addEventListener('click',()=>{NOISE.crinkle();flop.classList.remove('spin');void flop.offsetWidth;flop.classList.add('spin');});
+  ['.b1','.b2'].forEach(s=>{const b=q(s);if(!b)return;let x=0;b.addEventListener('click',()=>{NOISE.roll();x=x?0:(Math.random()<.5?-1:1)*(30+Math.random()*40);b.style.translate=`${x}px 0`;b.style.rotate=`${x*4}deg`;});});
+})();
 const awayAtLoad=S.last?Date.now()-S.last:0, hm=(location.hash||'').match(/^#(fl[A-Za-z0-9_-]+)$/);
 tick();renderAll();requestAnimationFrame(frame);
 // what happens when the monitor first comes on: a new player picks a pet, a returning one may find a gift or a battle link

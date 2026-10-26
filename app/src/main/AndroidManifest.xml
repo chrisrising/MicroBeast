@@ -2,12 +2,13 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.VIBRATE" />
 
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
-        android:label="Palward"
-        android:theme="@style/Theme.Palward">
+        android:label="MicroBeast"
+        android:theme="@style/Theme.MicroBeast">
         <activity
             android:name=".MainActivity"
             android:configChanges="orientation|screenSize|keyboardHidden|keyboard"

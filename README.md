@@ -1,11 +1,11 @@
-# Palward for Android
+# MicroBeast for Android
 
-A small Android app that runs the Palward creature-care game from its own files.
+A small Android app that runs the MicroBeast creature-care game from its own files.
 
 ## Get the APK (GitHub does the build)
 
 1. Push this folder to a GitHub repository (Claude can do this for you).
-2. GitHub builds the app automatically. After about 5 minutes, open the repository's **Releases** page on your phone and download `Palward.apk`.
+2. GitHub builds the app automatically. After about 5 minutes, open the repository's **Releases** page on your phone and download `MicroBeast.apk`.
 3. Open the file to install. The first time, Android asks you to allow installs from your browser.
 
 ## Notes
