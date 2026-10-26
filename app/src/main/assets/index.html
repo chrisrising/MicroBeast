@@ -1112,6 +1112,15 @@ body:not(.v-kb) .kbsel{outline:none!important;box-shadow:none!important}
 .office .vcar .oitem,.office .vcar .otile{grid-template-rows:auto auto!important;row-gap:2px}
 .office .vcar .osw{grid-row:1/3!important}.office .vcar b{grid-row:1!important;align-self:end}.office .vcar small{grid-row:2!important;align-self:start}
 .office .vcar .osw,.office .vcar .osw.big{height:min(80%,80px)!important}
+
+.crt>#menuSheet #tab-stats .chips{gap:3px}.crt>#menuSheet #tab-stats .chip{font-size:12px;padding:0 5px}
+.crt>#menuSheet #tab-stats #matNote{display:none}
+.crt>#menuSheet #tab-stats .stat{padding:2px}
+.crt>#menuSheet #training .btn{font-size:13px;padding:1px 8px}
+.crt>#menuSheet #training .sub{font-size:12px}
+.crt>#trainSheet .choice{padding:4px 6px;grid-template-columns:20px 1fr;gap:7px}.crt>#trainSheet .choice .sw{width:20px;height:20px}
+.crt>#trainSheet .choice strong{font-size:13px}.crt>#trainSheet .choice .d{font-size:12px}
+.crt>#trainSheet .tbar .k{margin-left:auto;margin-right:8px;font-size:15px}
 </style>
 
 <main class="desk" id="desk">
@@ -1313,6 +1322,14 @@ body:not(.v-kb) .kbsel{outline:none!important;box-shadow:none!important}
     <div class="ahead" id="advHead"></div>
     <div class="aboost sub" id="advBoost"></div>
     <div class="abody" id="advBody"></div>
+  </div>
+</div>
+
+<!-- training -->
+<div class="sheet" id="trainSheet" hidden>
+  <div class="box" role="dialog" aria-labelledby="trTitle">
+    <div class="tbar"><h3 id="trTitle">Train moves</h3><span class="k" id="trXP"></span><button class="x" id="trClose" type="button" aria-label="Close">[X]</button></div>
+    <div class="choices" id="trList"></div>
   </div>
 </div>
 
@@ -3023,12 +3040,14 @@ function drawBattle(c,t){
   const sh=B.shake>0?[Math.round((Math.random()-.5)*5*B.shake),Math.round((Math.random()-.5)*4*B.shake)]:[0,0];
   c.save();c.translate(sh[0],sh[1]);
   drawScene(c,200,150,false,t,110,(S.equip||{}).bg);
-  for(const [f,x,flip] of [[B.me,54,false],[B.foe,146,true]]){
+  for(const [f,x0,flip] of [[B.me,54,false],[B.foe,146,true]]){const x=f.baseX??x0;
     const s=f.sx, frozen=!!s.freeze, asleep=!!s.sleep||f.hp<=0;
     const lunge=f.lunge>0?Math.sin((1-f.lunge)*Math.PI)*(f.dash||14)*(flip?-1:1):0, jit=f.hit>0?Math.round(Math.sin(t*60)*2*f.hit):0;
     const pose=asleep?{mode:'sleep',f:0}:{mode:'idle',f:frozen?0:Math.floor(t*1.6+(flip?.5:0))%2};
     const tint=f.hit>.05?`rgba(255,70,50,${f.hit*.6})`:s.poison?`rgba(120,230,60,${.16+.1*Math.sin(t*4)})`:frozen?'rgba(170,230,255,.35)':null;
     f.info=drawPetAt(c,f.p,x+lunge+jit,110,frozen?0:t,{pose,flip,battle:true,mood:f.hp<f.st.hp*.3?'sad':null,asleep,seed:flip?1.3:0,tint});
+    if(f.baseX==null&&f.info){const front=(flip?f.info.bx0:f.info.bx1)-x,back=(flip?f.info.bx1:f.info.bx0)-x;
+      let nx=flip?112-front:88-front;nx=flip?Math.min(nx,197-back):Math.max(nx,3-back);f.baseX=Math.round(nx);}
     drawStatusFx(c,f,f.info,t);
     f.hit=Math.max(0,f.hit-.045);f.lunge=Math.max(0,f.lunge-.07);
   }
@@ -3698,7 +3717,7 @@ const VIEW=(()=>{
     if(k.dataset.tab){showTab(k.dataset.tab);$('menuSheet').hidden=false;return;}
     const a=k.dataset.act;if(a==='power')$('pwrKey').click();else if(a==='pet')$('petBtn').click();else if(a==='snd'){$('sndBtn').click();syncKeys();}else if(a==='desk')set('desk');else if(a==='back')goBack();else if(a==='office')OFFICE.open();});
   // BACK closes whatever is open on screen, using its own close/cancel button where it has one
-  const BACKORDER=['advSheet','eggSheet','officeSheet','resetSheet','pickSheet','giftSheet','unlockSheet','feedSheet','qrSheet','challengeSheet','evoSheet','battleSheet','menuSheet'];
+  const BACKORDER=['trainSheet','advSheet','eggSheet','officeSheet','resetSheet','pickSheet','giftSheet','unlockSheet','feedSheet','qrSheet','challengeSheet','evoSheet','battleSheet','menuSheet'];
   function goBack(){const id=BACKORDER.find(i=>$(i)&&!$(i).hidden);if(!id)return;if(id==='officeSheet'&&OFFICE.up())return;if(id==='menuSheet'&&curTab==='shop'&&shopPath){shopPath='';renderShop();return;}if(id==='menuSheet'&&curTab==='items'&&invPath){invPath='';renderItems();return;}const sh=$(id);
     const c=sh.querySelector('.x')||[...sh.querySelectorAll('button[id]')].find(b=>/(Close|No|Later|Keep|Cancel)$/.test(b.id));if(c)c.click();else sh.hidden=true;}
   const sheets=[...document.querySelectorAll('.sheet')];
@@ -4358,11 +4377,14 @@ const ADV=(()=>{
 function giveXP(p,x){if(!x)return;p.xp=(p.xp||0)+x;if(p.stage<3){p.stageStart-=x*90e3;}save();}
 const trainCost=l=>25+l*25;
 function renderTraining(){const box=$('training');if(!box)return;const xp=S.xp||0;
-  if(S.stage<3){box.innerHTML=`<div class="row"><span class="k">EXPERIENCE</span><span>${xp} XP</span></div><p class="sub">XP from adventures speeds up evolving (each XP takes 1½ minutes off). Once grown up, spend XP to train moves.</p>`;return;}
-  S.mlv=S.mlv||{};const moves=[{k:'atk',n:moveNames(S)[0]},...specialsOf(S).map(s=>({k:s.el||'flail',n:s.n}))];
-  box.innerHTML=`<div class="row"><span class="k">TRAINING</span><span>${xp} XP</span></div><div class="trains">${moves.map(m=>{const l=S.mlv[m.k]||0,c=trainCost(l),max=l>=5;
-    return `<button class="item" type="button" data-tr="${m.k}" ${max||xp<c?'disabled':''}>${m.n} Lv${l+1}${max?' MAX':` → ${c} XP`}</button>`;}).join('')}</div><p class="sub">Each level adds 8% power to that move.</p>`;
-  box.querySelectorAll('[data-tr]').forEach(b=>b.onclick=()=>{const k=b.dataset.tr,l=S.mlv[k]||0,c=trainCost(l);if((S.xp||0)<c)return;S.xp-=c;S.mlv[k]=l+1;SFX.play('unlock');save();renderTraining();toast('Move trained!');});}
+  box.innerHTML=`<div class="row"><span>EXPERIENCE</span><span class="k">${xp} XP</span></div>`+(S.stage<3?`<p class="sub">XP speeds up evolving. Once grown up, spend it on training.</p>`:`<div class="btnrow"><button class="btn" id="trainBtn" type="button">Train moves ›</button></div>`);
+  const b=$('trainBtn');if(b)b.onclick=openTrain;}
+function openTrain(){S.mlv=S.mlv||{};const xp=S.xp||0,moves=[{k:'atk',n:moveNames(S)[0]},...specialsOf(S).map(s=>({k:s.el||'flail',n:s.n}))];
+  $('trXP').textContent=`${xp} XP`;
+  $('trList').innerHTML=moves.map(m=>{const l=S.mlv[m.k]||0,c=trainCost(l),max=l>=5;
+    return `<button class="choice" type="button" data-tr="${m.k}" ${max||xp<c?'disabled':''}><span class="sw" style="background:${m.k==='atk'?'#B8AE96':EL[m.k]?EL[m.k].c:'#B07AFF'}"></span><span><strong>${m.n} · Lv${l+1}</strong><span class="d">${max?'Fully trained':`Train to Lv${l+2} for ${c} XP (+8% power)`}</span></span></button>`;}).join('');
+  $('trList').querySelectorAll('[data-tr]').forEach(b=>b.onclick=()=>{const k=b.dataset.tr,l=S.mlv[k]||0,c=trainCost(l);if((S.xp||0)<c)return;S.xp-=c;S.mlv[k]=l+1;SFX.play('unlock');save();renderTraining();openTrain();toast('Move trained!');});
+  $('menuSheet').hidden=true;$('trainSheet').hidden=false;}
 
 // a big red button on the screen whenever an evolution is ready
 (()=>{const b=$('evoBig');b.onclick=()=>{SFX.play('click');openEvo();};
@@ -4374,6 +4396,7 @@ function vScroll(el,smooth){const p=el.parentElement,r=p.getBoundingClientRect()
   if(!smooth||matchMedia('(prefers-reduced-motion: reduce)').matches){p.scrollTop=to;return;}
   const f=p.scrollTop,t0=performance.now(),id=(p._a=(p._a||0)+1);p.style.scrollSnapType='none';
   const st=t=>{if(p._a!==id)return;const q=Math.min(1,(t-t0)/240),e=1-Math.pow(1-q,3);p.scrollTop=f+(to-f)*e;if(q<1)requestAnimationFrame(st);else p.style.scrollSnapType='';};requestAnimationFrame(st);}
+$('trClose').onclick=()=>{$('trainSheet').hidden=true;showTab('stats');$('menuSheet').hidden=false;};
 const awayAtLoad=S.last?Date.now()-S.last:0, hm=(location.hash||'').match(/^#(fl[A-Za-z0-9_-]+)$/);
 tick();renderAll();requestAnimationFrame(frame);
 // what happens when the monitor first comes on: a new player picks a pet, a returning one may find a gift or a battle link
