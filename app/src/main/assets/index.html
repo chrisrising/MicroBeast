@@ -3043,6 +3043,7 @@ const FOODS={
   meat:{n:'Meat',hun:34,thi:0,joy:6},
   honey:{n:'Honey',hun:18,thi:2,joy:10},
   tonic:{n:'Spring tonic',hun:0,thi:100,joy:8,nrg:20},
+  zap:{n:'Zap! energy drink',hun:0,thi:15,joy:6,nrg:60,drink:1,price:15},
   feast:{n:'Royal feast',hun:100,thi:20,joy:25},
 };
 Object.assign(FOODS.apple,{price:6});Object.assign(FOODS.berries,{price:6});Object.assign(FOODS.carrot,{price:5});Object.assign(FOODS.seeds,{price:4});Object.assign(FOODS.bugs,{price:7});Object.assign(FOODS.fish,{price:10});Object.assign(FOODS.meat,{price:12});Object.assign(FOODS.honey,{price:12});Object.assign(FOODS.tonic,{price:15});Object.assign(FOODS.feast,{price:30});
@@ -3059,6 +3060,7 @@ const FOODSHAPES={
   honey:()=>[{shapes:[E(0,6,6.5,6),Cp(-4.5,11.5,1.2,4.5,11.5,1.2)],col:'#C98A2A',tex:'gloss',cap:4},{shapes:[E(0,12.6,5,1.6)],col:'#8A5A1A',tex:'smooth'},{shapes:[Cp(-2,12,1,-2.5,8,.9)],col:'#FFC447',tex:'gloss'}],
   water:()=>[{shapes:[E(0,3,8.5,3.6)],col:'#8C8F98',tex:'smooth',cap:3},{shapes:[E(0,5.4,7,1.6)],col:'#4FA8F0',tex:'gloss',edge:false}],
   chow:()=>[{shapes:[E(0,3,8.5,3.6)],col:'#8A6A4A',tex:'smooth',cap:3},{shapes:[E(-4,6,1.6,1.3),E(-1,6.6,1.6,1.3),E(2,6.2,1.6,1.3),E(4.5,5.8,1.5,1.2),E(-2.5,8,1.5,1.2),E(1,8.4,1.6,1.3)],col:'#C89A62',tex:'smooth',cap:1}],
+  zap:()=>[{shapes:[Cp(0,1,3.4,0,12,3.4)],col:'#2A2A34',tex:'gloss',cap:3},{shapes:[Pg(-3.4,4,3.4,4,3.4,9,-3.4,9)],flat:'#C8FF3A',edge:false},{shapes:[Pg(.6,9,-1.6,6.3,.1,6.3,-.8,4,1.6,7,0,7)],flat:'#2A2A34',edge:false},{shapes:[E(0,12.6,2.6,.9)],col:'#B8BEC6',tex:'gloss'}],
   tonic:()=>[{shapes:[Cp(0,1,3.8,0,8,3.4)],col:'#5AD86A',tex:'gloss',cap:3},{shapes:[Cp(0,10,1.4,0,13,1.2)],col:'#5AD86A',tex:'gloss'},{shapes:[E(0,14,1.6,1.3)],col:'#8A5A2A',tex:'smooth'},{shapes:[Pg(-2.6,3,2.6,3,2.6,6,-2.6,6)],flat:'#F2EBCB',edge:false}],
   feast:()=>[{shapes:[E(0,2.2,11,2.6)],col:'#EFEAE0',tex:'gloss',cap:2},{shapes:[E(-1.5,6.5,6.5,4.4,.15)],col:'#B05A2A',tex:'fur',cap:4},{shapes:[Cp(4,7,1.2,8.5,10,1.1),E(9,10.4,1.4,1.4)],col:'#EFE6D0',tex:'smooth'},{shapes:[E(7,4.5,1.6,1.6),E(9.2,4.2,1.6,1.6),E(8,6.4,1.6,1.6)],col:'#7A3FB0',tex:'gloss'},{shapes:[E(-7,4.6,2.6,1.2,.5)],col:'#4FA845',tex:'smooth'}],
 };
@@ -3085,7 +3087,9 @@ function openFeed(){
 }
 function feed(k){
   const F=FOODS[k], v=foodVerdict(k), m=S.m;
-  if(k!=='water'&&k!=='tonic'&&m.hunger>=96){toast(`${S.name} is too full`);return;}
+  if(k!=='water'&&k!=='tonic'&&k!=='zap'&&m.hunger>=96){toast(`${S.name} is too full`);return;}
+  if(k==='zap'&&m.energy>=96){toast(`${S.name} is already full of beans`);return;}
+  if(k==='zap'&&S.asleep){toast(`${S.name} is asleep`);return;}
   if((k==='water'||k==='tonic')&&m.thirst>=96){toast(`${S.name} isn't thirsty`);return;}
   if(!F.free){if(!(W.pantry[k]>0)){toast('None left. Buy more in the Shop');return;}W.pantry[k]--;}
   const mult=v==='fav'?1.25:v==='meh'?.6:1;
@@ -3093,8 +3097,8 @@ function feed(k){
   m.hunger=clamp(m.hunger+F.hun*mult,0,100);m.thirst=clamp(m.thirst+F.thi,0,100);m.joy=clamp(m.joy+(v==='fav'?F.joy+10:v==='meh'?-4:F.joy),0,100);
   if(k!=='water')m.clean=clamp(m.clean-5,0,100);
   anim={type:'feed',food:k,t0:now(),dur:1.6,love:v==='fav'};
-  if(k==='water'||k==='tonic')SFX.play('gulp');else{SFX.play('munch');if(v==='fav')setTimeout(()=>SFX.play('yum'),450);if(v==='meh')setTimeout(()=>SFX.play('meh'),450);}
-  toast(k==='water'?'Gulp gulp':v==='fav'?`Yum! ${S.name} loves ${F.n.toLowerCase()}!`:v==='meh'?`${S.name} isn't keen on ${F.n.toLowerCase()}...`:'Munch munch');
+  if(k==='water'||k==='tonic'||k==='zap')SFX.play('gulp');else{SFX.play('munch');if(v==='fav')setTimeout(()=>SFX.play('yum'),450);if(v==='meh')setTimeout(()=>SFX.play('meh'),450);}
+  toast(k==='zap'?`Zap! ${S.name} is buzzing with energy!`:k==='water'?'Gulp gulp':v==='fav'?`Yum! ${S.name} loves ${F.n.toLowerCase()}!`:v==='meh'?`${S.name} isn't keen on ${F.n.toLowerCase()}...`:'Munch munch');
   save();renderAll();
 }
 function drawNeeds(c,t){
