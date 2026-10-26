@@ -1146,6 +1146,17 @@ body:not(.v-kb) .kbsel{outline:none!important;box-shadow:none!important}
 @media (max-width:400px){.strip .brand{font-size:10.5px!important;letter-spacing:.06em!important}}
 #aPlay{font-size:8px!important;letter-spacing:0!important}
 @media (min-width:480px){#aPlay{font-size:9.5px!important}}
+
+/* desktop companion mode */
+.dtonly{display:none!important}
+.dtop .dtonly{display:flex!important}
+html.dtop,html.dtop body,.dtop .desk{background:transparent!important}
+.dtop .room,.dtop .wallgap,.dtop .surface::before,.dtop .surface::after,.dtop .desk::after,.dtop .clutter,.dtop .offdim,.dtop .viewnote,.dtop .tutarrow{display:none!important}
+.dtop .mk[data-act=desk],.dtop [data-nav=desk],.dtop #kbBtn{display:none!important}
+.dtop .monitor,.dtop .kbhead{-webkit-app-region:drag;cursor:grab}
+.dtop .monitor button,.dtop .crt,.dtop .kb .mk,.dtop .kb .tb,.dtop .kb .lcd,.dtop .bboard .bk{-webkit-app-region:no-drag}
+.dtop .rig{filter:drop-shadow(0 10px 14px rgba(0,0,0,.45))}
+.dtop .kb{filter:drop-shadow(0 8px 10px rgba(0,0,0,.4))}
 </style>
 
 <main class="desk" id="desk">
@@ -1399,6 +1410,7 @@ body:not(.v-kb) .kbsel{outline:none!important;box-shadow:none!important}
       <p class="sub">Once every pet is grown up, you can hatch another egg (up to 4 pets). Grown-ups look after themselves and wander in the distance. Use the ⇄ button on the monitor to switch between them.</p>
       <button class="btn test" id="testBtn" type="button" aria-pressed="false">Test mode: off</button>
       <p class="sub">Test mode is for building and testing: it gives 9999 coins and adds an "Evolve now" button. Turning it off puts your real coins back.</p>
+      <div class="btnrow dtonly"><button class="btn alt" id="dtHide" type="button">Hide window</button><button class="btn warn" id="dtQuit" type="button">Close MicroBeast</button></div>
       <button class="btn warn" id="resetBtn" type="button">Start over</button>
     </div>
   </div>
@@ -4462,6 +4474,18 @@ function buzz(p){try{if(!SFX.muted&&navigator.vibrate)navigator.vibrate(p);}catc
   const flop=q('.floppy');flop.addEventListener('click',()=>{NOISE.crinkle();flop.classList.remove('spin');void flop.offsetWidth;flop.classList.add('spin');});
   ['.b1','.b2'].forEach(s=>{const b=q(s);if(!b)return;let x=0;b.addEventListener('click',()=>{NOISE.roll();x=x?0:(Math.random()<.5?-1:1)*(30+Math.random()*40);b.style.translate=`${x}px 0`;b.style.rotate=`${x*4}deg`;});});
 })();
+
+// ---------- desktop companion: no room, just the monitor and keyboard floating over your other windows ----------
+const DESKTOP=!!window.mbDesktop||/[?&]desktop=1/.test(location.search);
+if(DESKTOP){document.documentElement.classList.add('dtop');try{if(!localStorage.getItem('palwardens.tut'))localStorage.setItem('palwardens.tut','0');}catch(e){}
+  VIEW.set('kb');
+  const D=window.mbDesktop||{quit(){},hide(){},passThrough(){}};
+  $('dtQuit').onclick=()=>{save();D.quit();};$('dtHide').onclick=()=>D.hide();
+  // let clicks through the see-through parts, catch them over the monitor, keyboard and any pop-ups
+  let pass=true;const solid='.rig,.kbwrap .kb:not([hidden]),.bboard,.tutnote,.mug,.spill';
+  addEventListener('mousemove',e=>{const el=document.elementFromPoint(e.clientX,e.clientY),want=!(el&&el.closest(solid));if(want!==pass){pass=want;D.passThrough(want);}});
+  addEventListener('mouseleave',()=>{if(!pass){pass=true;D.passThrough(true);}});
+}
 const awayAtLoad=S.last?Date.now()-S.last:0, hm=(location.hash||'').match(/^#(fl[A-Za-z0-9_-]+)$/);
 tick();renderAll();requestAnimationFrame(frame);
 // what happens when the monitor first comes on: a new player picks a pet, a returning one may find a gift or a battle link
