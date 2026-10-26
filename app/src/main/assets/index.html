@@ -1216,7 +1216,7 @@ body:not(.v-kb) .kbsel{outline:none!important;box-shadow:none!important}
         <button class="tb" id="aClean" type="button"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="8" cy="14" r="4"/><circle cx="15" cy="9" r="3"/><circle cx="16" cy="17" r="2.4"/></svg>Clean</button>
         <button class="tb" id="aSleep" type="button"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M15 3a9 9 0 1 0 6 15A8 8 0 0 1 15 3z"/></svg><span id="sleepLab">Sleep</span></button>
         <button class="tb red" id="battleBtn" type="button"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M4 3l7 7-2 2-7-7V3zm16 0v2l-9.5 9.5 1.6 1.6 1.4-1.4 1.4 1.4-1.4 1.4 2.1 2.1-1.4 1.4-2.1-2.1-1.4 1.4-1.4-1.4 1.4-1.4-1.6-1.6-1.4 1.4-1.4-1.4 1.4-1.4L18 3h2zM3 17.6l2.1-2.1 1.4 1.4L4.4 19 3 17.6z"/></svg>Battle</button>
-        <button class="tb dark" id="menuBtn" type="button" aria-haspopup="dialog"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="4" y="5" width="16" height="3"/><rect x="4" y="10.5" width="16" height="3"/><rect x="4" y="16" width="16" height="3"/></svg>Menu</button>
+        <button class="tb dark" id="menuBtn" type="button" aria-haspopup="dialog"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="4" y="5" width="16" height="3"/><rect x="4" y="10.5" width="16" height="3"/><rect x="4" y="16" width="16" height="3"/></svg><span class="ml">Menu</span></button>
       </div>
       <div class="btns battle" id="playKeys" hidden>
         <button class="tb" id="gJumpB" type="button"><span class="mv">Jump</span><small>stomp</small></button>
@@ -1691,10 +1691,11 @@ const SFX=(()=>{
     charge(){tone(160,2.9,'sawtooth',.045,6);tone(240,2.9,'square',.025,5);noise(2.9,.05,800,0,3000);for(let i=0;i<3;i++)tone(900,.08,'square',.06,1.5,2.3+i*.28);},
     thunk(){noise(.05,.22,0,0,700);tone(95,.1,'square',.09,.5);},
     hum(){tone(15700,.7,'sine',.012);tone(60,.9,'sine',.07,1);noise(.25,.05,3000,.05);},
+    tap(){const v=.9+Math.random()*.2;bp(.012,.18,5200*v,3);tone(1900*v,.05,'sine',.05,.7);bp(.06,.12,700*v,1.4,.004);},
     notice(){tone(600,.08,'square',.06);tone(900,.12,'square',.06,1.15,.09);},
   };
   return {
-    play(n){try{if(n==='click'){const t=performance.now();if(t-lastClick<70)return;lastClick=t;}if(!muted&&P[n])P[n]();}catch(e){}},
+    play(n){try{if(n==='click'&&window.__onScreen&&performance.now()-window.__onScreen<120)n='tap';if(n==='click'){const t=performance.now();if(t-lastClick<70)return;lastClick=t;}if(!muted&&P[n])P[n]();}catch(e){}},
     get muted(){return muted;},
     toggle(){muted=!muted;try{localStorage.setItem('fuselings.mute',muted?'1':'0');}catch(e){}if(!muted){ac();P.click();}return muted;},
   };
@@ -2707,7 +2708,10 @@ $('hatchBtn').onclick=()=>{
 let curTab='status';
 function showTab(t){if(t!==curTab&&t==='shop'){shopPath='';renderShop();}if(t!==curTab&&t==='items'){invPath='';renderItems();}curTab=t;document.querySelectorAll('.tabs [role=tab]').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.tab===t)));['status','stats','items','shop','system'].forEach(n=>$('tab-'+n).hidden=n!==t);}
 document.querySelectorAll('.tabs [role=tab]').forEach(b=>b.onclick=()=>showTab(b.dataset.tab));
-$('menuBtn').onclick=()=>{showTab(curTab);$('menuSheet').hidden=false;};
+$('menuBtn').onclick=()=>{if(!$('menuSheet').hidden){$('menuSheet').hidden=true;return;}showTab(curTab);$('menuSheet').hidden=false;};
+// any other action key closes the menu first; the menu key reads "Back" while it's open
+document.addEventListener('click',e=>{const k=e.target.closest('#careKeys .tb');if(k&&k.id!=='menuBtn'&&!$('menuSheet').hidden)$('menuSheet').hidden=true;},true);
+new MutationObserver(()=>{const open=!$('menuSheet').hidden,l=$('menuBtn').querySelector('.ml');if(l)l.textContent=open?'Back':'Menu';$('menuBtn').classList.toggle('open',open);}).observe($('menuSheet'),{attributes:true,attributeFilter:['hidden']});
 $('menuClose').onclick=()=>{$('menuSheet').hidden=true;};
 document.addEventListener('keydown',e=>{
   if(G&&!e.repeat){if(e.key===' '||e.key==='ArrowUp'||e.key==='w'){e.preventDefault();gJump();return;}if(e.key==='x'||e.key==='ArrowRight'||e.key==='d'){gAttack();return;}if(e.key==='c'||e.key==='z'){gSpecial();return;}if(e.key==='Escape'){endPlay('quit');return;}}
@@ -3443,7 +3447,7 @@ function drawGame(c,t){
 }
 
 
-document.addEventListener('pointerdown',e=>{if(e.target.closest('.tb,.btn,.food,.item,.choice,.sp,.tabs button,.x,.mk,.bk,.knob,.oitem,.otile,.oftab,.ofcrumb,.cbtn,.ware,.pick,.pager button,.w95t,.kbswitch')&&!e.target.closest('.pwrkey,.mk.pwr'))SFX.play('click');});
+document.addEventListener('pointerdown',e=>{if(e.target.closest('#crt')){window.__onScreen=performance.now();SFX.play('tap');return;}if(e.target.closest('.tb,.btn,.food,.item,.choice,.sp,.tabs button,.x,.mk,.bk,.knob,.oitem,.otile,.oftab,.ofcrumb,.cbtn,.ware,.pick,.pager button,.w95t,.kbswitch')&&!e.target.closest('.pwrkey,.mk.pwr'))SFX.play('click');});
 const sndBtn=$('sndBtn');const syncSnd=()=>{sndBtn.setAttribute('aria-pressed',String(!SFX.muted));sndBtn.setAttribute('aria-label',SFX.muted?'Sound off':'Sound on');};syncSnd();
 sndBtn.onclick=()=>{SFX.toggle();syncSnd();};
 (()=>{try{const n=document.createElement('canvas');n.width=150;n.height=150;const x=n.getContext('2d'),d=x.createImageData(150,150);for(let i=0;i<d.data.length;i+=4){const v=128+(Math.random()-.5)*46+(Math.random()<.01?-40:0);d.data[i]=d.data[i+1]=d.data[i+2]=v;d.data[i+3]=255;}x.putImageData(d,0,0);$('grain').style.backgroundImage=`url(${n.toDataURL()})`;}catch(e){}})();
@@ -3610,6 +3614,7 @@ function drawCoins(c,t){
 let shopPath='';const ACC_PRICE=60;
 function renderShop(){
   const box=$('shopBox');if(!box)return;
+  {const old=box.querySelector('.carousel');if(old)carSync(old);}
   const coins=W.coins|0,foods=Object.keys(FOODS).filter(k=>FOODS[k].price),accs=COSMETICS.filter(c=>c.type==='acc');
   const head=`<div class="row"><span class="k">${shopPath?{food:'FOOD · packs of '+PACK,acc:'ACCESSORIES · '+ACC_PRICE+'c each',dye:'DYES · '+DYE_PRICE+'c, for '+S.name}[shopPath]:'PET SHOP'}</span><span class="coins">● ${coins}</span></div>`;
   let body;
@@ -4256,7 +4261,7 @@ function fitSheets(){const crt=$('crt');if(crt.clientWidth)crt.style.setProperty
 addEventListener('resize',fitSheets);addEventListener('viewchange',()=>{fitSheets();setTimeout(fitSheets,700);});fitSheets();
 
 // ---------- carousels: one option in the middle, the next ones peeping in at the sides ----------
-function carCenter(it,smooth=true){const c=it.parentElement,x=Math.max(0,it.offsetLeft-(c.clientWidth-it.offsetWidth)/2);carMark(c,it);
+function carCenter(it,smooth=true,force){const c=it.parentElement;if(!force&&!smooth&&c._touch&&performance.now()-c._touch<900)return;const x=Math.max(0,it.offsetLeft-(c.clientWidth-it.offsetWidth)/2);carMark(c,it);
   if(!smooth||matchMedia('(prefers-reduced-motion: reduce)').matches){c.scrollLeft=x;return;}
   const x0=c.scrollLeft,t0=performance.now(),id=(c._anim=(c._anim||0)+1);c.style.scrollSnapType='none';c._busy=true;
   const step=t=>{if(c._anim!==id)return;const k=Math.min(1,(t-t0)/260),e=1-Math.pow(1-k,3);c.scrollLeft=x0+(x-x0)*e;if(k<1)requestAnimationFrame(step);else{c.style.scrollSnapType='';setTimeout(()=>{c._busy=false;},120);}};requestAnimationFrame(step);}
@@ -4268,7 +4273,8 @@ function carousel(c,name){if(!c)return;c.classList.add('carousel');if(name)c._na
   if(!c.parentElement.classList.contains('carwrap')){const w=document.createElement('div');w.className='carwrap';c.before(w);
     w.innerHTML='<button class="cbtn cprev" type="button" aria-label="Previous">‹</button><button class="cbtn cnext" type="button" aria-label="Next">›</button><div class="cdots" aria-hidden="true"></div>';
     w.insertBefore(c,w.querySelector('.cnext'));w.querySelector('.cprev').onclick=()=>carStep(c,-1);w.querySelector('.cnext').onclick=()=>carStep(c,1);
-    let st=0;c.addEventListener('scroll',()=>{if(c._busy)return;clearTimeout(st);st=setTimeout(()=>carSync(c),90);});}
+    let st=0;const touch=()=>{c._touch=performance.now();};['pointerdown','touchstart','wheel'].forEach(ev=>c.addEventListener(ev,touch,{passive:true}));
+    c.addEventListener('scroll',()=>{if(c._busy)return;touch();clearTimeout(st);st=setTimeout(()=>carSync(c),90);});c.addEventListener('scrollend',()=>{if(!c._busy)carSync(c);});}
   const keep=name&&CARPOS[name]&&[...c.children].find(x=>carKey(x)===CARPOS[name]);
   requestAnimationFrame(()=>{const f=keep||c.querySelector('.cur')||c.firstElementChild;if(f)carCenter(f,false);});}
 // tapping a food at the side slides it to the middle instead of choosing it
