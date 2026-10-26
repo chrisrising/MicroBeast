@@ -4353,7 +4353,7 @@ const ADV=(()=>{
       if(a==='b-move'){const e=pick(ORDER.filter(x=>!(me().el||[]).includes(x)));A.extra={...SPECIALS[e],el:e,n:SPECIALS[e].n};}
       if(a==='b-buddy'){const o=W.pets.filter((p,i)=>i!==A.pet);A.buddy=o.length?{name:pick(o).name}:{name:pick(['Pebble','Sprout','Ziggy','Nib'])};}
       A.leg++;A.map=genMap();A.at=[0,0];A.panel=null;SFX.play('round');render();return;}
-    if(a==='home'){finish(false);return;}
+    if(a==='home'){finish(!A.pushed);return;}
     if(a==='quitok'){finish(!A.pushed,true);return;}
   }
   function after(won,hp,boss){
@@ -4365,7 +4365,7 @@ const ADV=(()=>{
     else panel(`Victory! +${c} coins and +${x} XP.`,[['map','Onward']]);
   }
   function finish(keep,quit){const p=me();
-    if(keep&&(A.coins||A.xp)){addCoins(A.coins);giveXP(p,A.xp);toast(`Adventure over: +${A.coins} coins, +${A.xp} XP`);}
+    if(keep&&(A.coins||A.xp)){addCoins(A.coins);giveXP(p,A.xp);toast(`Adventure over: +${A.coins} coins, and ${p.name} gains ${A.xp} XP`);}
     else if(quit)toast(A.pushed?'You left the adventure and lost your winnings':'You headed home');
     A=null;$('advSheet').hidden=true;save();renderAll();returnHome();}
   $('advQuit').onclick=()=>{if(!A)return;if(A.panel&&/Head home|Checkpoint|data-a="quitok"/.test(A.panel))return;A.saved={panel:A.panel,pending};
