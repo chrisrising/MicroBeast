@@ -1085,6 +1085,33 @@ body:not(.v-kb) .kbsel{outline:none!important;box-shadow:none!important}
 .crt>#menuSheet #tab-status .btnrow .btn{padding:2px 8px;font-size:13px}
 .crt>#menuSheet #tab-status.ready .count,.crt>#menuSheet #tab-status.ready #evoHint{display:none}
 #chooseBtn{background:#D8392F;border-color:#FF8A72;color:#fff;text-shadow:none}
+
+/* office site: one big item per screen, scrolling down */
+.office .page{display:flex;flex-direction:column}
+.office .ofsec{flex:1;min-height:0;display:flex;flex-direction:column}
+.office .ofgrid.vcar{flex:1 1 0;min-height:0;display:flex!important;flex-direction:column;gap:8px;overflow-y:auto;overscroll-behavior:contain;scroll-snap-type:y mandatory;scrollbar-width:thin;touch-action:pan-y;padding:2px 3px 30%}
+.office .vcar>*{flex:0 0 78%;scroll-snap-align:start;flex-direction:row!important;justify-content:flex-start!important;align-items:center!important;gap:14px!important;padding:8px 14px!important;text-align:left!important}
+.office .vcar .osw,.office .vcar .osw.big{width:34%!important;height:72%!important;max-height:120px;flex:none;border-width:2px}
+.office .vcar b{font-size:clamp(15px,4.6cqw,26px)!important;white-space:normal!important;line-height:1.1}
+.office .vcar small{font-size:clamp(12px,3.2cqw,18px)!important}
+.office .vcar .oitem,.office .vcar .otile{display:grid!important;grid-template-columns:auto 1fr;grid-template-rows:1fr auto auto 1fr;column-gap:14px}
+.office .vcar .osw{grid-row:1/5;align-self:center}
+.office .vcar b{grid-column:2;grid-row:2}.office .vcar small{grid-column:2;grid-row:3}
+.crt>.office .vcar>*{flex-basis:76%}
+.crt>.office .page{overflow:hidden}
+
+.office .vcar .osw,.office .vcar .osw.big{width:clamp(56px,22cqw,120px)!important;height:clamp(38px,14cqw,80px)!important}
+.office .vcar>*{flex:0 0 60%!important;min-height:0!important;height:60%;overflow:hidden;background:#ECECE4!important;border:1px solid #808080!important}
+.office .ofgrid.vcar{padding-bottom:40%}
+
+.office .ofgrid.vcar{padding:2px 3px!important;gap:6px!important}
+.office .ofgrid.vcar::after{content:"";flex:0 0 30%}
+.office .vcar>*{flex:0 0 60%!important;min-height:0!important;height:60%;overflow:hidden;background:#ECECE4!important;border:1px solid #808080!important}
+.office .vcar .osw,.office .vcar .osw.big{height:min(70%,80px)!important}
+.office .vcar>*{padding:4px 12px!important;align-content:center}
+.office .vcar .oitem,.office .vcar .otile{grid-template-rows:auto auto!important;row-gap:2px}
+.office .vcar .osw{grid-row:1/3!important}.office .vcar b{grid-row:1!important;align-self:end}.office .vcar small{grid-row:2!important;align-self:start}
+.office .vcar .osw,.office .vcar .osw.big{height:min(80%,80px)!important}
 </style>
 
 <main class="desk" id="desk">
@@ -3692,7 +3719,7 @@ const VIEW=(()=>{
     clearMarks(sh);box.scrollTop=0;
     PG.secs=[...root.querySelectorAll('.isec')].filter(s=>!s.parentElement.closest('.isec'));
     let units;
-    if(PG.secs.length>1||(PG.secs.length===1&&sh.id==='officeSheet')){PG.sec=clamp(PG.sec,0,PG.secs.length-1);const s=PG.secs[PG.sec];hideAllBut(root,s);const g=gridOf(s),isCar=g&&(g.classList.contains('carwrap')||g.classList.contains('carousel'));units=g&&!isCar?[...g.children]:[];
+    if(PG.secs.length>1||(PG.secs.length===1&&sh.id==='officeSheet')){PG.sec=clamp(PG.sec,0,PG.secs.length-1);const s=PG.secs[PG.sec];hideAllBut(root,s);const g=gridOf(s),isCar=g&&(g.classList.contains('carwrap')||g.classList.contains('carousel')||g.classList.contains('vcar'));units=g&&!isCar?[...g.children]:[];
       if(isCar&&box.scrollHeight>box.clientHeight+1){for(const z of [.9,.82,.74,.66]){s.style.zoom=z;s.setAttribute('data-fz','1');if(box.scrollHeight<=box.clientHeight+1)break;}}}
     else{units=[...root.children].filter(c=>!c.matches('.tbar,h3,.tabs,.pager,.w95bar,.w95tools,.w95task'));
       if(box.scrollHeight>box.clientHeight+1){const kids=[...root.children].filter(c=>!c.matches('.pager'));
@@ -3719,7 +3746,7 @@ const VIEW=(()=>{
     else{SFX.play('meh');return false;}
     layout(false);const l=selectables();select((d<0&&toEnd)?l[l.length-1]:l[0]||null);SFX.play('flip');return true;
   }
-  function select(el,noc){if(selEl)selEl.classList.remove('kbsel');selEl=el;if(el){el.classList.add('kbsel');if(!noc&&el.parentElement&&el.parentElement.classList.contains('carousel')&&!el.classList.contains('cur'))carCenter(el);}}
+  function select(el,noc){if(selEl)selEl.classList.remove('kbsel');selEl=el;if(el){el.classList.add('kbsel');if(el.parentElement&&el.parentElement.classList.contains('vcar'))vScroll(el,!noc);if(!noc&&el.parentElement&&el.parentElement.classList.contains('carousel')&&!el.classList.contains('cur'))carCenter(el);}}
   function nav(dir){
     const sh=openSheet();if(!sh)return;const els=selectables();
     const car=selEl&&selEl.parentElement&&selEl.parentElement.classList.contains('carousel')?selEl.parentElement:null;
@@ -4082,7 +4109,7 @@ document.documentElement.style.setProperty('--circuit',CIRCUIT);
         body=Object.entries(MATS).map(([m,[n,col]])=>{const ks=Object.values(SKINS).filter(s=>s.m===m);return tile(`pc/${b}/${m}`,n,`${ks.length} colour${ks.length>1?'s':''} · ${from(ks)}`,{cls:'sw-'+m,st:`--sc:${col}`});}).join('');}
       else{crumbs.push(['pc/'+b,b==='mon'?'Monitor':'Keyboard']);crumbs.push([`pc/${b}/${c}`,MATS[c][0]]);title=MATS[c][0].toUpperCase();sub=c==='clear'?'See the circuits inside!':'Pick a colour.';
         body=Object.entries(SKINS).filter(([,v])=>v.m===c).map(([k,v])=>card(b,k,v,skinSw(v))).join('');}}
-    box.innerHTML=`<div class="isec ofsec"><span class="k">${title}</span><p class="ofsub">${sub}</p><div class="ofgrid${tiles?' tiles n'+(body.match(/class="otile"/g)||[]).length:''}">${body}</div></div>`;
+    box.innerHTML=`<div class="isec ofsec"><span class="k">${title}</span><p class="ofsub">${sub}</p><div class="ofgrid vcar${tiles?' tiles':''}">${body}</div></div>`;
     box.querySelectorAll('[data-of]').forEach(x=>x.onclick=()=>buy(x.dataset.of));
     box.querySelectorAll('[data-go]').forEach(x=>x.onclick=()=>{SFX.play('click');path=x.dataset.go.split('/');render();});
     $('ofTabs').innerHTML=crumbs.map((cr,i)=>i<crumbs.length-1?`<button class="ofcrumb" type="button" data-path="${cr[0]}">${i?cr[1]:'⌂ Home'}</button><span class="ofsep">›</span>`:`<b class="ofhere">${i?cr[1]:'⌂ Home'}</b>`).join('');
@@ -4324,6 +4351,13 @@ function renderTraining(){const box=$('training');if(!box)return;const xp=S.xp||
 // a big red button on the screen whenever an evolution is ready
 (()=>{const b=$('evoBig');b.onclick=()=>{SFX.play('click');openEvo();};
   setInterval(()=>{const show=!!S.offer&&S.stage<3&&!B&&!(typeof EVO!=='undefined'&&EVO)&&!document.querySelector('.crt>.sheet:not([hidden])')&&!document.body.classList.contains('tv-off')&&!(typeof ADV!=='undefined'&&ADV.on);if(b.hidden===show)b.hidden=!show;},300);})();
+
+// the office site scrolls one big item at a time, with the top of the next one peeping up from below
+function vScroll(el,smooth){const p=el.parentElement,r=p.getBoundingClientRect(),k=r.height/(p.offsetHeight||1)||1;
+  const to=Math.max(0,p.scrollTop+(el.getBoundingClientRect().top-r.top)/k-4);
+  if(!smooth||matchMedia('(prefers-reduced-motion: reduce)').matches){p.scrollTop=to;return;}
+  const f=p.scrollTop,t0=performance.now(),id=(p._a=(p._a||0)+1);p.style.scrollSnapType='none';
+  const st=t=>{if(p._a!==id)return;const q=Math.min(1,(t-t0)/240),e=1-Math.pow(1-q,3);p.scrollTop=f+(to-f)*e;if(q<1)requestAnimationFrame(st);else p.style.scrollSnapType='';};requestAnimationFrame(st);}
 const awayAtLoad=S.last?Date.now()-S.last:0, hm=(location.hash||'').match(/^#(fl[A-Za-z0-9_-]+)$/);
 tick();renderAll();requestAnimationFrame(frame);
 // what happens when the monitor first comes on: a new player picks a pet, a returning one may find a gift or a battle link
