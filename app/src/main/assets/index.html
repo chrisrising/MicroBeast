@@ -2773,7 +2773,7 @@ function startBattle(foe,friendly,opt){
   const cv=$('screen');cv.width=200;cv.height=150;
   $('crt').classList.add('battling');$('led').classList.add('fight');
   $('careKeys').hidden=true;$('battleKeys').hidden=false;
-  ['mAtk','mSp0','mGrd','bFlee'].forEach(id=>$(id).hidden=false);$('mSp1').hidden=B.me.sp.length<2;$('mSp2').hidden=B.me.sp.length<3;$('bDone').hidden=true;if(opt)$('bFlee').hidden=true;
+  ['mAtk','mSp0','mGrd','bFlee'].forEach(id=>$(id).hidden=false);$('mSp1').hidden=B.me.sp.length<2;$('mSp2').hidden=B.me.sp.length<3;$('bDone').hidden=true;
   $('bMeName').textContent=S.name;$('bFoeName').textContent=foe.name;
   $('mAtk').innerHTML=`<span class="mv">${moveNames(B.me.p)[0]}</span><small>attack</small>`;
   const e1=effectiveness(B.me.p.el,foe.el);
@@ -2926,7 +2926,16 @@ $('mSp1').onclick=()=>round({kind:'special',i:1});
 $('mSp2').onclick=()=>round({kind:'special',i:2});
 $('mGrd').onclick=()=>round({kind:'guard'});
 $('bDone').onclick=()=>{if(B&&B.adv){const w=B.advWon,hp=B.me.hp,boss=B.adv.boss;endBattle();ADV.after(w,hp,boss);return;}const it=B&&B.reward;endBattle();if(it)setTimeout(()=>showUnlock(it),300);};
-$('bFlee').onclick=()=>{if(!B||B.busy||B.over)return;SFX.play('flee');endBattle();toast('You fled the battle');};
+$('bFlee').onclick=async()=>{if(!B||B.busy||B.over)return;
+  if(!B.adv){SFX.play('flee');endBattle();toast('You fled the battle');return;}
+  // on an adventure running away is a gamble: half the time the foe catches you and gets a free hit
+  B.busy=true;renderBattle();log(`${S.name} tries to run...`);await sleepMs(700);if(!B)return;
+  if(Math.random()<.5){SFX.play('flee');const hp=B.me.hp;endBattle();ADV.fled(hp);return;}
+  log(`Blocked! ${B.foe.name} gets a free attack!`);SFX.play('hurt');await sleepMs(600);if(!B)return;
+  await takeTurn(B.foe,aiMove(B.foe),B.me);if(!B)return;
+  if(B.me.hp<=0){B.over=true;B.advWon=false;S.losses++;SFX.play('faint');log(`${S.name} fainted...`);save();
+    ['mAtk','mSp0','mSp1','mSp2','mGrd','bFlee'].forEach(id=>$(id).hidden=true);$('bDone').hidden=false;window.__bb&&window.__bb();}
+  B.busy=false;renderBattle();};
 
 // ---------- battle drawing ----------
 const GLYPH={'0':'111101101101111','1':'010110010010111','2':'111001111100111','3':'111001111001111','4':'101101111001001','5':'111100111001111','6':'111100111101111','7':'111001010010010','8':'111101111101111','9':'111101111001111','+':'000010111010000','-':'000000111000000','M':'101111111101101','I':'111010010010111','S':'111100111001111','C':'111100100100111','R':'110101110101101','T':'111010010010010','!':'010010010000010','?':'111001011000010'};
@@ -4182,7 +4191,7 @@ $('eggLater').onclick=()=>{$('eggSheet').hidden=true;toast('You can hatch an egg
     if(B.over)list=[{id:'bDone',name:'Back to pet',kind:'DONE',sub:'battle over',c:'#4FA86A'}];
     else list=[{id:'mAtk',name:moveNames(B.me.p)[0],kind:'ATTACK',eff:1,c:null},
       ...B.me.sp.map((sp,i)=>({id:'mSp'+i,name:sp.n,kind:'SPECIAL',cd:B.me.cds[i]||0,eff:sp.el?effOne(sp.el,foe.el):1,c:sp.el?EL[sp.el].c:'#B07AFF'})),
-      {id:'mGrd',name:'Guard',kind:'GUARD',sub:'block + heal',c:'#6A90BE'},{id:'bFlee',name:'Flee',kind:'FLEE',sub:'run away',dark:1}];
+      {id:'mGrd',name:'Guard',kind:'GUARD',sub:'block + heal',c:'#6A90BE'},{id:'bFlee',name:'Flee',kind:'FLEE',sub:B.adv?'50/50 chance':'run away',dark:1}];
     const nMoves=list.filter(m=>m.kind==='ATTACK'||m.kind==='SPECIAL').length||1;
     keys.innerHTML=$('bbDesk').innerHTML=list.map(m=>{const b=$(m.id),dis=!b||b.hidden||b.disabled;
       const effTxt=m.eff==null?`<em class="even">${m.sub}</em>`:m.eff>1.2?`<em class="good">×${+m.eff.toFixed(2)} SUPER</em>`:m.eff<.9?`<em class="bad">×${+m.eff.toFixed(2)} WEAK</em>`:`<em class="even">×1 NORMAL</em>`;
@@ -4286,9 +4295,9 @@ const ADV=(()=>{
   }
   function panel(html,btns){A.panel=`<div class="apanel"><div class="atext">${html}</div><div class="btnrow">${btns.map(([a,t,c])=>`<button class="btn ${c||''}" type="button" data-a="${a}">${t}</button>`).join('')}</div></div>`;render();}
   let pending=null;
-  function visit(L,i){const nd=A.map[L][i];A.at=[L,i];nd.done=true;SFX.play('click');
+  function visit(L,i){const nd=A.map[L][i];A.prevAt=A.at;A.at=[L,i];nd.done=nd.t!=='battle'&&nd.t!=='boss';SFX.play('click');
     if(nd.t==='battle'||nd.t==='boss'){const foe=makeFoe(nd.t==='boss');pending={foe,boss:nd.t==='boss'};const o=odds(foe);
-      panel(`<b>${nd.t==='boss'?'BOSS! ':''}${foe.name} the ${fullName(foe)} ${STAGES[foe.stage].toLowerCase()}</b><p>${o.mood}</p><p class="sub">Win chance: about ${Math.round(o.p*100)}%</p>`,[['fight','Fight!']]);}
+      panel(`<b>${nd.t==='boss'?'BOSS! ':''}${foe.name} the ${fullName(foe)} ${STAGES[foe.stage].toLowerCase()}</b><p>${o.mood}</p><p class="sub">Win chance: about ${Math.round(o.p*100)}%</p>`,[['fight','Fight!'],['retreat','Back to path','alt']]);}
     else if(nd.t==='item'){const r=Math.random();let msg;
       if(r<.45){const h=Math.round(A.max*.4);A.hp=Math.min(A.max,A.hp+h);msg=`a <b>health berry</b>! ${me().name} recovers ${h} HP.`;SFX.play('heal');}
       else if(r<.75){A.atk+=.1;msg=`a <b>power charm</b>! Attack +10% for this adventure.`;SFX.play('unlock');}
@@ -4311,10 +4320,12 @@ const ADV=(()=>{
     return {p:pr,mood};}
   function act(a){SFX.play('click');
     if(a==='map'){A.panel=null;pending=null;render();return;}
+    if(a==='retreat'){A.at=A.prevAt;A.panel=null;pending=null;render();return;}
+    if(a==='resume'){const s=A.saved;A.saved=null;A.panel=s.panel;pending=s.pending;render();return;}
     if(a==='riskgo'){const good=Math.random()<.6;
       if(good){const c=15+A.leg*10;A.coins+=c;A.xp+=5;SFX.play('coin');panel(`It paid off! ${me().name} grabs <b>${c} coins</b> and 5 XP.`,[['map','Onward']]);}
       else{const d=Math.round(A.max*.25);A.hp=Math.max(1,A.hp-d);SFX.play('hurt');panel(`Ouch! It was a trap. ${me().name} loses <b>${d} HP</b>.`,[['map','Onward']]);}return;}
-    if(a==='fight'){const {foe,boss}=pending;$('advSheet').hidden=true;A.panel=null;
+    if(a==='fight'){const {foe,boss}=pending;A.map[A.at[0]][A.at[1]].done=true;$('advSheet').hidden=true;A.panel=null;
       startBattle(foe,false,{adv:true,hp:A.hp,atk:A.atk,def:A.def,extra:A.extra,buddy:A.buddy,foeMul:foeMul(boss),boss});return;}
     if(a==='bank'){finish(true);return;}
     if(a==='push'){panel(`<b>Push on!</b> Choose a bonus for the next leg. If ${me().name} loses from here on, you lose everything you've earned.`,[['b-heal','Full heal'],['b-str','Strength +20%'],['b-move','Extra move'],['b-buddy','Buddy pet']]);return;}
@@ -4338,9 +4349,10 @@ const ADV=(()=>{
     if(keep&&(A.coins||A.xp)){addCoins(A.coins);giveXP(p,A.xp);toast(`Adventure over: +${A.coins} coins, +${A.xp} XP`);}
     else if(quit)toast(A.pushed?'You left the adventure and lost your winnings':'You headed home');
     A=null;$('advSheet').hidden=true;save();renderAll();returnHome();}
-  $('advQuit').onclick=()=>{if(!A)return;if(A.panel&&/Head home|Checkpoint/.test(A.panel))return;
-    panel(`Leave the adventure? ${A.pushed?'You pushed on, so you will lose everything earned.':`You'll keep <b>● ${A.coins}</b> and <b>${A.xp} XP</b>.`}`,[['quitok','Leave','warn'],['map','Keep going','alt']]);};
-  return {start,after,get on(){return !!A;},get state(){return A;}};
+  $('advQuit').onclick=()=>{if(!A)return;if(A.panel&&/Head home|Checkpoint|data-a="quitok"/.test(A.panel))return;A.saved={panel:A.panel,pending};
+    panel(`Leave the adventure? ${A.pushed?'You pushed on, so you will lose everything earned.':`You'll keep <b>● ${A.coins}</b> and <b>${A.xp} XP</b>.`}`,[['quitok','Leave','warn'],['resume','Keep going','alt']]);};
+  function fled(hp){A.hp=Math.max(1,hp);A.map[A.at[0]][A.at[1]].done=true;$('advSheet').hidden=false;panel(`${me().name} got away safely! No rewards from that one.`,[['map','Onward']]);}
+  return {start,after,fled,get on(){return !!A;},get state(){return A;}};
 })();
 // experience: speeds up evolving, and once grown up it trains moves
 function giveXP(p,x){if(!x)return;p.xp=(p.xp||0)+x;if(p.stage<3){p.stageStart-=x*90e3;}save();}
