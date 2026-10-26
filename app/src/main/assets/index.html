@@ -2708,10 +2708,16 @@ $('hatchBtn').onclick=()=>{
 let curTab='status';
 function showTab(t){if(t!==curTab&&t==='shop'){shopPath='';renderShop();}if(t!==curTab&&t==='items'){invPath='';renderItems();}curTab=t;document.querySelectorAll('.tabs [role=tab]').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.tab===t)));['status','stats','items','shop','system'].forEach(n=>$('tab-'+n).hidden=n!==t);}
 document.querySelectorAll('.tabs [role=tab]').forEach(b=>b.onclick=()=>showTab(b.dataset.tab));
-$('menuBtn').onclick=()=>{if(!$('menuSheet').hidden){$('menuSheet').hidden=true;return;}showTab(curTab);$('menuSheet').hidden=false;};
-// any other action key closes the menu first; the menu key reads "Back" while it's open
-document.addEventListener('click',e=>{const k=e.target.closest('#careKeys .tb');if(k&&k.id!=='menuBtn'&&!$('menuSheet').hidden)$('menuSheet').hidden=true;},true);
-new MutationObserver(()=>{const open=!$('menuSheet').hidden,l=$('menuBtn').querySelector('.ml');if(l)l.textContent=open?'Back':'Menu';$('menuBtn').classList.toggle('open',open);}).observe($('menuSheet'),{attributes:true,attributeFilter:['hidden']});
+$('menuBtn').onclick=()=>{showTab(curTab);$('menuSheet').hidden=false;};
+// each action key opens its own screen; pressing it again closes it (it reads "Back" while open), and pressing a different key swaps to that screen
+const KEYSHEET={aFeed:['feedSheet'],aPlay:['advSheet','pickSheet'],battleBtn:['battleSheet','qrSheet','challengeSheet'],menuBtn:['menuSheet','trainSheet','officeSheet']};
+const SWAPPABLE=['feedSheet','advSheet','pickSheet','battleSheet','qrSheet','challengeSheet','menuSheet','trainSheet','officeSheet'];
+document.querySelectorAll('#careKeys .tb').forEach(b=>{const t=[...b.childNodes].find(n=>n.nodeType===3&&n.textContent.trim());if(t){const s=document.createElement('span');s.className='ml';s.textContent=t.textContent.trim();b.dataset.lab=s.textContent;t.replaceWith(s);}else{const s=b.querySelector('.ml,#sleepLab');if(s)b.dataset.lab=s.textContent;}});
+document.addEventListener('click',e=>{const k=e.target.closest('#careKeys .tb');if(!k)return;const mine=KEYSHEET[k.id]||[];
+  const openMine=mine.find(i=>$(i)&&!$(i).hidden);
+  if(openMine){e.stopImmediatePropagation();e.preventDefault();mine.forEach(i=>{if($(i))$(i).hidden=true;});if(openMine==='officeSheet')$('crt').classList.remove('mini');return;}
+  SWAPPABLE.forEach(i=>{if($(i)&&!$(i).hidden){$(i).hidden=true;if(i==='officeSheet')$('crt').classList.remove('mini');}});},true);
+new MutationObserver(()=>{for(const [id,list] of Object.entries(KEYSHEET)){const b=$(id),l=b&&b.querySelector('.ml');if(!l)continue;const open=list.some(i=>$(i)&&!$(i).hidden);l.textContent=open?'Back':b.dataset.lab;b.classList.toggle('open',open);}}).observe(document.body,{attributes:true,subtree:true,attributeFilter:['hidden']});
 $('menuClose').onclick=()=>{$('menuSheet').hidden=true;};
 document.addEventListener('keydown',e=>{
   if(G&&!e.repeat){if(e.key===' '||e.key==='ArrowUp'||e.key==='w'){e.preventDefault();gJump();return;}if(e.key==='x'||e.key==='ArrowRight'||e.key==='d'){gAttack();return;}if(e.key==='c'||e.key==='z'){gSpecial();return;}if(e.key==='Escape'){endPlay('quit');return;}}
@@ -4323,6 +4329,7 @@ const ADV=(()=>{
   }
   const me=()=>W.pets[A.pet];
   function start(){
+    if(A){render();$('advSheet').hidden=false;return;}
     if(S.asleep){toast(`${S.name} is asleep`);return;}if(S.m.energy<20){toast(`${S.name} is too tired for an adventure`);return;}
     const go=()=>{const st=computeStats({...S,care:care()});
       A={pet:W.active,leg:1,map:genMap(),at:[0,0],hp:st.hp,max:st.hp,coins:0,xp:0,atk:1,def:1,extra:null,buddy:null,pushed:false,panel:null};
