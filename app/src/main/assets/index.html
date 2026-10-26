@@ -1059,6 +1059,32 @@ body:not(.v-kb) .kbsel{outline:none!important;box-shadow:none!important}
 .apanel .btn{font-size:14px;padding:2px 9px}
 .apanel .btnrow{gap:5px}
 .bbkeys,.bbdesk{grid-template-columns:repeat(12,minmax(0,1fr))!important}
+
+/* big red evolve button on the screen */
+.evobig{position:absolute;z-index:5;left:50%;bottom:9%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:0;padding:6px 22px 8px;border:0;border-radius:12px;cursor:pointer;
+  font-family:var(--pixel);font-weight:700;color:#FFF4EE;text-shadow:0 2px 0 rgba(0,0,0,.4);background:radial-gradient(ellipse 80% 60% at 50% 30%,#FF8A72,#D8392F 60%,#A01E16);
+  box-shadow:0 4px 0 #6E120C,0 6px 10px rgba(0,0,0,.5),inset 0 2px 0 rgba(255,255,255,.4),0 0 0 3px rgba(0,0,0,.35);animation:evopulse 1.1s ease-in-out infinite}
+.evobig span{font-size:clamp(18px,5.5cqw,34px);letter-spacing:.1em}
+.evobig small{font-size:clamp(10px,2.6cqw,15px);font-weight:600;opacity:.9}
+.evobig:active{transform:translateX(-50%) translateY(3px);box-shadow:0 1px 0 #6E120C,0 2px 4px rgba(0,0,0,.5)}
+@keyframes evopulse{50%{filter:brightness(1.15) drop-shadow(0 0 14px rgba(255,80,60,.9))}}
+@media (prefers-reduced-motion: reduce){.evobig{animation:none}}
+/* evolution choices fit one screen */
+.crt>#evoSheet .box{gap:4px}
+.crt>#evoSheet #evoSub{font-size:12px;line-height:1.05;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;flex:none}
+.crt>#evoSheet .choices{gap:4px}
+.crt>#evoSheet .choice{padding:3px 6px;gap:7px;grid-template-columns:24px 1fr}
+.crt>#evoSheet .choice .sw{width:24px;height:24px}
+.crt>#evoSheet .choice strong{font-size:13px}
+.crt>#evoSheet .choice .becomes{font-size:13px;line-height:1.05}
+.crt>#evoSheet .choice .d{font-size:11.5px;line-height:1.05}
+.crt>#evoSheet .choice .d+.d{display:none}
+.crt>#evoSheet #evoLater{padding:1px 8px;font-size:13px}
+/* status page: when an evolution is ready, show the button instead of the countdown */
+.crt>#menuSheet #tab-status .prog{display:none}
+.crt>#menuSheet #tab-status .btnrow .btn{padding:2px 8px;font-size:13px}
+.crt>#menuSheet #tab-status.ready .count,.crt>#menuSheet #tab-status.ready #evoHint{display:none}
+#chooseBtn{background:#D8392F;border-color:#FF8A72;color:#fff;text-shadow:none}
 </style>
 
 <main class="desk" id="desk">
@@ -1102,6 +1128,7 @@ body:not(.v-kb) .kbsel{outline:none!important;box-shadow:none!important}
           <div class="bulge" aria-hidden="true"></div>
           <div class="glass" aria-hidden="true"></div>
           <div class="poweroff" id="poweroff" aria-hidden="true"></div>
+        <button class="evobig" id="evoBig" type="button" hidden><span>EVOLVE!</span><small>tap to choose</small></button>
           <div class="toast glow" id="toast" aria-live="polite"></div>
           <div class="ghud glow" aria-live="polite"><span id="gInfo"></span><div class="hp" id="gBossBar" hidden><b></b></div><div id="gBanner"></div></div>
           <div class="bhud glow">
@@ -1281,7 +1308,7 @@ body:not(.v-kb) .kbsel{outline:none!important;box-shadow:none!important}
       <div class="row"><span class="count" id="countdown">--:--</span><span class="sub" id="evoHint"></span></div>
       <div class="prog"><b id="evoProg"></b></div>
       <div class="btnrow">
-        <button class="btn" id="chooseBtn" type="button" hidden>Choose evolution</button>
+        <button class="btn" id="chooseBtn" type="button" hidden>EVOLVE NOW!</button>
         <button class="btn test" id="evolveBtn" type="button">Evolve now (test)</button>
       </div>
     </div>
@@ -2466,7 +2493,7 @@ function renderEvo(){
   $('countdown').textContent=S.offer?'Ready!':fmt(left);
   $('evoHint').textContent=S.offer?'':'until it evolves';
   $('evoProg').style.width=clamp(100*(1-left/DUR[S.stage]),0,100)+'%';
-  $('chooseBtn').hidden=!S.offer;$('evolveBtn').hidden=!!S.offer||!W.test;
+  $('chooseBtn').hidden=!S.offer;$('tab-status').classList.toggle('ready',!!S.offer);$('evolveBtn').hidden=!!S.offer||!W.test;
 }
 function biasText(b){return ['HP','ATK','DEF','SPD'].map((l,i)=>b[i]?`${l} ${b[i]>0?'+':'−'}${Math.abs(b[i])}`:'').filter(Boolean).join(' · ');}
 function chip(color,label){return `<span class="chip"><i style="background:${color}"></i>${label}</span>`;}
@@ -4293,6 +4320,10 @@ function renderTraining(){const box=$('training');if(!box)return;const xp=S.xp||
   box.innerHTML=`<div class="row"><span class="k">TRAINING</span><span>${xp} XP</span></div><div class="trains">${moves.map(m=>{const l=S.mlv[m.k]||0,c=trainCost(l),max=l>=5;
     return `<button class="item" type="button" data-tr="${m.k}" ${max||xp<c?'disabled':''}>${m.n} Lv${l+1}${max?' MAX':` → ${c} XP`}</button>`;}).join('')}</div><p class="sub">Each level adds 8% power to that move.</p>`;
   box.querySelectorAll('[data-tr]').forEach(b=>b.onclick=()=>{const k=b.dataset.tr,l=S.mlv[k]||0,c=trainCost(l);if((S.xp||0)<c)return;S.xp-=c;S.mlv[k]=l+1;SFX.play('unlock');save();renderTraining();toast('Move trained!');});}
+
+// a big red button on the screen whenever an evolution is ready
+(()=>{const b=$('evoBig');b.onclick=()=>{SFX.play('click');openEvo();};
+  setInterval(()=>{const show=!!S.offer&&S.stage<3&&!B&&!(typeof EVO!=='undefined'&&EVO)&&!document.querySelector('.crt>.sheet:not([hidden])')&&!document.body.classList.contains('tv-off')&&!(typeof ADV!=='undefined'&&ADV.on);if(b.hidden===show)b.hidden=!show;},300);})();
 const awayAtLoad=S.last?Date.now()-S.last:0, hm=(location.hash||'').match(/^#(fl[A-Za-z0-9_-]+)$/);
 tick();renderAll();requestAnimationFrame(frame);
 // what happens when the monitor first comes on: a new player picks a pet, a returning one may find a gift or a battle link
