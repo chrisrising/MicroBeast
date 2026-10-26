@@ -24,6 +24,7 @@ jobs:
       - name: Copy in the game
         shell: bash
         run: |
+          mkdir -p app
           cp ../app/src/main/assets/index.html app/index.html
           curl -fsSL -o app/qrcode.js https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js
 
