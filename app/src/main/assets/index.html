@@ -153,8 +153,8 @@ button:focus-visible,input:focus-visible,label:focus-within{outline:2px solid va
 .choice strong{font-family:var(--pixel);font-size:16px;letter-spacing:.06em;text-transform:uppercase;display:block;color:var(--sel)}
 .choice .d{font-size:17px;color:var(--ph-dim);display:block}
 .choice .becomes{font-size:18px;color:var(--amber);display:block}
-input[type=text]{font:inherit;width:100%;border:2px solid var(--ph-dim);background:#000;color:var(--ph);border-radius:0;padding:6px 10px;caret-color:var(--ph)}
-input[type=text]::placeholder{color:var(--ph-dim);opacity:.8}
+input[type=text],input[type=email],input[type=password]{font:inherit;width:100%;border:2px solid var(--ph-dim);background:#000;color:var(--ph);border-radius:0;padding:6px 10px;caret-color:var(--ph)}
+input[type=text]::placeholder,input[type=email]::placeholder,input[type=password]::placeholder{color:var(--ph-dim);opacity:.8}
 .qr{display:grid;place-items:center;background:#fff;padding:10px;align-self:center}
 .qr img{width:200px;max-width:100%;image-rendering:pixelated;display:block}
 .code{font-size:15px;word-break:break-all;border:1px dashed var(--ph-dim);padding:6px 8px;user-select:all;color:var(--ph-dim)}
@@ -1361,6 +1361,16 @@ body:not(.v-kb) .crt>.sheet .box.vbox{height:100%!important;max-height:100%!impo
 .dtctl .dtmin:hover{background:#4A4438}
 .dtctl .dtx:hover{background:#C8302A}
 .dtctl button:focus-visible{outline:2px solid var(--amber);outline-offset:1px}
+
+/* account & sync */
+.syncbox{display:flex;flex-direction:column;gap:7px;padding-bottom:10px;border-bottom:1px dashed var(--ph-dim)}
+.syncbox .err{color:var(--red);margin:0;font-size:.9em}
+.syncbox .row span:first-child{overflow-wrap:anywhere;min-width:0}
+.linkbtn{align-self:flex-start;border:0;background:none;padding:0;color:var(--ph-dim);text-decoration:underline;font-size:.9em}
+.linkbtn:hover{color:var(--ph)}
+.crt>#menuSheet .syncbox input{padding:3px 8px;font-size:17px}
+
+#syncSheet{z-index:40!important}
 </style>
 
 <main class="desk" id="desk">
@@ -1548,6 +1558,13 @@ body:not(.v-kb) .crt>.sheet .box.vbox{height:100%!important;max-height:100%!impo
 </div>
 
 <!-- fully grown: offer a new egg -->
+<div class="sheet" id="syncSheet" hidden>
+  <div class="box" role="dialog" aria-labelledby="syTitle">
+    <h3 id="syTitle">Two saves found</h3>
+    <p class="sub">This device and your cloud save both have progress. Which one do you want to keep? The other one will be replaced.</p>
+    <div class="choices" id="syncPick"></div>
+  </div>
+</div>
 <div class="sheet" id="advHintSheet" hidden>
   <div class="box" role="dialog" aria-labelledby="ahTitle">
     <h3 id="ahTitle">Adventure mode now available!</h3>
@@ -1616,6 +1633,7 @@ body:not(.v-kb) .crt>.sheet .box.vbox{height:100%!important;max-height:100%!impo
     <div class="tab" id="tab-items" role="tabpanel" hidden><div id="itemsBox" class="tab"></div></div>
     <div class="tab" id="tab-shop" role="tabpanel" hidden><div id="shopBox" class="tab"></div><button id="ofOpen2" type="button" hidden></button></div>
     <div class="tab" id="tab-system" role="tabpanel" hidden>
+      <div class="isec syncbox" id="syncBox"></div>
       <p><span class="k">MICROBEAST</span> v1.4 · CRT-14</p>
       <p class="sub">Pets evolve from baby to toddler in about 10 minutes, toddler to teen in 3 hours, and teen to adult in a day. Your pet keeps ageing while the screen is off.</p>
       <p class="sub">Each evolution offers 3 elements. Two elements fuse into a new type, and the adult picks a material that sets rarity, attack and defence.</p>
@@ -1959,7 +1977,7 @@ function loadWorld(){
   }catch(e){}
   return null;
 }
-function save(){try{if(W){W.pets[W.active]=S;localStorage.setItem(WKEY,JSON.stringify(W));}}catch(e){}}
+function save(){if(window.__mbAdopting)return;try{if(W){W.pets[W.active]=S;localStorage.setItem(WKEY,JSON.stringify(W));}}catch(e){}}
 function careOf(p){return Math.round(p.careSum/p.careN);}
 function care(){return careOf(S);}
 W=loadWorld();
@@ -4013,7 +4031,7 @@ const VIEW=(()=>{
     if(k.dataset.tab){showTab(k.dataset.tab);$('menuSheet').hidden=false;return;}
     const a=k.dataset.act;if(a==='power')$('pwrKey').click();else if(a==='pet')$('petBtn').click();else if(a==='snd'){$('sndBtn').click();syncKeys();}else if(a==='desk')set('desk');else if(a==='back')goBack();else if(a==='office')OFFICE.open();});
   // BACK closes whatever is open on screen, using its own close/cancel button where it has one
-  const BACKORDER=['advHintSheet','trainSheet','advSheet','eggSheet','officeSheet','resetSheet','pickSheet','giftSheet','unlockSheet','feedSheet','qrSheet','challengeSheet','evoSheet','battleSheet','menuSheet'];
+  const BACKORDER=['syncSheet','advHintSheet','trainSheet','advSheet','eggSheet','officeSheet','resetSheet','pickSheet','giftSheet','unlockSheet','feedSheet','qrSheet','challengeSheet','evoSheet','battleSheet','menuSheet'];
   function goBack(){const id=BACKORDER.find(i=>$(i)&&!$(i).hidden);if(!id)return;if(id==='officeSheet'&&OFFICE.up())return;if(id==='menuSheet'&&curTab==='shop'&&shopPath){shopPath='';renderShop();return;}if(id==='menuSheet'&&curTab==='items'&&invPath){invPath='';renderItems();return;}const sh=$(id);
     const c=sh.querySelector('.x')||[...sh.querySelectorAll('button[id]')].find(b=>/(Close|No|Later|Keep|Cancel)$/.test(b.id));if(c)c.click();else sh.hidden=true;}
   const sheets=[...document.querySelectorAll('.sheet')];
@@ -4851,6 +4869,113 @@ function buzz(p){try{if(!SFX.muted&&navigator.vibrate)navigator.vibrate(p);}catc
   ['.b1','.b2'].forEach(s=>{const b=q(s);if(!b)return;let x=0;b.addEventListener('click',()=>{NOISE.roll();x=x?0:(Math.random()<.5?-1:1)*(30+Math.random()*40);b.style.translate=`${x}px 0`;b.style.rotate=`${x*4}deg`;});});
 })();
 
+// ---------- account and cloud save: sign in with an email address and your progress follows you between phone, PC and iPhone ----------
+const SYNC=(()=>{
+  const FB={key:'AIzaSyAB5D8oo93pbPFbpdOOC1dzHe5wgkGrn2A',project:'microbeast-2ae3c'};
+  // the test harness can point this at a stand-in server
+  const API=window.__mbFirebaseAPI||{auth:'https://identitytoolkit.googleapis.com/v1',token:'https://securetoken.googleapis.com/v1',store:'https://firestore.googleapis.com/v1'};
+  const AKEY='microbeast.acct';
+  // the claude.ai page can't reach outside servers, so sync only appears in the apps and the home-screen version
+  const OK=location.protocol==='file:'||/(^|\.)github\.io$|^localhost$|^127\.0\.0\.1$/.test(location.hostname)||!!window.__mbFirebaseAPI;
+  const DEVICE=window.mbDesktop?'Windows app':/iPhone|iPad|iPod/.test(navigator.userAgent)?'iPhone':/Android/.test(navigator.userAgent)?'Android phone':'web browser';
+  let acct=null,idTok=null,idExp=0,busy=false,lastErr='',state='idle';
+  // a fingerprint of the save that ignores things that change on their own (meters ticking down, timestamps),
+  // so "changed since the last sync" means something was actually done: coins, items, evolutions, battles...
+  const VOL=new Set(['m','last','careSum','careN','feedT','drinkT','restless','asleep','lastBattle']);
+  const fp=w=>{const t=JSON.stringify(w,(k,v)=>VOL.has(k)?undefined:v)||'';let h=5381;for(let i=0;i<t.length;i++)h=(h*33^t.charCodeAt(i))>>>0;return h.toString(36)+t.length;};
+  const isDirty=()=>!!acct&&acct.fp!==fp(W);
+  try{acct=JSON.parse(localStorage.getItem(AKEY)||'null');}catch(e){}
+  const keep=()=>{try{if(acct)localStorage.setItem(AKEY,JSON.stringify(acct));else localStorage.removeItem(AKEY);}catch(e){}};
+  const MSG={EMAIL_EXISTS:'There is already an account with that email. Try signing in instead.',EMAIL_NOT_FOUND:'No account with that email. Try creating one.',
+    INVALID_PASSWORD:'That password is not right.',INVALID_LOGIN_CREDENTIALS:'That email and password don\'t match an account.',INVALID_EMAIL:'That doesn\'t look like an email address.',
+    WEAK_PASSWORD:'Use a password with at least 6 characters.',MISSING_PASSWORD:'Type a password.',TOO_MANY_ATTEMPTS_TRY_LATER:'Too many tries. Wait a few minutes and try again.',
+    OPERATION_NOT_ALLOWED:'Email sign-in isn\'t switched on in Firebase yet.',USER_DISABLED:'This account has been switched off.',PERMISSION_DENIED:'The cloud save is locked. The Firestore rules need setting up.',
+    NO_DATABASE:'The cloud save database hasn\'t been created yet (Firestore).',OFFLINE:'Can\'t reach the internet right now. Your progress is still saved on this device.'};
+  const errOf=(code)=>{code=String(code||'').split(' ')[0].split(':')[0];return MSG[code]||'Something went wrong ('+(code||'unknown')+'). Try again.';};
+  async function call(url,opt){let r;try{r=await fetch(url,opt);}catch(e){throw new Error('OFFLINE');}
+    let j={};try{j=await r.json();}catch(e){}
+    if(!r.ok){const m=(j.error&&j.error.message)||'',st=(j.error&&j.error.status)||'';
+      // sign-in errors come as codes (EMAIL_EXISTS); save errors as a status (PERMISSION_DENIED) with a sentence
+      const code=/^[A-Z_]{4,}\b/.test(m)?m:r.status===404&&/does not exist/i.test(m)?'NO_DATABASE':(st||'HTTP_'+r.status);
+      const e=new Error(code);e.status=r.status;e.fs=st;throw e;}return j;}
+  async function authCall(op,body){return call(`${API.auth}/accounts:${op}?key=${FB.key}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});}
+  async function token(){
+    if(idTok&&Date.now()<idExp-60e3)return idTok;
+    const j=await call(`${API.token}/token?key=${FB.key}`,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'grant_type=refresh_token&refresh_token='+encodeURIComponent(acct.refresh)});
+    idTok=j.id_token;idExp=Date.now()+(+j.expires_in||3600)*1000;if(j.refresh_token){acct.refresh=j.refresh_token;keep();}return idTok;}
+  const docURL=()=>`${API.store}/projects/${FB.project}/databases/(default)/documents/saves/${acct.uid}`;
+  async function pull(){
+    let j;try{j=await call(docURL(),{headers:{Authorization:'Bearer '+await token()}});}catch(e){if(e.status===404&&e.message!=='NO_DATABASE')return null;throw e;}
+    const f=j.fields||{};return {data:f.data&&f.data.stringValue,t:+(f.t&&f.t.integerValue)||0,dev:(f.dev&&f.dev.stringValue)||'another device',rev:j.updateTime};}
+  // upload this device's progress; unless forced, only if nobody else has saved since we last synced
+  async function push(force){
+    save();const body={fields:{data:{stringValue:localStorage.getItem(WKEY)||JSON.stringify(W)},t:{integerValue:String(Date.now())},dev:{stringValue:DEVICE}}};
+    let q='';if(!force)q=acct.rev?'?currentDocument.updateTime='+encodeURIComponent(acct.rev):'?currentDocument.exists=false';
+    const j=await call(docURL()+q,{method:'PATCH',headers:{'Content-Type':'application/json',Authorization:'Bearer '+await token()},body:JSON.stringify(body),keepalive:true});
+    acct.rev=j.updateTime;acct.syncedAt=Date.now();acct.fp=fp(W);keep();}
+  const valid=d=>{try{const w=JSON.parse(d);return !!(w&&Array.isArray(w.pets)&&w.pets.length);}catch(e){return false;}};
+  // take the cloud copy: write it over this device's save and restart the game on it
+  function adopt(c,why){if(!valid(c.data))throw new Error('BAD_SAVE');window.__mbAdopting=true;
+    try{localStorage.setItem(WKEY,c.data);acct.rev=c.rev;acct.syncedAt=Date.now();acct.fp=fp(JSON.parse(c.data));keep();sessionStorage.setItem('microbeast.msg',why||`Loaded your progress from your ${c.dev}`);}catch(e){}
+    location.reload();}
+  const ago=t=>{const s=Math.max(0,(Date.now()-t)/1000|0);return s<60?'just now':s<3600?`${s/60|0} min ago`:s<86400?`${s/3600|0} hr ago`:`${s/86400|0} days ago`;};
+  const sum=w=>{try{w=typeof w==='string'?JSON.parse(w):w;return w.pets.map(p=>`${p.name} (${STAGES[p.stage]||'?'})`).join(', ')+` · ● ${w.coins|0}`;}catch(e){return '?';}};
+  // a brand-new game on this device has nothing worth keeping over a cloud save
+  const trivial=()=>W.pets.length===1&&W.pets[0].stage===0&&!(W.coins|0)&&!W.pets[0].wins&&!W.pets[0].losses;
+  async function run(f){if(busy)return;busy=true;state='busy';lastErr='';render();try{await f();state='ok';}catch(e){state='err';lastErr=e.message==='BAD_SAVE'?'The cloud save looks damaged, so it was left alone.':errOf(e.message);
+      if(/INVALID_REFRESH_TOKEN|TOKEN_EXPIRED|USER_NOT_FOUND|INVALID_ID_TOKEN/.test(e.message)){acct=null;keep();lastErr='You were signed out. Sign in again to keep syncing.';}}
+    busy=false;render();}
+  // check the cloud: newer progress from another device is loaded; if both changed, the player picks
+  async function check(first){const c=await pull();
+    if(!c){await push();return;}
+    if(c.rev===acct.rev){if(isDirty())await push();return;}
+    if(first&&trivial()){adopt(c);return;}
+    if(!first&&!isDirty()&&acct.rev){adopt(c);return;}
+    choose(c);}
+  function choose(c){const box=$('syncPick');box.innerHTML=`<button class="choice" type="button" data-p="cloud"><span class="sw" style="background:#4FA8F0"></span><span><strong>Use the cloud save</strong><span class="becomes">From your ${c.dev}, ${ago(c.t)}</span><span class="d">${sum(c.data)}</span></span></button>`+
+      `<button class="choice" type="button" data-p="here"><span class="sw" style="background:#8DFFA8"></span><span><strong>Keep this ${DEVICE}'s</strong><span class="becomes">Played here</span><span class="d">${sum(W)}</span></span></button>`;
+    box.querySelector('[data-p=cloud]').onclick=()=>{$('syncSheet').hidden=true;try{adopt(c,'Loaded your cloud save');}catch(e){toast('The cloud save looks damaged');}};
+    box.querySelector('[data-p=here]').onclick=()=>{$('syncSheet').hidden=true;run(async()=>{await push(true);toast('This device\'s progress is now your cloud save');});};
+    $('menuSheet').hidden=true;$('syncSheet').hidden=false;SFX.play('unlock');}
+  async function signIn(email,pw,create){
+    const j=await authCall(create?'signUp':'signInWithPassword',{email,password:pw,returnSecureToken:true});
+    acct={email:j.email||email,uid:j.localId,refresh:j.refreshToken,rev:null,syncedAt:0};idTok=j.idToken;idExp=Date.now()+(+j.expiresIn||3600)*1000;keep();
+    await check(true);toast(create?'Account created. Your progress is saved to the cloud':'Signed in. Your progress now syncs');}
+  // the Account part of Settings → System
+  function render(){const b=$('syncBox');if(!b)return;
+    // keep whatever has been typed when the box redraws (after an error, say)
+    const te=$('syncEmail'),tp=$('syncPw'),ve=te?te.value:'',vp=tp?tp.value:'',foc=document.activeElement&&document.activeElement.id;
+    if(!OK){b.innerHTML=`<span class="k">ACCOUNT & SYNC</span><p class="sub">Sign in from the Android app, the PC app or the home-screen version to sync your progress between devices.</p>`;return;}
+    const err=lastErr?`<p class="err">${lastErr}</p>`:'';
+    if(!acct){b.innerHTML=`<span class="k">ACCOUNT & SYNC</span><p class="sub">Sign in to keep the same progress on your phone, PC and iPhone.</p>
+      <input type="email" id="syncEmail" placeholder="Email address" autocomplete="email" spellcheck="false">
+      <input type="password" id="syncPw" placeholder="Password (6+ characters)" autocomplete="current-password">
+      ${err}<div class="btnrow"><button class="btn" id="syncIn" type="button" ${busy?'disabled':''}>Sign in</button><button class="btn alt" id="syncNew" type="button" ${busy?'disabled':''}>Create account</button></div>
+      <button class="linkbtn" id="syncForgot" type="button">Forgot password?</button>`;
+      const go=create=>{const e=$('syncEmail').value.trim(),p=$('syncPw').value;if(!e||!p){lastErr=!e?'Type your email address.':'Type a password.';render();return;}run(()=>signIn(e,p,create));};
+      $('syncEmail').value=ve;$('syncPw').value=vp;if(foc==='syncEmail'||foc==='syncPw')$(foc).focus();
+      $('syncIn').onclick=()=>go(false);$('syncNew').onclick=()=>go(true);$('syncPw').onkeydown=e=>{if(e.key==='Enter')go(false);};
+      $('syncForgot').onclick=()=>{const e=$('syncEmail').value.trim();if(!e){lastErr='Type your email address first, then press Forgot password.';render();return;}
+        run(async()=>{await authCall('sendOobCode',{requestType:'PASSWORD_RESET',email:e});toast('Password reset email sent');lastErr='';});};
+      return;}
+    const when=busy?'Syncing…':acct.syncedAt?'Last synced '+ago(acct.syncedAt):'Not synced yet';
+    b.innerHTML=`<span class="k">ACCOUNT & SYNC</span><div class="row"><span>${acct.email.replace(/[<>&"]/g,'')}</span><span class="sub">${when}</span></div>${err}
+      <div class="btnrow"><button class="btn" id="syncNow" type="button" ${busy?'disabled':''}>Sync now</button><button class="btn alt" id="syncOut" type="button" ${busy?'disabled':''}>Sign out</button></div>`;
+    $('syncNow').onclick=()=>run(async()=>{await check(false);if(!$('syncSheet').hidden)return;toast('Synced');});
+    $('syncOut').onclick=()=>{acct=null;idTok=null;keep();lastErr='';render();toast('Signed out. Your progress stays on this device');};}
+  if(OK){
+    // every 30 seconds: upload if something has changed here; every 2 minutes: look for newer progress from another device
+    let n=0;setInterval(()=>{if(!acct||busy||document.hidden||navigator.onLine===false||!$('syncSheet').hidden)return;n++;
+      if(isDirty())run(()=>push());else if(n%4===0)run(()=>check(false));},30e3);
+    document.addEventListener('visibilitychange',()=>{if(!acct)return;if(document.hidden){if(isDirty())push().catch(()=>{});}else run(()=>check(false));});
+    addEventListener('online',()=>{if(acct)run(()=>check(false));});}
+  // a conflict on upload means another device saved meanwhile: check again, which loads theirs or asks
+  const push0=push;push=async f=>{try{await push0(f);}catch(e){if(!f&&(e.status===409||e.fs==='FAILED_PRECONDITION'||e.fs==='ALREADY_EXISTS')){await check(false);return;}throw e;}};
+  function start(){render();try{const m=sessionStorage.getItem('microbeast.msg');if(m){sessionStorage.removeItem('microbeast.msg');setTimeout(()=>toast(m),1500);}}catch(e){}
+    if(OK&&acct)run(()=>check(false));}
+  return {start,render,get signedIn(){return !!acct;},get available(){return OK;}};
+})();
+
 // ---------- desktop companion: no room, just the monitor and keyboard floating over your other windows ----------
 const DTAPP=!!window.mbDesktop||/[?&]desktop=1/.test(location.search),WINDOWED=/[?&]mode=windowed/.test(location.search);
 const DESKTOP=DTAPP&&!WINDOWED;
@@ -4883,7 +5008,7 @@ if(DESKTOP){document.documentElement.classList.add('dtop');try{if(!localStorage.
   addEventListener('mouseleave',()=>{if(!sizing&&!pass){pass=true;D.passThrough(true);}});
 }
 const awayAtLoad=S.last?Date.now()-S.last:0, hm=(location.hash||'').match(/^#(fl[A-Za-z0-9_-]+)$/);
-tick();renderAll();requestAnimationFrame(frame);
+tick();renderAll();requestAnimationFrame(frame);SYNC.start();
 // what happens when the monitor first comes on: a new player picks a pet, a returning one may find a gift or a battle link
 window.__startup=()=>{
 if(firstRun) openSpecies(false); else if(!S.sp) openSpecies(true);
