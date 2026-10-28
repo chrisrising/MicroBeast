@@ -1240,7 +1240,6 @@ body:not(.v-kb) .kbsel{outline:none!important;box-shadow:none!important}
 .dtop .dtonly{display:flex!important}
 html.dtop,html.dtop body,.dtop .desk{background:transparent!important}
 .dtop .room,.dtop .wallgap,.dtop .surface::before,.dtop .surface::after,.dtop .desk::after,.dtop .clutter,.dtop .offdim,.dtop .viewnote,.dtop .tutarrow{display:none!important}
-.dtop .mk[data-act=desk],.dtop [data-nav=desk],.dtop #kbBtn{display:none!important}
 .dtop .monitor,.dtop .kbhead{-webkit-app-region:drag;cursor:grab}
 .dtop .monitor button,.dtop .crt,.dtop .kb .mk,.dtop .kb .tb,.dtop .kb .lcd,.dtop .bboard .bk{-webkit-app-region:no-drag}
 .dtop .rig{filter:drop-shadow(0 10px 14px rgba(0,0,0,.45))}
@@ -1328,6 +1327,20 @@ body:not(.v-kb) .crt>.sheet .box.vbox{height:100%!important;max-height:100%!impo
 .carwrap>.carousel>.choice .becomes,.carwrap>.carousel>.choice .d{font-size:min(clamp(12px,3.3cqw,17px),11cqh)!important}
 
 .crt>#menuSheet #itemsBox .vfill>.sub{display:none}
+
+/* desktop app, desk view: just the monitor, filling the window */
+.dtop body:not(.v-kb) .desk{justify-content:center!important;padding:0 12px!important}
+.dtop body:not(.v-kb) .surface,.dtop body:not(.v-kb) .wallscene{display:none!important}
+.dtop body:not(.v-kb) .rig{width:calc(100vw - 24px)!important;flex:none}
+
+/* desktop app resize grip */
+.dtgrip{display:none}
+.dtop .dtgrip{display:block;position:fixed;right:2px;bottom:2px;z-index:90;width:22px;height:22px;cursor:nwse-resize;-webkit-app-region:no-drag;opacity:.55;transition:opacity .2s;
+  background:linear-gradient(135deg,transparent 0 46%,#E8E0CC 46% 52%,transparent 52% 62%,#E8E0CC 62% 68%,transparent 68% 78%,#E8E0CC 78% 84%,transparent 84%);
+  filter:drop-shadow(0 1px 1px rgba(0,0,0,.7))}
+.dtop .dtgrip:hover,.dtop .dtgrip.on{opacity:1}
+
+.sp .spn{display:block;max-width:100%;overflow:hidden;white-space:nowrap;text-align:center}
 </style>
 
 <main class="desk" id="desk">
@@ -2888,7 +2901,7 @@ function openSpecies(mig,mode){
   $('nsSub').textContent=mig?'Pets now hatch as an animal. Pick one for your current pet. Its stage and elements stay the same.':'Pick an animal and give it a name. It evolves into a toddler in about 10 minutes, a teen 3 hours after that, and an adult a day later.';
   $('nameInput').value=mig?S.name:'';$('hatchBtn').textContent=mig?'Confirm':'Hatch';
   const g=$('speciesGrid');
-  g.innerHTML=Object.keys(SPECIES).map(k=>`<button class="sp" type="button" data-k="${k}" aria-pressed="${k===pickSp}"><canvas width="96" height="72" aria-hidden="true"></canvas>${SPECIES[k].n}</button>`).join('');
+  g.innerHTML=Object.keys(SPECIES).map(k=>`<button class="sp" type="button" data-k="${k}" aria-pressed="${k===pickSp}"><canvas width="96" height="72" aria-hidden="true"></canvas><span class="spn">${SPECIES[k].n}</span></button>`).join('');
   g.querySelectorAll('.sp').forEach(b=>b.onclick=()=>{pickSp=b.dataset.k;g.querySelectorAll('.sp').forEach(x=>x.setAttribute('aria-pressed',x===b));spInfo();});
   spInfo();$('nameSheet').hidden=false;
 }
@@ -4770,7 +4783,7 @@ $('trClose').onclick=()=>{$('trainSheet').hidden=true;showTab('stats');$('menuSh
 function buzz(p){try{if(!SFX.muted&&navigator.vibrate)navigator.vibrate(p);}catch(e){}}
 
 // ---------- no label ever spills off its key: shrink the words (just on that key) until they fit ----------
-(()=>{const SEL='.tb,.mk,.bscr b,.btn,.bkbtn,.oitem,.otile,.stile,.food,.ware,.pick,.item,.choice,[role=tab],.w95t,.w95start,.ofcrumb,#kbBtn,.brand,.model';
+(()=>{const SEL='.tb,.mk,.bscr b,.sp,.btn,.bkbtn,.oitem,.otile,.stile,.food,.ware,.pick,.item,.choice,[role=tab],.w95t,.w95start,.ofcrumb,#kbBtn,.brand,.model';
   const over=e=>e.scrollWidth>e.clientWidth+.5||e.scrollHeight>e.clientHeight+1.5&&getComputedStyle(e).overflowY!=='visible';
   function fit(b){if(!b.offsetParent||!b.clientWidth)return;const key=b.textContent+'|'+b.clientWidth+'|'+b.clientHeight;if(b._fit===key)return;
     const parts=[b,...b.querySelectorAll('*')].filter(e=>e.children.length===0||e===b||[...e.childNodes].some(n=>n.nodeType===3&&n.textContent.trim()));
@@ -4820,13 +4833,21 @@ function buzz(p){try{if(!SFX.muted&&navigator.vibrate)navigator.vibrate(p);}catc
 // ---------- desktop companion: no room, just the monitor and keyboard floating over your other windows ----------
 const DESKTOP=!!window.mbDesktop||/[?&]desktop=1/.test(location.search);
 if(DESKTOP){document.documentElement.classList.add('dtop');try{if(!localStorage.getItem('palwardens.tut'))localStorage.setItem('palwardens.tut','0');}catch(e){}
-  VIEW.set('kb');
   const D=window.mbDesktop||{quit(){},hide(){},passThrough(){}};
+  // open in whichever view was used last; the window reshapes to fit each view
+  VIEW.set(/[?&]view=desk/.test(location.search)?'desk':'kb');
+  addEventListener('viewchange',()=>{D.setView&&D.setView(VIEW.get());});
   $('dtQuit').onclick=()=>{save();D.quit();};$('dtHide').onclick=()=>D.hide();
-  // let clicks through the see-through parts, catch them over the monitor, keyboard and any pop-ups
-  let pass=true;const solid='.rig,.kbwrap .kb:not([hidden]),.bboard,.tutnote,.mug,.spill';
-  addEventListener('mousemove',e=>{const el=document.elementFromPoint(e.clientX,e.clientY),want=!(el&&el.closest(solid));if(want!==pass){pass=want;D.passThrough(want);}});
-  addEventListener('mouseleave',()=>{if(!pass){pass=true;D.passThrough(true);}});
+  // a grip in the bottom-right corner: drag it to make the whole program bigger or smaller
+  const grip=document.createElement('div');grip.className='dtgrip';grip.title='Drag to resize';grip.setAttribute('aria-hidden','true');document.body.appendChild(grip);
+  let sizing=false;
+  grip.addEventListener('pointerdown',e=>{e.preventDefault();sizing=true;grip.setPointerCapture(e.pointerId);grip.classList.add('on');D.passThrough(false);D.resizeStart&&D.resizeStart();});
+  const stop=()=>{if(!sizing)return;sizing=false;grip.classList.remove('on');D.resizeEnd&&D.resizeEnd();};
+  ['pointerup','pointercancel','lostpointercapture'].forEach(ev=>grip.addEventListener(ev,stop));addEventListener('blur',stop);
+  // let clicks through the see-through parts, catch them over the monitor, keyboard, the grip and any pop-ups
+  let pass=true;const solid='.rig,.kbwrap .kb:not([hidden]),.bboard,.tutnote,.mug,.spill,.dtgrip';
+  addEventListener('mousemove',e=>{if(sizing)return;const el=document.elementFromPoint(e.clientX,e.clientY),want=!(el&&el.closest(solid));if(want!==pass){pass=want;D.passThrough(want);}});
+  addEventListener('mouseleave',()=>{if(!sizing&&!pass){pass=true;D.passThrough(true);}});
 }
 const awayAtLoad=S.last?Date.now()-S.last:0, hm=(location.hash||'').match(/^#(fl[A-Za-z0-9_-]+)$/);
 tick();renderAll();requestAnimationFrame(frame);
