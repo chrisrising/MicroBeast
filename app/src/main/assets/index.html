@@ -1237,13 +1237,13 @@ body:not(.v-kb) .kbsel{outline:none!important;box-shadow:none!important}
 
 /* desktop companion mode */
 .dtonly{display:none!important}
-.dtop .dtonly{display:flex!important}
+.dtapp .dtonly{display:flex!important}
 html.dtop,html.dtop body,.dtop .desk{background:transparent!important}
 .dtop .room,.dtop .wallgap,.dtop .surface::before,.dtop .surface::after,.dtop .desk::after,.dtop .clutter,.dtop .offdim,.dtop .viewnote,.dtop .tutarrow{display:none!important}
 .dtop .monitor,.dtop .kbhead{-webkit-app-region:drag;cursor:grab}
 .dtop .monitor button,.dtop .crt,.dtop .kb .mk,.dtop .kb .tb,.dtop .kb .lcd,.dtop .bboard .bk{-webkit-app-region:no-drag}
-.dtop .rig{filter:drop-shadow(0 10px 14px rgba(0,0,0,.45))}
-.dtop .kb{filter:drop-shadow(0 8px 10px rgba(0,0,0,.4))}
+.dtop .rig{filter:none!important}
+.dtop .kb{filter:none!important}
 
 /* ===== every list menu works like the office site: one big option at a time, the next peeping up from below, scroll down ===== */
 .sheet .box.vbox{height:min(620px,100%)}
@@ -1341,6 +1341,26 @@ body:not(.v-kb) .crt>.sheet .box.vbox{height:100%!important;max-height:100%!impo
 .dtop .dtgrip:hover,.dtop .dtgrip.on{opacity:1}
 
 .sp .spn{display:block;max-width:100%;overflow:hidden;white-space:nowrap;text-align:center}
+
+/* desktop companion: a clean front panel with rounded corners, no 3D sides, back, stand or shadows */
+.dtop .mtop,.dtop .mhump,.dtop .mside,.dtop .stand,.dtop .rig::after,.dtop .postit,.dtop .sticker{display:none!important}
+.dtop .rig{padding-top:0!important}
+.dtop .monitor{border-radius:18px!important;box-shadow:inset 0 2px 0 rgba(255,255,255,.4),inset 0 -5px 0 rgba(0,0,0,.14)!important}
+.dtop .kb{box-shadow:inset 0 2px 0 rgba(255,255,255,.35),inset 0 -4px 0 rgba(0,0,0,.14)!important}
+.dtop .kbwrap::before,.dtop .kbwrap::after,.dtop .kb::before,.dtop .kb::after{box-shadow:none!important}
+.dtop body:not(.v-kb) .desk{justify-content:flex-start!important;padding:6px 12px!important}
+/* minimise and close */
+.dtctl{display:none}
+.dtop .dtctl{display:flex;gap:6px;position:fixed;top:6px;right:6px;z-index:95;opacity:0;pointer-events:none;transition:opacity .18s;-webkit-app-region:no-drag}
+.dtop.hov .dtctl{opacity:1;pointer-events:auto}
+.dtctl button{width:22px;height:22px;border-radius:50%;border:0;padding:0;display:grid;place-items:center;cursor:pointer;background:rgba(30,26,22,.78);box-shadow:0 0 0 1px rgba(255,255,255,.25)}
+.dtctl button i{display:block;position:relative;width:10px;height:10px}
+.dtctl .dtmin i::before{content:"";position:absolute;left:0;right:0;bottom:1px;height:2px;background:#F2ECDD;border-radius:1px}
+.dtctl .dtx i::before,.dtctl .dtx i::after{content:"";position:absolute;left:-1px;right:-1px;top:4px;height:2px;background:#F2ECDD;border-radius:1px;transform:rotate(45deg)}
+.dtctl .dtx i::after{transform:rotate(-45deg)}
+.dtctl .dtmin:hover{background:#4A4438}
+.dtctl .dtx:hover{background:#C8302A}
+.dtctl button:focus-visible{outline:2px solid var(--amber);outline-offset:1px}
 </style>
 
 <main class="desk" id="desk">
@@ -1603,6 +1623,7 @@ body:not(.v-kb) .crt>.sheet .box.vbox{height:100%!important;max-height:100%!impo
       <p class="sub">Once every pet is grown up, you can hatch another egg (up to 4 pets). Grown-ups look after themselves and wander in the distance. Use the ⇄ button on the monitor to switch between them.</p>
       <button class="btn test" id="testBtn" type="button" aria-pressed="false">Test mode: off</button>
       <p class="sub">Test mode is for building and testing: it gives 9999 coins and adds an "Evolve now" button. Turning it off puts your real coins back.</p>
+      <div class="btnrow dtonly"><button class="btn alt" id="dtMode" type="button">Switch to windowed</button></div>
       <div class="btnrow dtonly"><button class="btn alt" id="dtHide" type="button">Hide window</button><button class="btn warn" id="dtQuit" type="button">Close MicroBeast</button></div>
       <button class="btn warn" id="resetBtn" type="button">Start over</button>
     </div>
@@ -4831,13 +4852,22 @@ function buzz(p){try{if(!SFX.muted&&navigator.vibrate)navigator.vibrate(p);}catc
 })();
 
 // ---------- desktop companion: no room, just the monitor and keyboard floating over your other windows ----------
-const DESKTOP=!!window.mbDesktop||/[?&]desktop=1/.test(location.search);
+const DTAPP=!!window.mbDesktop||/[?&]desktop=1/.test(location.search),WINDOWED=/[?&]mode=windowed/.test(location.search);
+const DESKTOP=DTAPP&&!WINDOWED;
+if(DTAPP){document.documentElement.classList.add('dtapp');const D0=window.mbDesktop||{};const mb=$('dtMode');mb.textContent=WINDOWED?'Switch to floating PC':'Switch to windowed';
+  mb.onclick=()=>{save();D0.setMode&&D0.setMode(WINDOWED?'float':'windowed');};
+  $('dtQuit').onclick=()=>{save();D0.quit&&D0.quit();};$('dtHide').onclick=()=>D0.hide&&D0.hide();}
 if(DESKTOP){document.documentElement.classList.add('dtop');try{if(!localStorage.getItem('palwardens.tut'))localStorage.setItem('palwardens.tut','0');}catch(e){}
   const D=window.mbDesktop||{quit(){},hide(){},passThrough(){}};
   // open in whichever view was used last; the window reshapes to fit each view
   VIEW.set(/[?&]view=desk/.test(location.search)?'desk':'kb');
   addEventListener('viewchange',()=>{D.setView&&D.setView(VIEW.get());});
-  $('dtQuit').onclick=()=>{save();D.quit();};$('dtHide').onclick=()=>D.hide();
+  // a little minimise and close in the corner, shown while the pointer is over the app
+  const ctl=document.createElement('div');ctl.className='dtctl';ctl.innerHTML='<button type="button" class="dtmin" aria-label="Minimise MicroBeast"><i></i></button><button type="button" class="dtx" aria-label="Close MicroBeast"><i></i></button>';document.body.appendChild(ctl);
+  ctl.querySelector('.dtmin').onclick=()=>{D.minimize&&D.minimize();};ctl.querySelector('.dtx').onclick=()=>{save();D.quit();};
+  const placeCtl=()=>{const m=document.querySelector('.monitor').getBoundingClientRect();if(!m.width)return;ctl.style.top=Math.round(m.top+5)+'px';ctl.style.right=Math.round(innerWidth-m.right+5)+'px';};
+  D.onHover&&D.onHover(on=>{document.documentElement.classList.toggle('hov',!!on);if(on)placeCtl();});
+  addEventListener('resize',placeCtl);addEventListener('viewchange',()=>setTimeout(placeCtl,450));setTimeout(placeCtl,300);
   // a grip in the bottom-right corner: drag it to make the whole program bigger or smaller
   const grip=document.createElement('div');grip.className='dtgrip';grip.title='Drag to resize';grip.setAttribute('aria-hidden','true');document.body.appendChild(grip);
   let sizing=false;
@@ -4845,7 +4875,7 @@ if(DESKTOP){document.documentElement.classList.add('dtop');try{if(!localStorage.
   const stop=()=>{if(!sizing)return;sizing=false;grip.classList.remove('on');D.resizeEnd&&D.resizeEnd();};
   ['pointerup','pointercancel','lostpointercapture'].forEach(ev=>grip.addEventListener(ev,stop));addEventListener('blur',stop);
   // let clicks through the see-through parts, catch them over the monitor, keyboard, the grip and any pop-ups
-  let pass=true;const solid='.rig,.kbwrap .kb:not([hidden]),.bboard,.tutnote,.mug,.spill,.dtgrip';
+  let pass=true;const solid='.rig,.kbwrap .kb:not([hidden]),.bboard,.tutnote,.mug,.spill,.dtgrip,.dtctl';
   addEventListener('mousemove',e=>{if(sizing)return;const el=document.elementFromPoint(e.clientX,e.clientY),want=!(el&&el.closest(solid));if(want!==pass){pass=want;D.passThrough(want);}});
   addEventListener('mouseleave',()=>{if(!sizing&&!pass){pass=true;D.passThrough(true);}});
 }
