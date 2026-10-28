@@ -10,5 +10,6 @@ contextBridge.exposeInMainWorld('mbDesktop', {
   resizeEnd: () => ipcRenderer.send('mb:resizeEnd'),
   setMode: (mode) => ipcRenderer.send('mb:mode', mode),
   minimize: () => ipcRenderer.send('mb:min'),
+  fit: (h) => ipcRenderer.send('mb:fit', h),
   onHover: (cb) => ipcRenderer.on('mb:hover', (e, on) => cb(!!on)),
 });

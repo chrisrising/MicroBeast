@@ -4862,6 +4862,9 @@ if(DESKTOP){document.documentElement.classList.add('dtop');try{if(!localStorage.
   // open in whichever view was used last; the window reshapes to fit each view
   VIEW.set(/[?&]view=desk/.test(location.search)?'desk':'kb');
   addEventListener('viewchange',()=>{D.setView&&D.setView(VIEW.get());});
+  // desk view: the window is exactly as tall as the monitor, and follows it when it grows (a battle adds a row of keys)
+  {const rig=document.querySelector('.rig');let last=0;const fit=()=>{if(VIEW.get()!=='desk'||!D.fit)return;const h=Math.ceil(rig.getBoundingClientRect().bottom+6);if(Math.abs(h-last)<2)return;last=h;D.fit(h);};
+    new ResizeObserver(fit).observe(rig);addEventListener('viewchange',()=>{last=0;setTimeout(fit,450);});setTimeout(fit,400);}
   // a little minimise and close in the corner, shown while the pointer is over the app
   const ctl=document.createElement('div');ctl.className='dtctl';ctl.innerHTML='<button type="button" class="dtmin" aria-label="Minimise MicroBeast"><i></i></button><button type="button" class="dtx" aria-label="Close MicroBeast"><i></i></button>';document.body.appendChild(ctl);
   ctl.querySelector('.dtmin').onclick=()=>{D.minimize&&D.minimize();};ctl.querySelector('.dtx').onclick=()=>{save();D.quit();};

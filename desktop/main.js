@@ -20,6 +20,7 @@ let win, tray, st = loadState();
 if (typeof st.scale !== 'number') st.scale = SIZES[st.size] || 1;
 if (st.view !== 'desk') st.view = 'kb';
 if (st.mode !== 'windowed') st.mode = 'float';
+if (st.deskH >= 300 && st.deskH <= 1000) BASE.desk[1] = st.deskH;
 
 const dims = (view, scale) => BASE[view].map((n) => Math.round(n * scale));
 const workArea = (b) => screen.getDisplayMatching(b).workArea;
@@ -171,6 +172,14 @@ ipcMain.on('mb:pass', (e, on) => { if (win) win.setIgnoreMouseEvents(on, { forwa
 ipcMain.on('mb:size', (e, n) => setSize(n));
 ipcMain.on('mb:view', (e, v) => setView(v));
 ipcMain.on('mb:mode', (e, m) => setMode(m));
+// desk view: the game reports how tall the monitor is (it grows in battles) and the window follows
+ipcMain.on('mb:fit', (e, h) => {
+  if (!win || st.mode === 'windowed' || st.view !== 'desk' || sizing) return;
+  h = Math.round(Math.max(300, Math.min(1000, +h || 0)));
+  if (Math.abs(h - BASE.desk[1]) < 2) return;
+  BASE.desk[1] = h; st.deskH = h;
+  apply(st.scale, 'desk'); saveState(st);
+});
 ipcMain.on('mb:min', () => win && win.minimize());
 ipcMain.on('mb:resizeStart', resizeStart);
 ipcMain.on('mb:resizeEnd', resizeEnd);
