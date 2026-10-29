@@ -1,11 +1,50 @@
 // MicroBeast desktop companion. Two modes:
 //  - floating (default): a frameless, see-through PC that floats over your other windows
 //  - windowed: an ordinary window showing the full room, the same layout as the Android app
-const { app, BrowserWindow, Tray, Menu, ipcMain, screen, nativeImage } = require('electron');
+const { app, BrowserWindow, Tray, Menu, ipcMain, screen, nativeImage, shell } = require('electron');
 const path = require('path');
 const fs = require('fs');
 
 if (!app.requestSingleInstanceLock()) { app.quit(); }
+
+// The game itself lives on the website, so it updates itself like the phone version.
+// This window is only the shell: see-through floating PC, resizing, tray. If the site can't be
+// reached and nothing is cached yet, the copy bundled inside the .exe is used instead.
+const REMOTE = process.env.MB_REMOTE || 'https://chrisrising.github.io/MicroBeast/';
+const REMOTE_ORIGIN = new URL(REMOTE).origin;
+function loadGame(w, query) {
+  const qs = new URLSearchParams(query).toString();
+  let fellBack = false;
+  w.webContents.on('did-fail-load', (e, code, desc, url, isMain) => {
+    if (!isMain || fellBack || code === -3) return;   // -3 = a load we replaced ourselves
+    fellBack = true;
+    w.loadFile(path.join(__dirname, 'app', 'index.html'), { query });
+  });
+  w.loadURL(REMOTE + '?' + qs);
+  // links to anywhere else open in the normal browser, never inside the game window
+  w.webContents.setWindowOpenHandler(({ url }) => { shell.openExternal(url); return { action: 'deny' }; });
+  w.webContents.on('will-navigate', (e, url) => {
+    let o = ''; try { o = new URL(url).origin; } catch (x) {}
+    if (o !== REMOTE_ORIGIN && !url.startsWith('file:')) { e.preventDefault(); shell.openExternal(url); }
+  });
+}
+
+// One-off: earlier versions kept the save inside the .exe's own storage. Read it so the
+// website version can start with it (the preload hands it over before the game loads).
+let oldSave = null;
+async function readOldSave() {
+  if (st.migrated) return;
+  const h = new BrowserWindow({ show: false, webPreferences: { contextIsolation: true } });
+  try {
+    await h.loadFile(path.join(__dirname, 'migrate.html'));
+    const dump = await h.webContents.executeJavaScript('JSON.stringify(Object.fromEntries(Object.keys(localStorage).map(k=>[k,localStorage.getItem(k)])))');
+    const o = JSON.parse(dump || '{}');
+    if (o['fuselings.world']) oldSave = o;
+  } catch (e) {}
+  h.destroy();
+}
+ipcMain.on('mb:oldsave', (e) => { e.returnValue = oldSave; });
+ipcMain.on('mb:migrated', () => { oldSave = null; st.migrated = true; saveState(st); });
 
 // The game is laid out at one fixed size per view and the whole thing is scaled up or down,
 // so text and buttons always stay in proportion to the window.
@@ -46,7 +85,7 @@ function create() {
   });
   win.setBounds(onScreen(win.getBounds()));
   win.setAlwaysOnTop(st.onTop !== false, 'floating');
-  win.loadFile(path.join(__dirname, 'app', 'index.html'), { query: { desktop: '1', view: st.view } });
+  loadGame(win, { desktop: '1', view: st.view });
   win.webContents.on('did-finish-load', zoom);
   // Ctrl+scroll and Ctrl+plus/minus would zoom the page without resizing the window, so keep the zoom tied to the window
   win.webContents.on('zoom-changed', () => setTimeout(zoom, 0));
@@ -71,7 +110,7 @@ function createWindowed() {
   });
   win.setMenu(null);
   win.setBounds(onScreen(win.getBounds()));
-  win.loadFile(path.join(__dirname, 'app', 'index.html'), { query: { desktop: '1', mode: 'windowed' } });
+  loadGame(win, { desktop: '1', mode: 'windowed' });
   win.webContents.on('did-finish-load', zoom);
   win.webContents.on('zoom-changed', () => setTimeout(zoom, 0));
   const remember = () => { if (!win || win.isMinimized() || win.isMaximized()) return; const b = win.getBounds(); st.wx = b.x; st.wy = b.y; st.ww = b.width; st.wh = b.height; saveState(st); };
@@ -185,5 +224,7 @@ ipcMain.on('mb:resizeStart', resizeStart);
 ipcMain.on('mb:resizeEnd', resizeEnd);
 
 app.on('second-instance', () => { if (win) { if (win.isMinimized()) win.restore(); win.show(); win.focus(); } });
-app.whenReady().then(() => { create(); buildTray(); });
-app.on('window-all-closed', () => app.quit());
+app.whenReady().then(async () => { await readOldSave(); create(); buildTray(); started = true; });
+// (ignored while starting up, when the only window is the hidden one reading the old save)
+let started = false;
+app.on('window-all-closed', () => { if (started) app.quit(); });

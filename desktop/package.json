@@ -1,7 +1,7 @@
 {
   "name": "microbeast",
   "productName": "MicroBeast",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "MicroBeast desktop companion",
   "main": "main.js",
   "author": "Chris Bloor",
@@ -11,7 +11,7 @@
   "build": {
     "appId": "com.microbeast.desktop",
     "productName": "MicroBeast",
-    "files": ["main.js", "preload.js", "icon.png", "tray.png", "app/**"],
+    "files": ["main.js", "preload.js", "migrate.html", "icon.png", "tray.png", "app/**"],
     "win": { "target": "portable", "icon": "icon.png" },
     "portable": { "artifactName": "MicroBeast.exe" }
   }

@@ -1,5 +1,13 @@
 // A tiny bridge so the game can talk to the desktop window: quit, click-through, view, size and moving it about.
 const { contextBridge, ipcRenderer } = require('electron');
+// First run on the website version: bring the save across from the old built-in copy (only if this has no save yet).
+try {
+  if (location.protocol === 'https:' || location.protocol === 'http:') {
+    const old = ipcRenderer.sendSync('mb:oldsave');
+    if (old && !localStorage.getItem('fuselings.world')) for (const k in old) localStorage.setItem(k, old[k]);
+    if (old) ipcRenderer.send('mb:migrated');
+  }
+} catch (e) {}
 contextBridge.exposeInMainWorld('mbDesktop', {
   quit: () => ipcRenderer.send('mb:quit'),
   hide: () => ipcRenderer.send('mb:hide'),
