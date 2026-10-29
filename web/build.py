@@ -5,7 +5,9 @@ site = root / 'site'
 shutil.rmtree(site, ignore_errors=True)
 shutil.copytree(root / 'web', site, ignore=shutil.ignore_patterns('build.py'))
 html = (root / 'app/src/main/assets/index.html').read_text(encoding='utf-8')
-head = '''<meta name="mobile-web-app-capable" content="yes">
+import time
+head = '''<script>window.MB_BUILD='''+str(int(time.time()*1000))+''';</script>
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="MicroBeast">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">

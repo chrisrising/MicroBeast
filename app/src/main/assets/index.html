@@ -1700,6 +1700,7 @@ body:not(.v-kb) .crt>.sheet .box.vbox{height:100%!important;max-height:100%!impo
     <div class="tab" id="tab-system" role="tabpanel" hidden>
       <div class="isec syncbox" id="syncBox"></div>
       <p><span class="k">MICROBEAST</span> v1.4 · CRT-14</p>
+      <p class="sub" id="buildInfo"></p>
       <p class="sub">Pets evolve from baby to toddler in about 10 minutes, toddler to teen in 3 hours, and teen to adult in a day. Your pet keeps ageing while the screen is off.</p>
       <p class="sub">Each evolution offers 3 elements. Two elements fuse into a new type, and the adult picks a material that sets rarity, attack and defence.</p>
       <button class="btn" id="eggBtn" type="button" hidden>Hatch a new egg</button>
@@ -2924,7 +2925,11 @@ function renderHead(){
 function fitHud(){const a=$('petName'),b=$('petStage');if(!a||!b)return;b.style.removeProperty('font-size');if(!b.offsetParent)return;
   let fs=parseFloat(getComputedStyle(b).fontSize);const min=fs*.68;for(let i=0;i<12&&Math.abs(b.getBoundingClientRect().top-a.getBoundingClientRect().top)>2&&fs>min;i++){fs*=.95;b.style.fontSize=fs.toFixed(2)+'px';}}
 addEventListener('resize',()=>requestAnimationFrame(fitHud));addEventListener('viewchange',()=>setTimeout(fitHud,450));addEventListener('poweron',()=>setTimeout(fitHud,50));
-function renderAll(){renderHead();renderMeters();renderEvo();renderStats();renderItems();renderShop();$('eggBtn').hidden=!canHatch();$('petBtn').hidden=W.pets.length<2;}
+function buildInfo(){const b=$('buildInfo');if(!b)return;const when=window.MB_BUILD?new Date(window.MB_BUILD):null;
+  const fmt=when?`${when.getDate()} ${['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][when.getMonth()]}, ${String(when.getHours()).padStart(2,'0')}:${String(when.getMinutes()).padStart(2,'0')}`:'';
+  const live=/^https?:$/.test(location.protocol)&&!/claude/.test(location.hostname);
+  b.textContent=live?`Game version: ${fmt||'latest'} · updates itself`:location.protocol==='file:'&&window.mbDesktop?'Built-in copy: this PC app doesn\'t update itself. Download the latest MicroBeast.exe from GitHub once to fix that.':'';}
+function renderAll(){buildInfo();renderHead();renderMeters();renderEvo();renderStats();renderItems();renderShop();$('eggBtn').hidden=!canHatch();$('petBtn').hidden=W.pets.length<2;}
 
 // actions
 function act(type){
@@ -4577,7 +4582,7 @@ const BOOK=(()=>{
     else if(innerWidth-rig.right>=w+30){x=rig.right+12;y=rig.bottom-h*.92;}else{x=rig.right-w-rig.width*.05;y=rig.bottom-h*.3;}
     el.style.left=Math.round(x-sr.left)+'px';el.style.top=Math.round(y-sr.top)+'px';}
   let lastC='#A8302A';
-  function place(c){el.hidden=!c;if(!c){return;}lastC=c;el.style.setProperty('--bk',c);requestAnimationFrame(()=>requestAnimationFrame(pos));}
+  function place(c,keep){if(keep)lastC=keep;el.hidden=!c;if(!c){return;}lastC=c;el.style.setProperty('--bk',c);requestAnimationFrame(()=>requestAnimationFrame(pos));}
   addEventListener('resize',()=>requestAnimationFrame(pos));addEventListener('viewchange',()=>setTimeout(pos,450));
   // ---- opening it: it comes up off the desk to the front, the cover swings open, one boss per page ----
   let V=null;
@@ -4744,7 +4749,7 @@ document.documentElement.style.setProperty('--circuit',CIRCUIT);
     if(dk.dataset.wall!==wl){dk.dataset.wall=wl;$('wallScene').innerHTML=WALLS[wl].win||wl==='office'?wallScene(wl):'';}
     wallTop();
     tidy();
-    BOOK.place((BOOKS[st.book]||{}).c||null);
+    if(st.book)st.bookLast=st.book;BOOK.place((BOOKS[st.book]||{}).c||null,(BOOKS[st.book||st.bookLast]||{}).c);
   }
   // how much wall shows above the monitor, so a window or the office behind sits where you can see it
   function wallTop(){const dk=document.querySelector('.desk'),r=document.querySelector('.rig').getBoundingClientRect(),d=dk.getBoundingClientRect(),sf=$('surface').getBoundingClientRect(),top=Math.max(60,r.top-d.top+34),floor=sf.top-d.top,wide=d.width>r.width*1.7;

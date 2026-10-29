@@ -1,6 +1,6 @@
 // MicroBeast offline support: keep a copy of the game so it opens with no signal.
 // The game page is fetched fresh when online (so updates arrive) and falls back to the saved copy offline.
-const CACHE = 'microbeast-v1';
+const CACHE = 'microbeast-v2';
 const CORE = ['./', './index.html', './qrcode.js', './manifest.webmanifest', './icons/icon-192.png', './icons/apple-touch-icon.png'];
 self.addEventListener('install', (e) => { e.waitUntil(caches.open(CACHE).then((c) => c.addAll(CORE)).then(() => self.skipWaiting())); });
 self.addEventListener('activate', (e) => {
@@ -14,7 +14,8 @@ self.addEventListener('fetch', (e) => {
   const isFont = url.hostname === 'fonts.googleapis.com' || url.hostname === 'fonts.gstatic.com';
   if (isPage) {
     // network first, so a new version shows up straight away; saved copy when offline
-    e.respondWith(fetch(req).then((res) => { const copy = res.clone(); caches.open(CACHE).then((c) => c.put('./index.html', copy)); return res; })
+    // always ask the server (skipping the browser's 10-minute cache) so a new version shows on the next open
+    e.respondWith(fetch(req.url, { cache: 'no-cache', credentials: 'same-origin' }).then((res) => { const copy = res.clone(); caches.open(CACHE).then((c) => c.put('./index.html', copy)); return res; })
       .catch(() => caches.match('./index.html')));
   } else if (url.origin === location.origin || isFont) {
     // everything else rarely changes: use the saved copy, fetch and keep it the first time
