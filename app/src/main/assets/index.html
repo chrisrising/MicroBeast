@@ -3323,7 +3323,7 @@ $('bFlee').onclick=async()=>{if(!B||B.busy||B.over)return;
 
 // ---------- boss scenes: a close-up as the boss arrives, and again when it's beaten ----------
 // layers (back to front): its elements raging behind it, "DEFEATED", the boss close-up, a frame made of its material, its name
-function bossMat(name){let h=7;for(const ch of name)h=(h*31+ch.charCodeAt(0))>>>0;const mats=Object.keys(MAT);return mats[(h>>>13)%mats.length];}
+function bossMat(name){if(BOSSES[name])return BOSSES[name].mat;const mats=Object.keys(MAT);return mats[(bossHash(name)>>>13)%mats.length];}
 const BOSSFX=(()=>{
   let cur=null;
   const W_=160,H_=120;
@@ -4901,10 +4901,35 @@ function placeMug(){const m=$('mugSvg');if(!m)return;const P=['width','left','to
 addEventListener('resize',()=>setTimeout(placeMug,50));addEventListener('viewchange',()=>{setTimeout(placeMug,900);setTimeout(placeMug,1600);});
 // ---------- Adventure: a branching path of battles, finds, risks and rest spots, with a boss every 5 stages ----------
 // bosses: each one always looks the same (its species and elements come from its name), and every win goes in the Book of Victories
-const BOSS_NAMES=['Grimtooth','Duskfang','Ironjaw','Stormhide','Ashmaw'];
-function bossLook(name,stage){let h=7;for(const ch of name)h=(h*31+ch.charCodeAt(0))>>>0;
-  const sps=Object.keys(SPECIES),e1=ORDER[(h>>>4)%ORDER.length],e2s=ORDER.filter(e=>e!==e1),e2=e2s[(h>>>9)%e2s.length],mats=Object.keys(MAT);
+// each boss is named for the material it's forged from, which also frames its close-up
+const BOSSES={
+  Oakskull:{mat:'wood',sp:'bear',el:['plant','earth']},
+  Slatejaw:{mat:'stone',sp:'turtle',el:['earth','water']},
+  Marrowgrin:{mat:'bone',sp:'wolf',el:['shadow','poison']},
+  Irontail:{mat:'iron',sp:'lizard',el:['lightning','earth']},
+  Coppermaw:{mat:'amber',sp:'capybara',el:['fire','earth']},
+  Steelhorn:{mat:'steel',sp:'dino',el:['wind','lightning']},
+  Glassclaw:{mat:'glass',sp:'eagle',el:['light','ice']},
+  Obsidius:{mat:'obsidian',sp:'crow',el:['shadow','fire']},
+  Goldfang:{mat:'gold',sp:'serval',el:['light','fire']},
+  Diamondback:{mat:'diamond',sp:'snake',el:['ice','light']},
+};
+const BOSS_NAMES=Object.keys(BOSSES);
+const OLD_BOSSES=['Grimtooth','Duskfang','Ironjaw','Stormhide','Ashmaw'];
+function bossHash(name){let h=7;for(const ch of name)h=(h*31+ch.charCodeAt(0))>>>0;return h;}
+function bossLook(name,stage){const B_=BOSSES[name];
+  if(B_)return {sp:B_.sp,el:B_.el.slice(0,Math.min(2,stage)),mat:stage===3?B_.mat:null};
+  const h=bossHash(name),sps=Object.keys(SPECIES),e1=ORDER[(h>>>4)%ORDER.length],e2s=ORDER.filter(e=>e!==e1),e2=e2s[(h>>>9)%e2s.length],mats=Object.keys(MAT);
   return {sp:sps[h%sps.length],el:[e1,e2].slice(0,Math.min(2,stage)),mat:stage===3?mats[(h>>>13)%mats.length]:null};}
+// bosses beaten under the old names move to the new boss of the same material, keeping their wins
+function migrateBosses(w){const b=w&&w.bosses;if(!b)return;
+  for(const old of OLD_BOSSES){const r=b[old];if(!r)continue;delete b[old];
+    const m=(r.look&&r.look.mat)||Object.keys(MAT)[(bossHash(old)>>>13)%Object.keys(MAT).length];
+    const nn=BOSS_NAMES.find(n=>BOSSES[n].mat===m)||BOSS_NAMES[0],st=(r.look&&r.look.stage)||2;
+    const cur=b[nn];b[nn]={n:(cur?cur.n:0)+(r.n|0),t:cur?Math.min(cur.t,r.t):r.t,look:{...bossLook(nn,st),stage:st}};}
+  return true;}
+// (runs here, once the boss list exists; the save itself was loaded earlier)
+if(W&&W.bosses&&OLD_BOSSES.some(n=>W.bosses[n])){migrateBosses(W);save();}
 function recordBoss(f){W.bosses=W.bosses||{};const b=W.bosses[f.name]||{n:0,t:Date.now()};b.n++;b.look={sp:f.sp,stage:f.stage,el:(f.el||[]).slice(),mat:f.mat||null};W.bosses[f.name]=b;save();}
 const ADV=(()=>{
   let A=null;
