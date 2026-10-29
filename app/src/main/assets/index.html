@@ -4906,7 +4906,7 @@ const SYNC=(()=>{
   const isDirty=()=>!!acct&&acct.fp!==fp(W);
   try{acct=JSON.parse(localStorage.getItem(AKEY)||'null');}catch(e){}
   const keep=()=>{try{if(acct)localStorage.setItem(AKEY,JSON.stringify(acct));else localStorage.removeItem(AKEY);}catch(e){}};
-  const MSG={EMAIL_EXISTS:'There is already an account with that email. Try signing in instead.',EMAIL_NOT_FOUND:'No account with that email. Try creating one.',
+  const MSG={EMAIL_EXISTS:'There is already an account with that email. Press "I have an account" to sign in.',EMAIL_NOT_FOUND:'No account with that email. Press "Create account" to make one.',
     INVALID_PASSWORD:'That password is not right.',INVALID_LOGIN_CREDENTIALS:'That email and password don\'t match an account.',INVALID_EMAIL:'That doesn\'t look like an email address.',
     WEAK_PASSWORD:'Use a password with at least 6 characters.',MISSING_PASSWORD:'Type a password.',TOO_MANY_ATTEMPTS_TRY_LATER:'Too many tries. Wait a few minutes and try again.',
     OPERATION_NOT_ALLOWED:'Email sign-in isn\'t switched on in Firebase yet.',USER_DISABLED:'This account has been switched off.',PERMISSION_DENIED:'The cloud save is locked. The Firestore rules need setting up.',
@@ -4960,26 +4960,36 @@ const SYNC=(()=>{
   async function signIn(email,pw,create){
     const j=await authCall(create?'signUp':'signInWithPassword',{email,password:pw,returnSecureToken:true});
     acct={email:j.email||email,uid:j.localId,refresh:j.refreshToken,rev:null,syncedAt:0};idTok=j.idToken;idExp=Date.now()+(+j.expiresIn||3600)*1000;keep();
-    $('signSheet').hidden=true;await check(true);toast(create?'Account created. Your progress is saved to the cloud':'Signed in. Your progress now syncs');}
+    mode='in';$('signSheet').hidden=true;await check(true);toast(create?'Account created. Your progress is saved to the cloud':'Signed in. Your progress now syncs');}
   // the sign-in form: drawn in Settings → System and in the pop-up at the start
   const LKEY='microbeast.lastEmail',PKEY='microbeast.noPrompt';
+  let mode='in';  // 'in' = sign in, 'new' = create an account (asks for the password twice)
   const esc=t=>String(t).replace(/[<>&"]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]));
   function form(b,head){
     // keep whatever has been typed when the box redraws (after an error, say)
     const q=sel=>b.querySelector(sel),te=q('[data-f=email]'),tp=q('[data-f=pw]'),foc=document.activeElement&&b.contains(document.activeElement)?document.activeElement.dataset.f:null;
-    let ve=te?te.value:'',vp=tp?tp.value:'';if(!te){try{ve=localStorage.getItem(LKEY)||'';}catch(e){}}
+    const tc=q('[data-f=pw2]');let ve=te?te.value:'',vp=tp?tp.value:'',vc=tc?tc.value:'';if(!te){try{ve=localStorage.getItem(LKEY)||'';}catch(e){}}
+    const nw=mode==='new';
     const err=lastErr?`<p class="err">${lastErr}</p>`:'';
     b.innerHTML=`${head}
       <input type="email" data-f="email" id="${b.id}Email" placeholder="Email address" autocomplete="username" spellcheck="false" autocapitalize="off">
-      <input type="password" data-f="pw" id="${b.id}Pw" placeholder="Password (6+ characters)" autocomplete="current-password">
-      ${err}<div class="btnrow"><button class="btn" data-f="in" type="button" ${busy?'disabled':''}>${busy?'Signing in…':'Sign in'}</button><button class="btn alt" data-f="new" type="button" ${busy?'disabled':''}>Create account</button></div>
-      <button class="linkbtn" data-f="forgot" data-key="Forgot" type="button">Forgot password?</button>`;
-    q('[data-f=email]').value=ve;q('[data-f=pw]').value=vp;if(foc==='email'||foc==='pw')q(`[data-f=${foc}]`).focus();
+      <input type="password" data-f="pw" id="${b.id}Pw" placeholder="${nw?'Choose a password (6+ characters)':'Password'}" data-key="Password" autocomplete="${nw?'new-password':'current-password'}">
+      ${nw?`<input type="password" data-f="pw2" id="${b.id}Pw2" placeholder="Type the password again" data-key="Confirm" autocomplete="new-password">`:''}
+      ${err}<div class="btnrow">${nw
+        ?`<button class="btn" data-f="new" type="button" ${busy?'disabled':''}>${busy?'Creating…':'Create account'}</button><button class="btn alt" data-f="mode" data-key="Sign in" type="button" ${busy?'disabled':''}>I have an account</button>`
+        :`<button class="btn" data-f="in" type="button" ${busy?'disabled':''}>${busy?'Signing in…':'Sign in'}</button><button class="btn alt" data-f="mode" data-key="New" type="button" ${busy?'disabled':''}>Create account</button>`}</div>
+      ${nw?'':'<button class="linkbtn" data-f="forgot" data-key="Forgot" type="button">Forgot password?</button>'}`;
+    q('[data-f=email]').value=ve;q('[data-f=pw]').value=vp;if(nw)q('[data-f=pw2]').value=vc;if(foc&&q(`[data-f=${foc}]`)&&/email|pw/.test(foc))q(`[data-f=${foc}]`).focus();
     const go=create=>{const e=q('[data-f=email]').value.trim(),p=q('[data-f=pw]').value;if(!e||!p){lastErr=!e?'Type your email address.':'Type a password.';render();return;}
+      if(create){const p2=q('[data-f=pw2]').value;if(!p2){lastErr='Type the password again to confirm it.';render();return;}
+        if(p2!==p){lastErr='The two passwords don\'t match. Try typing them again.';q('[data-f=pw2]').value='';render();return;}}
       try{localStorage.setItem(LKEY,e);}catch(x){}run(()=>signIn(e,p,create));};
-    q('[data-f=in]').onclick=()=>go(false);q('[data-f=new]').onclick=()=>go(true);q('[data-f=pw]').onkeydown=e=>{if(e.key==='Enter')go(false);};
+    // switching between "sign in" and "create account" keeps the email, clears the passwords
+    q('[data-f=mode]').onclick=()=>{mode=nw?'in':'new';lastErr='';q('[data-f=pw]').value='';render();const n=q(nw?'[data-f=pw]':'[data-f=email]');n&&n.focus();};
+    if(nw){q('[data-f=new]').onclick=()=>go(true);q('[data-f=pw2]').onkeydown=e=>{if(e.key==='Enter')go(true);};}
+    else{q('[data-f=in]').onclick=()=>go(false);q('[data-f=pw]').onkeydown=e=>{if(e.key==='Enter')go(false);};
     q('[data-f=forgot]').onclick=()=>{const e=q('[data-f=email]').value.trim();if(!e){lastErr='Type your email address first, then press Forgot password.';render();return;}
-      run(async()=>{await authCall('sendOobCode',{requestType:'PASSWORD_RESET',email:e});toast('Password reset email sent');lastErr='Password reset email sent. Check your inbox.';});};
+      run(async()=>{await authCall('sendOobCode',{requestType:'PASSWORD_RESET',email:e});toast('Password reset email sent');lastErr='Password reset email sent. Check your inbox.';});};}
   }
   function render(){
     const b=$('syncBox');
@@ -4991,7 +5001,7 @@ const SYNC=(()=>{
           <div class="btnrow"><button class="btn" id="syncNow" type="button" ${busy?'disabled':''}>Sync now</button><button class="btn alt" id="syncOut" type="button" ${busy?'disabled':''}>Sign out</button></div>`;
         $('syncNow').onclick=()=>run(async()=>{await check(false);if(!$('syncSheet').hidden)return;toast('Synced');});
         $('syncOut').onclick=()=>{acct=null;idTok=null;keep();lastErr='';render();toast('Signed out. Your progress stays on this device');};}}
-    const sb=$('signBox');if(sb&&!$('signSheet').hidden){if(acct)$('signSheet').hidden=true;else form(sb,'');}
+    const sb=$('signBox');if(sb&&!$('signSheet').hidden){if(acct)$('signSheet').hidden=true;else{$('sgTitle').textContent=mode==='new'?'Create your account':'Sign in to MicroBeast';form(sb,'');}}
   }
   // the pop-up when the game starts and nobody is signed in on this device
   function prompt(){if(!OK||acct)return;try{if(localStorage.getItem(PKEY))return;}catch(e){}
