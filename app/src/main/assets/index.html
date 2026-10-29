@@ -1428,6 +1428,32 @@ body:not(.v-kb) .crt>.sheet .box.vbox{height:100%!important;max-height:100%!impo
   linear-gradient(#F2E6CC,#F2E6CC) 50% 82%/18% 34% no-repeat,
   radial-gradient(ellipse 50% 34% at 50% 44%,#FF6A3A 0 70%,#B8302A 71% 100%,transparent 101%);filter:drop-shadow(0 0 4px rgba(255,170,60,.8))}
 .phoenixflash{position:absolute;inset:0;z-index:8;pointer-events:none;background:radial-gradient(circle at 30% 70%,rgba(255,190,80,.5),rgba(255,90,40,.15) 45%,transparent 70%);animation:koflash .85s ease-out forwards}
+
+.crt.noscan::before{background:none!important;animation:none!important}
+.crt.noscan .roll{display:none}
+
+/* friends and live battles */
+.frbody{display:flex;flex-direction:column;gap:8px;min-height:0}
+.frcode{font-size:1.15em;letter-spacing:.08em}
+.frmini{padding:2px 10px!important;font-size:16px!important}
+.frrow{display:flex;gap:6px}.frrow input{flex:1;min-width:0}
+.frreq{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;border:1px dashed var(--ph-dim);padding:5px 8px}
+.ltimer{position:absolute;left:50%;top:22%;transform:translateX(-50%);z-index:5;pointer-events:none;font-family:var(--term-font);font-size:clamp(14px,3.8cqw,20px);color:#F0FFF3;
+  background:rgba(2,8,4,.72);padding:2px 10px;box-shadow:0 0 0 1px rgba(141,255,168,.35);white-space:nowrap}
+.ltimer:empty{display:none}.ltimer.low{color:#FFB347}
+.lwdots{display:flex;gap:6px;justify-content:center}.lwdots i{width:8px;height:8px;background:var(--ph);animation:blink 1s steps(1) infinite}.lwdots i:nth-child(2){animation-delay:.33s}.lwdots i:nth-child(3){animation-delay:.66s}
+.crt>#friendsSheet .frbody input{padding:3px 8px;font-size:16px}
+
+#friendsSheet .frbody{flex:1 1 auto}
+#friendsSheet .box{height:100%!important;max-height:100%!important}
+
+.crt>#friendsSheet .box{gap:4px;padding-top:6px;padding-bottom:6px}
+.crt>#friendsSheet .frbody{gap:4px}
+.crt>#friendsSheet .frbody .row{font-size:15px}
+.crt>#friendsSheet .frmini{padding:0 8px!important;font-size:14px!important}
+.crt>#friendsSheet .frbody input{padding:1px 6px;font-size:15px}
+#friendsSheet .carwrap>.carousel>*{min-height:80cqh!important}
+#friendsSheet .carwrap>.carousel::after{flex-basis:20%}
 </style>
 
 <main class="desk" id="desk">
@@ -1478,6 +1504,7 @@ body:not(.v-kb) .crt>.sheet .box.vbox{height:100%!important;max-height:100%!impo
             <div class="bh me"><span class="nm" id="bMeName"></span><div class="hp" id="bMeHpBar"><b></b></div><span class="t" id="bMeHp"></span></div>
             <div class="bh foe"><span class="nm" id="bFoeName"></span><div class="hp" id="bFoeHpBar"><b></b></div><span class="t" id="bFoeHp"></span></div>
             <div class="log" id="bLog" aria-live="polite"></div>
+            <div class="ltimer" id="lTimer" hidden></div>
           </div>
         </div>
       </div>
@@ -1615,6 +1642,20 @@ body:not(.v-kb) .crt>.sheet .box.vbox{height:100%!important;max-height:100%!impo
 </div>
 
 <!-- fully grown: offer a new egg -->
+<div class="sheet" id="friendsSheet" hidden>
+  <div class="box tall" role="dialog" aria-labelledby="frTitle">
+    <div class="tbar"><h3 id="frTitle">Friends</h3><button class="x" id="frClose" type="button" aria-label="Close">[X]</button></div>
+    <div id="frBody" class="frbody"></div>
+  </div>
+</div>
+<div class="sheet" id="liveWait" hidden>
+  <div class="box" role="dialog" aria-labelledby="lwTitle"><h3 id="lwTitle">Challenge sent</h3><p id="lwText" class="sub"></p><div class="lwdots" aria-hidden="true"><i></i><i></i><i></i></div>
+    <div class="btnrow"><button class="btn alt" id="lwCancel" type="button">Cancel</button></div></div>
+</div>
+<div class="sheet" id="liveInvite" hidden>
+  <div class="box" role="dialog" aria-labelledby="liTitle"><h3 id="liTitle">A friend challenges you!</h3><p id="liText"></p><p class="sub">A live battle: you both pick a move each turn.</p>
+    <div class="btnrow"><button class="btn alt" id="liNo" type="button">Not now</button><button class="btn" id="liYes" type="button">Battle</button></div></div>
+</div>
 <div class="sheet" id="signSheet" hidden>
   <div class="box" role="dialog" aria-labelledby="sgTitle">
     <h3 id="sgTitle">Sign in to MicroBeast</h3>
@@ -1758,6 +1799,7 @@ body:not(.v-kb) .crt>.sheet .box.vbox{height:100%!important;max-height:100%!impo
     <div class="tbar"><h3 id="btTitle">Battle</h3><button class="x" id="btClose" type="button" aria-label="Close">[X]</button></div>
     <div class="row"><span class="k" id="btWho"></span><span class="sub" id="record2"></span></div>
     <button class="btn" id="randBtn" type="button">&gt; Random battle</button>
+    <button class="btn" id="liveBtn" type="button">&gt; Battle a friend live</button>
     <button class="btn alt" id="myCodeBtn" type="button">&gt; Battle a friend: show my QR</button>
     <p class="sub">Got a friend's code? Paste it here to battle their pet.</p>
     <input type="text" id="friendCode" placeholder="Paste a battle code or link" autocomplete="off" spellcheck="false">
@@ -2024,7 +2066,7 @@ const SFX=(()=>{
 // W holds everything shared (coins, owned items, pantry, treasures). S is the pet you're looking after right now.
 const KEY='fuselings.v1', WKEY='fuselings.world', MAXPETS=4;
 let W=null, S=null;
-const ACC_SLOT={tophat:'head',bow:'head',flowers:'head',crown:'head',beanie:'head',party:'head',wizard:'head',cap:'head',halo:'head',scarf:'neck',bell:'neck',bowtie:'neck',pearls:'neck',bandana:'neck',shades:'face',monocle:'face'};
+const ACC_SLOT={phones:'head',viking:'head',eyepatch:'face',medal:'neck',tophat:'head',bow:'head',flowers:'head',crown:'head',beanie:'head',party:'head',wizard:'head',cap:'head',halo:'head',scarf:'neck',bell:'neck',bowtie:'neck',pearls:'neck',bandana:'neck',shades:'face',monocle:'face'};
 const SCENERY=['beach','snow','city','space','desert','sunset','neon','moon','disco'];
 const defEquip=()=>({head:null,neck:null,face:null,bg:'meadow',light:'day',feeder:false,fountain:false});
 function freshPet(name,sp){
@@ -2068,7 +2110,8 @@ function decayPet(p,hrs){
 function tickOther(p,now){
   const hrs=Math.max(0,(now-p.last)/3600e3);p.last=now;if(!hrs)return;
   const m=p.m;
-  if(p.stage>=3){p.asleep=false;for(const k in m)m[k]=clamp(m[k]+(86-m[k])*Math.min(1,hrs*3),0,100);}   // grown-ups look after themselves
+  // grown-ups look after themselves; a sleeping one keeps sleeping until it's fully rested
+  if(p.stage>=3){for(const k in m)if(k!=='energy'||!p.asleep)m[k]=clamp(m[k]+(86-m[k])*Math.min(1,hrs*3),0,100);if(p.asleep){m.energy=clamp(m.energy+25*hrs,0,100);if(m.energy>=100)p.asleep=false;}}
   else{decayPet(p,hrs);if(p.asleep&&m.energy>=100)p.asleep=false;
     if(p.stage<3&&!p.offer&&now-p.stageStart>=DUR[p.stage])p.offer=p.stage<2?sampleDistinct(ORDER,3):sampleDistinct(Object.keys(MAT),3,k=>RWEIGHT[MAT[k].r]);}
   const mean=(m.hunger+m.thirst+m.joy+m.energy+m.clean)/5,mins=hrs*60;p.careSum+=mean*mins;p.careN+=mins;
@@ -3071,7 +3114,7 @@ $('petBtn').onclick=()=>{if(W.pets.length>1)switchPet((W.active+1)%W.pets.length
 
 // ---------- battle codes ----------
 function encode(p){
-  const json=JSON.stringify({v:1,n:p.name,a:p.sp,s:p.stage,e:p.el,m:p.mat,c:care(),k:p.evoCare||[],q:[(p.equip||{}).head||null,(p.equip||{}).neck||null,(p.equip||{}).face||null],y:p.dye||null,z:p.accDye||null});
+  const json=JSON.stringify({v:1,n:p.name,a:p.sp,s:p.stage,e:p.el,m:p.mat,c:care(),k:p.evoCare||[],q:[(p.equip||{}).head||null,(p.equip||{}).neck||null,(p.equip||{}).face||null],y:p.dye||null,z:p.accDye||null,l:p.mlv||null});
   return 'fl'+btoa(unescape(encodeURIComponent(json))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
 }
 function decode(text){
@@ -3086,7 +3129,8 @@ function decode(text){
     const mat=stage===3&&MAT[o.m]?o.m:null;
     if(stage===3&&!mat) return null;
     return {name:String(o.n||'Rival').slice(0,14),sp:SPECIES[o.a]?o.a:o.a==='dog'?'wolf':o.a==='cat'?'serval':'capybara',stage,el,mat,care:clamp(+o.c||80,0,100),evoCare:(Array.isArray(o.k)?o.k:[]).slice(0,3).map(v=>clamp(+v||60,0,100)),equip:(()=>{const q=Array.isArray(o.q)?o.q:[o.q];const e={head:null,neck:null,face:null};q.forEach(id=>{if(ACC_SLOT[id])e[ACC_SLOT[id]]=id;});return e;})(),dye:DYES[o.y]?o.y:null,
-      accDye:(()=>{const z={};if(o.z&&typeof o.z==='object')for(const k in o.z)if(ACC_SLOT[k]&&DYES[o.z[k]])z[k]=o.z[k];return z;})()};
+      accDye:(()=>{const z={};if(o.z&&typeof o.z==='object')for(const k in o.z)if(ACC_SLOT[k]&&DYES[o.z[k]])z[k]=o.z[k];return z;})(),
+      mlv:(()=>{const l={};if(o.l&&typeof o.l==='object')for(const k in o.l)l[k]=clamp(parseInt(o.l[k])||0,0,5);return l;})()};
   }catch(e){return null;}
 }
 function showMyCode(){
@@ -3130,6 +3174,7 @@ function quickBattle(){
   choosePet('battle',()=>startBattle(randomFoe(),false));
 }
 $('randBtn').onclick=quickBattle;
+$('liveBtn').onclick=()=>LIVE.open();
 $('battleBtn').onclick=()=>{$('btWho').textContent=`${S.name.toUpperCase()} · ${STAGES[S.stage].toUpperCase()}`;$('codeErr').textContent='';$('battleSheet').hidden=false;};
 $('btClose').onclick=()=>{$('battleSheet').hidden=true;};
 
@@ -3155,11 +3200,14 @@ const STATUS={burn:['BRN','#FF8A3A',3],soak:['WET','#6EC2FF',3],stun:['STN','#FF
 const MAJOR=['sleep','freeze','para','stun'];
 const ST_MSG={burn:n=>`${n} is burning!`,soak:n=>`${n} is soaked through!`,stun:n=>`${n} is stunned!`,para:n=>`${n} is paralysed!`,freeze:n=>`${n} froze solid!`,seed:n=>`Parasite blooms sprout on ${n}!`,blind:n=>`${n} is blinded by the light!`,sleep:n=>`${n} fell into a deep sleep...`,poison:n=>`${n} was badly poisoned!`};
 function specialsOf(p){const els=[...new Set(p.el||[])];return els.length?els.map(e=>({...SPECIALS[e],el:e})):[{...FLAIL,el:null}];}
+// battle dice: in a live battle both players' games roll the same seeded dice, so a turn plays out the same on both screens
+const BR=()=>B&&B.rng?B.rng():Math.random(),brnd=(a,b)=>a+BR()*(b-a);
+function mulberry(a){return()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
 function fighter(p,isMe,name){const st=computeStats(p);return {p,st,hp:st.hp,guard:false,cds:{},isMe,hit:0,lunge:0,sx:{},name,info:null,sp:specialsOf(p)};}
 
-function startBattle(foe,friendly,opt){
+function startBattle(foe,friendly,opt,meOverride){
   const wasRestless=isRestless();S.restless=0;S.lastBattle=Date.now();save();
-  const me={...S,care:care()};
+  const me=meOverride||{...S,care:care()};
   B={wasRestless,me:fighter(me,true,S.name),foe:fighter(foe,false,foe.name),over:false,busy:false,friendly,log:[],fx:[],pops:[],shake:0,flash:0,adv:opt||null};
   if(opt){const m=B.me,f=B.foe;m.st.atk=Math.round(m.st.atk*opt.atk);m.st.def=Math.round(m.st.def*opt.def);m.hp=Math.max(1,Math.min(opt.hp,m.st.hp));if(opt.extra&&m.sp.length<3)m.sp.push(opt.extra);B.buddy=opt.buddy;
     ['hp','atk','def','spd'].forEach(k=>f.st[k]=Math.round(f.st[k]*opt.foeMul));f.hp=f.st.hp;}
@@ -3177,6 +3225,7 @@ function startBattle(foe,friendly,opt){
   renderBattle();
 }
 function endBattle(){
+  setTimeout(()=>dispatchEvent(new Event('battleend')),0);
   const wr=B&&B.wasRestless;B=null;if(wr)setTimeout(()=>toast(`${S.name} feels much calmer now`),400);const cv=$('screen');cv.width=160;cv.height=120;
   $('crt').classList.remove('battling');$('led').classList.remove('fight');$('crt').querySelectorAll('.bresult,.bflash').forEach(e=>e.remove());BOSSFX.stop();$('bDone').disabled=false;
   $('careKeys').hidden=false;$('battleKeys').hidden=true;window.__bb&&window.__bb();renderAll();if(!ADV.on)returnHome();
@@ -3200,9 +3249,9 @@ function calc(att,def,pow,el){
   if(el) for(const d of new Set(def.p.el||[])){if(EL[el].s.includes(d))eff*=1.5;else if(EL[d].s.includes(el))eff*=.75;}
   eff=clamp(eff,.5,2.25);
   if(el==='lightning'&&def.sx.soak) eff*=2;
-  const crit=Math.random()<.08;
+  const crit=BR()<.08;
   const ml=att.p&&att.p.mlv;if(ml)pow*=1+.08*(ml[el||'atk']||0);
-  let dmg=att.st.atk*pow*eff*rnd(.85,1)*(crit?1.5:1)-def.st.def*.45;
+  let dmg=att.st.atk*pow*eff*brnd(.85,1)*(crit?1.5:1)-def.st.def*.45;
   dmg=Math.max(1,Math.round(dmg));
   if(def.guard) dmg=Math.max(1,Math.round(dmg*.4));
   return {dmg,eff,crit};
@@ -3220,7 +3269,7 @@ const OFF_MSG={burn:n=>`${n}'s burn cooled off!`,soak:n=>`${n} dried off!`,stun:
 async function shakeOff(f,k){
   if(!f.sx[k])return true;
   f.sxa=f.sxa||{};const n=f.sxa[k]||0;f.sxa[k]=n+1;
-  if(Math.random()>=SHAKE[Math.min(n,SHAKE.length-1)])return false;
+  if(BR()>=SHAKE[Math.min(n,SHAKE.length-1)])return false;
   delete f.sx[k];delete f.sxa[k];if(k==='freeze')addFx('thaw',f,f,.6);log(OFF_MSG[k](f.name));renderBattle();await sleepMs(650);return true;
 }
 function applyStatus(f,st,src){
@@ -3246,14 +3295,14 @@ async function canAct(f,o){
     if(await shakeOff(f,'stun'))return true;
     log(`${f.name} is stunned and can't move!`);renderBattle();await sleepMs(800);return false;
   }
-  if(s.para&&!(await shakeOff(f,'para'))&&Math.random()<.5){addFx('sparkz',f,f,.6);log(`${f.name} is paralysed! It can't move!`);await sleepMs(800);return false;}
+  if(s.para&&!(await shakeOff(f,'para'))&&BR()<.5){addFx('sparkz',f,f,.6);log(`${f.name} is paralysed! It can't move!`);await sleepMs(800);return false;}
   return true;
 }
 async function doAttack(att,def){
   const name=moveNames(att.p)[0];
   log(`${att.name} used ${name}!`);
   att.dash=24;att.lunge=1;await sleepMs(170);
-  if(att.sx.blind&&Math.random()<.5){pop(def,'MISS','#D8D0FF');log(`${att.name} can't see and missed!`);await sleepMs(650);return;}
+  if(att.sx.blind&&BR()<.5){pop(def,'MISS','#D8D0FF');log(`${att.name} can't see and missed!`);await sleepMs(650);return;}
   const r=calc(att,def,1,null);
   addFx('impact',att,def,.35);B.shake=Math.max(B.shake,.5);hurt(def,r.dmg);SFX.play('hit');
   if(r.crit){pop(def,'CRIT!','#FFE27A');SFX.play('crit');}
@@ -3267,11 +3316,11 @@ async function doSpecial(att,def,sp,i){
   const H={fireball:.62,wave:.6,boulder:.55,cyclone:.42,bolt:.35,ice:.55,vines:.55,beam:.4,shade:.55,toxic:.6,dust:.3}[sp.fx];
   addFx(sp.fx,att,def,D);SFX.play(sp.el||'earth');
   await sleepMs(D*H*1000);
-  if(att.sx.blind&&Math.random()<.5){pop(def,'MISS','#D8D0FF');log(`${att.name} can't see and missed!`);await sleepMs(D*(1-H)*1000+400);return;}
-  const hits=sp.hits?(Math.random()<.5?2:3):1;
+  if(att.sx.blind&&BR()<.5){pop(def,'MISS','#D8D0FF');log(`${att.name} can't see and missed!`);await sleepMs(D*(1-H)*1000+400);return;}
+  const hits=sp.hits?(BR()<.5?2:3):1;
   let total=0,eff=1;
   for(let h=0;h<hits;h++){
-    const pow=sp.flail?rnd(.4,2.2):sp.pow, r=calc(att,def,pow,sp.el);eff=r.eff;
+    const pow=sp.flail?brnd(.4,2.2):sp.pow, r=calc(att,def,pow,sp.el);eff=r.eff;
     hurt(def,r.dmg,r.eff>1.2?'#FFE27A':null);total+=r.dmg;SFX.play('hit');if(r.crit)pop(def,'CRIT!','#FFE27A');
     if(sp.fx==='boulder'||sp.fx==='bolt')B.shake=1;
     if(sp.fx==='bolt')B.flash=.8;
@@ -3281,7 +3330,7 @@ async function doSpecial(att,def,sp,i){
   if(sp.el==='fire'&&def.sx.freeze){delete def.sx.freeze;log(`The heat melted the ice!`);await sleepMs(600);}
   log(hits>1?`Hit ${hits} times for ${total} damage!`:eff>1.2?(def.sx.soak&&sp.el==='lightning'?'Soaked and shocked! Double damage!':"It's super effective!"):eff<.9?"It's not very effective...":`${total} damage!`);
   await sleepMs(Math.max(350,D*(1-H)*1000));
-  if(sp.st&&def.hp>0&&Math.random()<sp.ch){if(applyStatus(def,sp.st,att))await sleepMs(750);}
+  if(sp.st&&def.hp>0&&BR()<sp.ch){if(applyStatus(def,sp.st,att))await sleepMs(750);}
 }
 async function doGuard(f){
   f.guard=true;addFx('shield',f,f,1);const h=Math.round(f.st.hp*.08);heal(f,h);
@@ -3304,15 +3353,18 @@ function aiMove(f){
   return {kind:'attack'};
 }
 const speedOf=f=>f.st.spd*(f.sx.soak?.5:1);
-async function round(mine){
+async function round(mine,theirs){
   if(!B||B.busy||B.over) return;
   B.busy=true;renderBattle();
-  const me=B.me,foe=B.foe,fm=aiMove(foe);
-  const order=[[me,mine,foe],[foe,fm,me]].sort((a,b)=>(a[1].kind==='guard'?-1:0)-(b[1].kind==='guard'?-1:0)||(speedOf(b[0])-speedOf(a[0]))||(Math.random()-.5));
+  const me=B.me,foe=B.foe,fm=theirs||aiMove(foe);
+  // whoever guards goes first, then the faster beast, then a coin toss (in a live battle, always listed host first)
+  const ent=[[me,mine,foe],[foe,fm,me]];if(B.live&&B.live.role==='b')ent.reverse();
+  const g0=ent[0][1].kind==='guard',g1=ent[1][1].kind==='guard',s0=speedOf(ent[0][0]),s1=speedOf(ent[1][0]);
+  const firstA=g0!==g1?g0:s0!==s1?s0>s1:BR()<.5,order=firstA?ent:[ent[1],ent[0]];
   for(const [f,m,o] of order){if(f.hp<=0||o.hp<=0)break;await takeTurn(f,m,o);if(!B)return;}
   if(B.buddy&&foe.hp>0&&me.hp>0){const d=Math.max(1,Math.round(me.st.atk*.35));addFx('hit',me,foe,.4);hurt(foe,d,'#FFE27A');log(`${B.buddy.name} joins in for ${d} damage!`);await sleepMs(650);}
   // end of round: burns, seeds and timers
-  for(const f of [me,foe]){
+  for(const f of (B.live&&B.live.role==='b'?[foe,me]:[me,foe])){
     if(f.hp<=0)continue;const o=f===me?foe:me;
     if(f.sx.burn){const d=Math.max(1,Math.round(f.st.hp*.06));addFx('flare',f,f,.6);hurt(f,d,'#FF8A3A');log(`${f.name} is hurt by its burn!`);await sleepMs(700);if(f.hp>0)await shakeOff(f,'burn');}
     if(f.hp>0&&f.sx.seed){const d=Math.max(1,Math.round(f.st.hp*.07));addFx('drain',o,f,.8);hurt(f,d,'#7CD65A');await sleepMs(450);if(o.hp>0)heal(o,d);log(`Parasite blooms drain ${f.name}!`);await sleepMs(650);if(f.hp>0)await shakeOff(f,'seed');}
@@ -3332,13 +3384,13 @@ async function round(mine){
   }
   B.busy=false;renderBattle();
 }
-$('mAtk').onclick=()=>round({kind:'attack'});
-$('mSp0').onclick=()=>round({kind:'special',i:0});
-$('mSp1').onclick=()=>round({kind:'special',i:1});
-$('mSp2').onclick=()=>round({kind:'special',i:2});
-$('mGrd').onclick=()=>round({kind:'guard'});
+$('mAtk').onclick=()=>B&&B.live?LIVE.choose({kind:'attack'}):round({kind:'attack'});
+$('mSp0').onclick=()=>B&&B.live?LIVE.choose({kind:'special',i:0}):round({kind:'special',i:0});
+$('mSp1').onclick=()=>B&&B.live?LIVE.choose({kind:'special',i:1}):round({kind:'special',i:1});
+$('mSp2').onclick=()=>B&&B.live?LIVE.choose({kind:'special',i:2}):round({kind:'special',i:2});
+$('mGrd').onclick=()=>B&&B.live?LIVE.choose({kind:'guard'}):round({kind:'guard'});
 $('bDone').onclick=()=>{if(B&&B.adv){const w=B.advWon,hp=B.me.hp,boss=B.adv.boss;endBattle();ADV.after(w,hp,boss);return;}const it=B&&B.reward;endBattle();if(it)setTimeout(()=>showUnlock(it),300);};
-$('bFlee').onclick=async()=>{if(!B||B.busy||B.over)return;
+$('bFlee').onclick=async()=>{if(B&&B.live){LIVE.giveUp();return;}if(!B||B.busy||B.over)return;
   if(!B.adv){SFX.play('flee');endBattle();toast('You fled the battle');return;}
   // on an adventure running away is a gamble: half the time the foe catches you and gets a free hit
   B.busy=true;renderBattle();log(`${S.name} tries to run...`);await sleepMs(700);if(!B)return;
@@ -3640,20 +3692,22 @@ const COSMETICS=[
   {id:'wizard',type:'acc',n:'Wizard hat',c:'#3A2A8A',p:110},{id:'cap',type:'acc',n:'Baseball cap',c:'#D8392F'},{id:'halo',type:'acc',n:'Halo',c:'#FFE27A',p:130},
   {id:'shades',type:'acc',n:'Sunglasses',c:'#1E1C24',p:80},{id:'monocle',type:'acc',n:'Monocle',c:'#E8B923',p:90},
   {id:'bowtie',type:'acc',n:'Bow tie',c:'#26222C'},{id:'pearls',type:'acc',n:'Pearl necklace',c:'#EDE6DA',p:100},{id:'bandana',type:'acc',n:'Bandana',c:'#2F6FD8'},
+  {id:'phones',type:'acc',n:'Headphones',c:'#2A2A30',p:90},{id:'viking',type:'acc',n:'Viking helmet',c:'#9AA4AC',p:120},{id:'eyepatch',type:'acc',n:'Pirate eyepatch',c:'#1A1418'},{id:'medal',type:'acc',n:'Gold medal',c:'#E8B923',p:100},
   {id:'feeder',type:'gadget',n:'Auto-feeder',c:'#A9B4BE',d:'Drops food when your pet gets hungry.'},{id:'fountain',type:'gadget',n:'Water fountain',c:'#4FA8F0',d:'Tops up thirst automatically.'},
   {id:'beach',type:'bg',n:'Beach',c:'#E8D39A'},{id:'snow',type:'bg',n:'Snowy peaks',c:'#EEF4FA'},{id:'city',type:'bg',n:'Night city',c:'#4E3A72'},{id:'space',type:'bg',n:'Moon base',c:'#05050F'},{id:'desert',type:'bg',n:'Red desert',c:'#E0A060'},
   {id:'sunset',type:'light',n:'Sunset glow',c:'#FF8A3A'},{id:'neon',type:'light',n:'Neon',c:'#FF3AD8'},{id:'moon',type:'light',n:'Moonlight',c:'#5A78D8'},{id:'disco',type:'light',n:'Disco',c:'#B05AFF'},
+  {id:'aurora',type:'light',n:'Aurora',c:'#4FE0A8'},{id:'candle',type:'light',n:'Candlelight',c:'#FFB24A'},{id:'underwater',type:'light',n:'Underwater',c:'#2F9AD8'},{id:'fireflies',type:'light',n:'Fireflies',c:'#D8F06A'},{id:'spooky',type:'light',n:'Spooky glow',c:'#7AE05A'},
 ];
 const COSBY=Object.fromEntries(COSMETICS.map(c=>[c.id,c]));
 const accCv=document.createElement('canvas');accCv.width=SW;accCv.height=SH;const accCtx=accCv.getContext('2d');
 // accessories: each has a main colour (which a dye can change) and fixed details (gems, bells, pom-poms)
 const ACCMAIN={scarf:'#C8302A',bell:'#2F5EC8',tophat:'#241C22',bow:'#F4A7C3',flowers:'#F4A7C3',crown:'#E8B923',beanie:'#3A7AD8',party:'#B05AFF',wizard:'#3A2A8A',
-  cap:'#D8392F',halo:'#FFE27A',shades:'#1E1C24',monocle:'#E8B923',bowtie:'#26222C',pearls:'#EDE6DA',bandana:'#2F6FD8'};
+  cap:'#D8392F',halo:'#FFE27A',shades:'#1E1C24',monocle:'#E8B923',bowtie:'#26222C',pearls:'#EDE6DA',bandana:'#2F6FD8',phones:'#2A2A30',viking:'#9AA4AC',eyepatch:'#1A1418',medal:'#E8B923'};
 function accPal(acc,dye){const b=dye&&DYES[dye]?DYES[dye].c:ACCMAIN[acc]||'#888888';return {d:shade(b,-.5),m:shade(b,-.25),b,l:shade(b,.32),h:shade(b,.62)};}
 function drawAcc(c,acc,S_,X,Y,st,dir,t,pl){
   const A=S_.A, hR=A.headR||8, k=clamp(hR/8.5,.7,1.6), tilt=-(A.tilt||0)*dir, P=accPal(acc,pl&&pl.dye);
   const R=(x,y,w,h,col)=>{c.fillStyle=col;c.fillRect(x,y,w,h);};
-  const NECK={scarf:1,bell:1,bowtie:1,pearls:1,bandana:1},HEAD={tophat:1,bow:1,flowers:1,crown:1,beanie:1,party:1,wizard:1,cap:1,halo:1},FACE={shades:1,monocle:1};
+  const NECK={scarf:1,bell:1,bowtie:1,pearls:1,bandana:1,medal:1},HEAD={tophat:1,bow:1,flowers:1,crown:1,beanie:1,party:1,wizard:1,cap:1,halo:1,phones:1,viking:1},FACE={shades:1,monocle:1,eyepatch:1};
   if(NECK[acc]&&A.neck&&A.neckBase&&pl){
     const P0=[X(A.neck[0]),Y(A.neck[1])],Bp=[X(A.neckBase[0]),Y(A.neckBase[1])];
     let vx=P0[0]-Bp[0],vy=P0[1]-Bp[1];const L=Math.hypot(vx,vy)||1;vx/=L;vy/=L;
@@ -3669,6 +3723,7 @@ function drawAcc(c,acc,S_,X,Y,st,dir,t,pl){
       if(acc==='scarf'){let cl=[P.l,P.b,P.b,P.d][Math.min(3,d-1)];if(d===th0)cl=P.d;if((sx+sy)%4===0&&d>1)cl=P.l;return cl;}
       if(acc==='bandana'){if(d===th0)return P.d;return (sx*3+sy*2)%7===0?'#F2F2F6':d===1?P.l:P.b;}
       if(acc==='pearls')return (sx+sy)%2?P.h:P.m;
+      if(acc==='medal')return (sx+sy)%3===0?'#F2F2F6':'#2F6FD8';
       if(acc==='bowtie')return P.m;
       return [P.l,P.b][Math.min(1,d-1)];};
     // what hangs at the throat
@@ -3679,6 +3734,7 @@ function drawAcc(c,acc,S_,X,Y,st,dir,t,pl){
       else if(acc==='bell'){const bs=Math.max(3,Math.round(2.4*k)),bx=Math.round(tp[0]-bs/2),by=y;R(bx,by,bs,bs,'#E8B923');R(bx,by,1,1,'#FFF2B0');R(bx+Math.floor(bs/2),by+bs,1,1,'#7A5A10');R(bx-1,by+bs-1,bs+2,1,'#B88A12');R(x,by-1,1,1,'#7A5A10');}
       else if(acc==='bowtie'){const w=Math.max(2,Math.round(2.2*k));for(let q=1;q<=w;q++){const h=q===1?1:q===w?3:2,yy=y-(h>1?1:0),col=q===w?P.m:P.b;R(x-q-1,yy,1,h,col);R(x+q,yy,1,h,col);}R(x-w,y-1,1,1,P.l);R(x+w-1,y-1,1,1,P.l);R(x-1,y-1,2,2,P.d);}
       else if(acc==='pearls'){R(x-1,y,3,3,P.h);R(x-1,y,1,1,'#FFFFFF');R(x+1,y+2,1,1,P.m);}
+      else if(acc==='medal'){const m=Math.max(3,Math.round(2.6*k));R(x-1,y,2,2,'#2F6FD8');R(x-Math.floor(m/2),y+2,m,m,P.b);R(x-Math.floor(m/2),y+2,m,1,P.h);R(x-Math.floor(m/2),y+1+m,m,1,P.d);R(x,y+2+Math.floor(m/2),1,1,P.h);}
       else if(acc==='bandana'){const n=Math.round(3+k*2);for(let q=0;q<n;q++){const w=n-q;R(x-w,y+q,w*2,1,q===n-1?P.d:(q%2?P.b:P.l));}R(x-1,y+1,1,1,'#F2F2F6');}};
     // hug the seam where head meets neck: body pixels within th0 of a head pixel, near the neck, not under the chin
     {const nr=A.neckR||5,Rl=Math.max(5,nr*1.7),ccx=Math.round(cx),ccy=Math.round(cy),pts=[];let tp=null;
@@ -3718,6 +3774,10 @@ function drawAcc(c,acc,S_,X,Y,st,dir,t,pl){
       R(-4.6,-3.6,9.2,1.3,'#F7D348');[[-2.5,-7],[1,-5.5],[-3.4,-10]].forEach(([x0,y0])=>{R(x0,y0,1,1,'#F7D348');R(x0-.6,y0+.4,2.2,.3,'#FFF2B0');});}
     if(acc==='cap'){R(-5.5,-5,9.5,5,P.b);R(-4.5,-6,7.5,1.2,P.b);R(-4,-6,5,.8,P.l);R(-5.5,-1,9.5,1,P.m);R(3.5,-1.8,6,1.8,P.d);R(3.5,-1.8,6,.7,P.m);R(-1,-6.8,2,1,P.d);R(-.4,-5,.8,4,P.m);
       R(-4,-3.6,3,1.6,'#F2F2F6');}
+    if(acc==='phones'){R(-6,-5.5,12,1.6,P.b);R(-6,-5.5,12,.6,P.l);R(-7,-5,1.6,4,P.b);R(5.4,-5,1.6,4,P.b);
+      R(-8.4,-2.4,3.6,4.4,P.m);R(-8.4,-2.4,3.6,1,P.l);R(-7.6,-1.4,2,2.4,'#D8392F');R(4.8,-2.4,3.6,4.4,P.m);R(4.8,-2.4,3.6,1,P.l);R(5.6,-1.4,2,2.4,'#D8392F');}
+    if(acc==='viking'){R(-5.6,-5.4,11.2,5.6,P.b);R(-4.6,-6.8,9.2,1.6,P.b);R(-3.4,-7.6,6.8,1,P.l);R(-4.4,-5.4,3,1,P.h);R(-5.6,-1.2,11.2,1.4,'#8A5A2B');R(-5.6,-1.2,11.2,.5,'#B8803E');
+      R(-.6,-7.6,1.2,7,P.d);[[-1,1],[1,-1]].forEach(([sd])=>{for(let q=0;q<5;q++){const hx=sd*(6+q*.7),hy=-4-q*1.3;R(hx-(sd<0?1.2:0),hy,1.4,1.4,q>3?'#FFFFFF':'#EDE3C8');}});}
     if(acc==='halo'){const by=-11-Math.sin(t*2.2)*1.2,rx=6,ry=1.8;c.globalAlpha=.35;R(-rx-1,by-ry-1,(rx+1)*2,(ry+1)*2+.4,P.h);c.globalAlpha=1;
       for(let a=0;a<28;a++){const an=a/28*Math.PI*2;R(Math.round(Math.cos(an)*rx),Math.round(by+Math.sin(an)*ry),1,1,Math.sin(an)<0?P.b:P.l);}
       R(-2,by-ry,2,1,'#FFFFFF');}
@@ -3727,6 +3787,7 @@ function drawAcc(c,acc,S_,X,Y,st,dir,t,pl){
     const ex=X(A.eye[0]),ey=Y(A.eye[1]);
     const kf=k*(st<=1?1.3:1);c.save();c.translate(Math.round(ex),Math.round(ey));c.rotate(tilt);c.scale(kf*dir,kf);
     if(acc==='shades'){R(-3,-2,6.2,3.8,P.b);R(-3,-2,6.2,.9,P.l);R(-3,1.2,6.2,.6,P.d);R(-1.8,-1,1.3,1.1,'#FFFFFF');R(-7,-1.5,4.2,1,P.d);R(3.2,-1.1,2.2,1,P.d);}
+    if(acc==='eyepatch'){R(-2.6,-2,5.2,4.2,P.b);R(-2.6,-2,5.2,.8,shade(P.b,.25));R(-9,-3.6,6.6,.9,P.d);R(2.4,-2.8,4.6,.9,P.d);}
     if(acc==='monocle'){const r=2.7;c.globalAlpha=.25;R(-r+.5,-r+.5,r*2-1,r*2-1,'#DDEFFF');c.globalAlpha=1;
       for(let a=0;a<20;a++){const an=a/20*Math.PI*2;R(Math.round(Math.cos(an)*r),Math.round(Math.sin(an)*r),1,1,a<10?P.b:P.l);}
       for(let q=0;q<5;q++)R(Math.round(-r*.6-q*.6),Math.round(r+q),1,1,q%2?P.m:P.b);}
@@ -3768,6 +3829,20 @@ function applyLight(c,W,H,t){
   if(L==='sunset'){c.globalCompositeOperation='soft-light';c.fillStyle='rgba(255,110,40,.6)';c.fillRect(0,0,W,H);c.globalCompositeOperation='source-over';const gr=c.createLinearGradient(0,0,0,H);gr.addColorStop(0,'rgba(255,140,60,.2)');gr.addColorStop(1,'rgba(120,30,80,.2)');c.fillStyle=gr;c.fillRect(0,0,W,H);}
   if(L==='moon'){c.globalCompositeOperation='multiply';c.globalAlpha=.6;c.fillStyle='#5A6EC8';c.fillRect(0,0,W,H);c.globalAlpha=1;c.globalCompositeOperation='screen';c.fillStyle='rgba(120,150,255,.08)';c.fillRect(0,0,W,H);}
   if(L==='neon'){c.globalCompositeOperation='soft-light';const gr=c.createLinearGradient(0,0,W,0);gr.addColorStop(0,'rgba(255,0,200,.8)');gr.addColorStop(1,'rgba(0,230,255,.8)');c.fillStyle=gr;c.fillRect(0,0,W,H);c.globalCompositeOperation='source-over';c.fillStyle='rgba(30,0,50,.18)';c.fillRect(0,0,W,H);}
+  if(L==='aurora'){c.globalCompositeOperation='multiply';c.globalAlpha=.55;c.fillStyle='#2A3A6A';c.fillRect(0,0,W,H);c.globalAlpha=1;c.globalCompositeOperation='screen';
+    for(let b=0;b<3;b++){const col=['rgba(80,240,170,','rgba(120,200,255,','rgba(200,120,255,'][b];for(let x=0;x<W;x+=2){const y=H*.12+b*7+Math.sin(x*.045+t*.7+b*1.7)*8+Math.sin(x*.11-t*.4)*3,h=10+Math.sin(x*.07+t+b)*5;
+      const g=c.createLinearGradient(0,y,0,y+h);g.addColorStop(0,col+'0)');g.addColorStop(.5,col+'.32)');g.addColorStop(1,col+'0)');c.fillStyle=g;c.fillRect(x,y,2,h);}}}
+  if(L==='candle'){c.globalCompositeOperation='multiply';c.globalAlpha=.62;c.fillStyle='#4A2A14';c.fillRect(0,0,W,H);c.globalAlpha=1;c.globalCompositeOperation='screen';
+    const fl=.85+Math.sin(t*9)*.06+Math.sin(t*23)*.05,g=c.createRadialGradient(W*.5,H*.62,4,W*.5,H*.62,W*.6*fl);g.addColorStop(0,'rgba(255,190,90,.5)');g.addColorStop(.5,'rgba(255,140,50,.18)');g.addColorStop(1,'rgba(0,0,0,0)');c.fillStyle=g;c.fillRect(0,0,W,H);}
+  if(L==='underwater'){c.globalCompositeOperation='multiply';c.fillStyle='rgba(40,110,170,.6)';c.fillRect(0,0,W,H);c.globalCompositeOperation='screen';
+    for(let i=0;i<9;i++){const x=(i*W/8+Math.sin(t*.6+i)*10),w=6+Math.sin(t+i*2)*3;c.fillStyle='rgba(170,230,255,.07)';c.beginPath();c.moveTo(x-w,0);c.lineTo(x+w,0);c.lineTo(x+w*3-12,H);c.lineTo(x-w*2-12,H);c.fill();}
+    for(let i=0;i<7;i++){const ph=(t*.18+i/7)%1,x=W*((i*.37)%1)+Math.sin(t*2+i)*3;c.fillStyle='rgba(220,245,255,.55)';c.fillRect(x,H*(1-ph),1,1);c.fillRect(x+1,H*(1-ph)-1,1,1);}}
+  if(L==='fireflies'){c.globalCompositeOperation='multiply';c.globalAlpha=.6;c.fillStyle='#1E2A3A';c.fillRect(0,0,W,H);c.globalAlpha=1;c.globalCompositeOperation='screen';
+    for(let i=0;i<12;i++){const x=W*hash(i,1,9)+Math.sin(t*.7+i*1.3)*14,y=H*(.3+.6*hash(i,2,9))+Math.cos(t*.9+i)*8,on=Math.max(0,Math.sin(t*1.6+i*2.1));if(on<.1)continue;
+      const g=c.createRadialGradient(x,y,0,x,y,6);g.addColorStop(0,`rgba(230,255,120,${.7*on})`);g.addColorStop(1,'rgba(230,255,120,0)');c.fillStyle=g;c.fillRect(x-6,y-6,12,12);c.fillStyle=`rgba(255,255,210,${on})`;c.fillRect(Math.round(x),Math.round(y),1,1);}}
+  if(L==='spooky'){c.globalCompositeOperation='multiply';c.globalAlpha=.6;c.fillStyle='#2A1E3A';c.fillRect(0,0,W,H);c.globalAlpha=1;c.globalCompositeOperation='screen';
+    const g=c.createLinearGradient(0,H,0,H*.4);g.addColorStop(0,'rgba(120,230,90,.32)');g.addColorStop(1,'rgba(120,230,90,0)');c.fillStyle=g;c.fillRect(0,0,W,H);
+    for(let i=0;i<4;i++){const x=((t*6+i*W/4)%(W+40))-20,y=H*.8+Math.sin(t+i)*3;c.fillStyle='rgba(180,255,160,.08)';c.beginPath();c.ellipse(x,y,26,5,0,0,7);c.fill();}}
   if(L==='disco'){c.globalCompositeOperation='soft-light';c.fillStyle=`hsla(${(t*90)%360},90%,55%,.65)`;c.fillRect(0,0,W,H);c.globalCompositeOperation='screen';for(let i=0;i<5;i++){const x=W/2+Math.cos(t*1.5+i*1.3)*W*.4,y=H*.55+Math.sin(t*1.1+i*2)*H*.3;c.fillStyle=`hsla(${(t*120+i*72)%360},100%,60%,.28)`;c.beginPath();c.arc(x,y,12,0,7);c.fill();}}
   c.restore();
 }
@@ -4183,11 +4258,12 @@ function choosePet(kind,cb){
   const need=kind==='play'?15:10, box=$('pickGrid');
   $('pkTitle').textContent=kind==='play'?'Who goes on the adventure?':'Who will battle?';
   if(kind==='play'&&W.pets.every(p=>p.stage===0)){toast('Babies are too little for adventures');SFX.play('meh');return;}
-  box.innerHTML=W.pets.map((p,i)=>{const why=kind==='play'&&p.stage===0?'too little':p.asleep&&p.stage<3?'asleep':p.m.energy<need?'too tired':'';
+  const ord=[W.active,...W.pets.map((_,i)=>i).filter(i=>i!==W.active)];
+  box.innerHTML=ord.map(i=>[W.pets[i],i]).map(([p,i])=>{const why=kind==='play'&&p.stage===0?'too little':p.asleep&&p.stage<3?'asleep':p.m.energy<need?'too tired':'';
     return `<button class="pick" type="button" data-i="${i}" ${why?'disabled':''}><canvas width="96" height="72" aria-hidden="true"></canvas><b>${p.name}</b><small>${STAGES[p.stage]}${why?` · ${why}`:p===S?' · here now':''}</small></button>`;}).join('');
   box.querySelectorAll('.pick').forEach(b=>{const p=W.pets[+b.dataset.i],c=b.querySelector('canvas').getContext('2d');drawScene(c,96,72,false,0,0,p.equip&&p.equip.bg);drawPetAt(c,p,48,56,0,{pose:{mode:'idle',f:0},mood:'happy',noFx:true});
     b.onclick=()=>{$('pickSheet').hidden=true;const i=+b.dataset.i;RETURN_TO=W.active;if(i!==W.active){W.pets[i].asleep=false;switchPet(i,true);}cb();};});
-  carousel(box,'pick');$('pickSheet').hidden=false;
+  CARPOS.pick=String(W.active);carousel(box,'pick');$('pickSheet').hidden=false;
 }
 function returnHome(){if(RETURN_TO!=null&&RETURN_TO!==W.active&&W.pets[RETURN_TO]){const r=RETURN_TO;RETURN_TO=null;setTimeout(()=>switchPet(r,true),1200);}else RETURN_TO=null;}
 function drawBackPets(c,t,dt){
@@ -4270,7 +4346,7 @@ const VIEW=(()=>{
     if(k.dataset.tab){showTab(k.dataset.tab);$('menuSheet').hidden=false;return;}
     const a=k.dataset.act;if(a==='power')$('pwrKey').click();else if(a==='pet')$('petBtn').click();else if(a==='snd'){$('sndBtn').click();syncKeys();}else if(a==='desk')set('desk');else if(a==='back')goBack();else if(a==='office')OFFICE.open();});
   // BACK closes whatever is open on screen, using its own close/cancel button where it has one
-  const BACKORDER=['signSheet','syncSheet','advHintSheet','trainSheet','advSheet','eggSheet','officeSheet','resetSheet','pickSheet','giftSheet','unlockSheet','feedSheet','qrSheet','challengeSheet','evoSheet','battleSheet','menuSheet'];
+  const BACKORDER=['liveInvite','liveWait','friendsSheet','signSheet','syncSheet','advHintSheet','trainSheet','advSheet','eggSheet','officeSheet','resetSheet','pickSheet','giftSheet','unlockSheet','feedSheet','qrSheet','challengeSheet','evoSheet','battleSheet','menuSheet'];
   function goBack(){const id=BACKORDER.find(i=>$(i)&&!$(i).hidden);if(!id)return;if(id==='officeSheet'&&OFFICE.up())return;if(id==='menuSheet'&&curTab==='shop'&&shopPath){shopPath='';renderShop();return;}if(id==='menuSheet'&&curTab==='items'&&invPath){invPath='';renderItems();return;}const sh=$(id);
     const c=sh.querySelector('.x')||[...sh.querySelectorAll('button[id]')].find(b=>/(Close|No|Later|Keep|Cancel)$/.test(b.id));if(c)c.click();else sh.hidden=true;}
   const sheets=[...document.querySelectorAll('.sheet')];
@@ -4886,6 +4962,8 @@ $('eggLater').onclick=()=>{$('eggSheet').hidden=true;toast('You can hatch an egg
 
 // pop-ups scale with the display: on the monitor they're laid out at phone size and scaled up to fill a big screen; full-page ones grow on big monitors
 function fitSheets(){const crt=$('crt');if(crt.clientWidth)crt.style.setProperty('--zc',(crt.clientWidth/340).toFixed(3));
+  // scan lines are drawn every 3 pixels; on a small or zoomed-out screen they land between real pixels and clump into a grid, so turn them off
+  const devPx=crt.getBoundingClientRect().width*(window.devicePixelRatio||1);crt.classList.toggle('noscan',devPx<430||(window.devicePixelRatio||1)<.95);
   document.documentElement.style.setProperty('--sz',clamp(Math.min(innerWidth/600,innerHeight/760),1,1.8).toFixed(3));}
 addEventListener('resize',fitSheets);addEventListener('viewchange',()=>{fitSheets();setTimeout(fitSheets,700);});fitSheets();
 // the screen can change size without the window resizing (the PC app, a view change), so follow it directly
@@ -4896,10 +4974,13 @@ if(window.ResizeObserver)new ResizeObserver(()=>fitSheets()).observe($('crt'));
 function carCenter(it,smooth=true,force){const c=it.parentElement;if(!force&&!smooth&&c._touch&&performance.now()-c._touch<900)return;const x=Math.max(0,it.offsetTop-2);carMark(c,it);
   if(!smooth||matchMedia('(prefers-reduced-motion: reduce)').matches){c.scrollTop=x;return;}
   const x0=c.scrollTop,t0=performance.now(),id=(c._anim=(c._anim||0)+1);c.style.scrollSnapType='none';c._busy=true;
-  const step=t=>{if(c._anim!==id)return;const k=Math.min(1,(t-t0)/260),e=1-Math.pow(1-k,3);c.scrollTop=x0+(x-x0)*e;if(k<1)requestAnimationFrame(step);else{c.style.scrollSnapType='';setTimeout(()=>{c._busy=false;},120);}};requestAnimationFrame(step);}
+  // when it lands, hold the tapped item as the current one for a moment, so the list's snap-to-place
+  // (iPhones especially) can't pull the highlight back to the item before
+  const step=t=>{if(c._anim!==id)return;const k=Math.min(1,(t-t0)/260),e=1-Math.pow(1-k,3);c.scrollTop=x0+(x-x0)*e;if(k<1)requestAnimationFrame(step);
+    else{c.scrollTop=x;c._hold={it,until:performance.now()+700};setTimeout(()=>{if(c._anim!==id)return;c.style.scrollSnapType='';c.scrollTop=x;carMark(c,it);setTimeout(()=>{if(c._anim===id)c._busy=false;},200);},120);}};requestAnimationFrame(step);}
 
 function carMark(c,it){if(c._name)CARPOS[c._name]=carKey(it);[...c.children].forEach(x=>x.classList.toggle('cur',x===it));if(document.querySelector('.kbsel')&&c.contains(document.querySelector('.kbsel'))){document.querySelector('.kbsel').classList.remove('kbsel');it.classList.add('kbsel');}const w=c.parentElement;if(w&&w.classList.contains('carwrap')){const i=[...c.children].indexOf(it);w.querySelector('.cprev').disabled=i<=0;w.querySelector('.cnext').disabled=i>=c.children.length-1;w.querySelector('.cdots').innerHTML=[...c.children].map((_,k)=>`<i class="${k===i?'on':''}"></i>`).join('');}}
-function carSync(c){const top=c.scrollTop+2;let best=null,bd=1e9;[...c.children].forEach(x=>{const d=Math.abs(x.offsetTop-top);if(d<bd){bd=d;best=x;}});if(best&&!best.classList.contains('cur'))carMark(c,best);}
+function carSync(c){if(c._hold&&performance.now()<c._hold.until){if(!c._hold.it.classList.contains('cur'))carMark(c,c._hold.it);return;}const top=c.scrollTop+2;let best=null,bd=1e9;[...c.children].forEach(x=>{const d=Math.abs(x.offsetTop-top);if(d<bd){bd=d;best=x;}});if(best&&!best.classList.contains('cur'))carMark(c,best);}
 function carStep(c,d){const items=[...c.children],i=items.findIndex(x=>x.classList.contains('cur'));const n=items[clamp(i+d,0,items.length-1)];if(n){SFX.play('swipe');carCenter(n);}}
 function carousel(c,name){if(!c)return;c.classList.add('carousel');if(name)c._name=name;
   {const bx=c.closest('.box');if(bx){bx.classList.add('vbox');let a=c.parentElement;while(a&&a!==bx){a.classList.add('vfill');a=a.parentElement;}}}
@@ -5298,7 +5379,162 @@ const SYNC=(()=>{
   function start(){try{if(sessionStorage.getItem('microbeast.adopted')){sessionStorage.removeItem('microbeast.adopted');adoptedNow=true;if(acct){acct.fp=fp(W);keep();}}}catch(e){}
     render();try{const m=sessionStorage.getItem('microbeast.msg');if(m){sessionStorage.removeItem('microbeast.msg');setTimeout(()=>toast(m),3200);}}catch(e){}
     if(OK&&acct&&!adoptedNow)run(()=>check(false));}
-  return {start,render,prompt,get adopted(){return adoptedNow;},get signedIn(){return !!acct;},get available(){return OK;}};
+  const fs={token:()=>token(),call,base:()=>`${API.store}/projects/${FB.project}/databases/(default)/documents`,get uid(){return acct&&acct.uid;},get email(){return acct&&acct.email;},ok:OK};
+  return {start,render,prompt,fs,get adopted(){return adoptedNow;},get signedIn(){return !!acct;},get available(){return OK;}};
+})();
+
+// ---------- friends and live battles ----------
+// Firestore layout: profiles/{uid} (name, code, beast, seen, friends), codes/{CODE} -> uid,
+// requests/{from}_{to} (pending / accepted), matches/{id} (an invite, then the live battle: moves per turn, heartbeats)
+const LIVE=(()=>{
+  const F=()=>SYNC.fs, NKEY='microbeast.trainerName';
+  const TURN=20, GRACE=25, STALE=30;   // seconds: pick a move, extra wait for the other player, no heartbeat = gone
+  // --- Firestore values ---
+  const toV=v=>v===null||v===undefined?{nullValue:null}:typeof v==='boolean'?{booleanValue:v}:typeof v==='number'?(Number.isInteger(v)?{integerValue:String(v)}:{doubleValue:v}):
+    typeof v==='string'?{stringValue:v}:Array.isArray(v)?{arrayValue:{values:v.map(toV)}}:{mapValue:{fields:toF(v)}};
+  const toF=o=>Object.fromEntries(Object.entries(o).map(([k,v])=>[k,toV(v)]));
+  const fromV=v=>!v?null:'stringValue' in v?v.stringValue:'integerValue' in v?+v.integerValue:'doubleValue' in v?v.doubleValue:'booleanValue' in v?v.booleanValue:
+    'arrayValue' in v?(v.arrayValue.values||[]).map(fromV):'mapValue' in v?fromF(v.mapValue.fields||{}):null;
+  const fromF=f=>Object.fromEntries(Object.entries(f||{}).map(([k,v])=>[k,fromV(v)]));
+  const H=async()=>({'Content-Type':'application/json',Authorization:'Bearer '+await F().token()});
+  async function get(path){try{const j=await F().call(`${F().base()}/${path}`,{headers:await H()});return {...fromF(j.fields),_t:j.updateTime};}catch(e){if(e.status===404||e.status===403)return null;throw e;}}
+  async function put(path,obj,{mask,create}={}){let q=[];if(mask)q=mask.map(m=>'updateMask.fieldPaths='+encodeURIComponent(m));if(create)q.push('currentDocument.exists=false');
+    return F().call(`${F().base()}/${path}${q.length?'?'+q.join('&'):''}`,{method:'PATCH',headers:await H(),body:JSON.stringify({fields:toF(obj)})});}
+  async function del(path){try{await F().call(`${F().base()}/${path}`,{method:'DELETE',headers:await H()});}catch(e){}}
+  async function query(col,eq){const filters=Object.entries(eq).map(([k,v])=>({fieldFilter:{field:{fieldPath:k},op:'EQUAL',value:toV(v)}}));
+    const j=await F().call(`${F().base()}:runQuery`,{method:'POST',headers:await H(),body:JSON.stringify({structuredQuery:{from:[{collectionId:col}],where:filters.length>1?{compositeFilter:{op:'AND',filters}}:filters[0]}})});
+    return (Array.isArray(j)?j:[]).filter(r=>r.document).map(r=>({...fromF(r.document.fields),_id:r.document.name.split('/').pop(),_t:r.document.updateTime}));}
+  // --- my profile ---
+  let me=null,friends=[],reqs=[],busy=false,err='',lastPoll=0;
+  const myName=()=>{try{return localStorage.getItem(NKEY)||'';}catch(e){return '';}};
+  const CH='ABCDEFGHJKMNPQRSTUVWXYZ23456789',newCode=()=>'MB-'+Array.from({length:6},()=>CH[Math.floor(Math.random()*CH.length)]).join('');
+  async function ensureProfile(){const uid=F().uid;if(!uid)return null;
+    if(me&&me.uid===uid)return me;
+    let p=await get('profiles/'+uid);
+    if(!p||!p.code){for(let i=0;i<5;i++){const c=newCode();try{await put('codes/'+c,{uid},{create:true});p={...(p||{}),code:c};break;}catch(e){if(i===4)throw e;}}}
+    p={name:myName()||p.name||'',code:p.code,friends:Array.isArray(p.friends)?p.friends:[],beast:encode(S),seen:Date.now()};
+    await put('profiles/'+uid,p);me={...p,uid};return me;}
+  async function heartbeat(){if(!me)return;me.seen=Date.now();me.beast=encode(S);try{await put('profiles/'+me.uid,{seen:me.seen,beast:me.beast,name:me.name},{mask:['seen','beast','name']});}catch(e){}}
+  async function setFriends(list){me.friends=[...new Set(list)];await put('profiles/'+me.uid,{friends:me.friends},{mask:['friends']});}
+  // --- friends ---
+  async function addByCode(raw){const code=String(raw||'').toUpperCase().replace(/[^A-Z0-9]/g,'').replace(/^MB/,'');if(code.length!==6)throw new Error('That code should look like MB-7K3QXP.');
+    const c=await get('codes/MB-'+code);if(!c||!c.uid)throw new Error('No one has that friend code. Check it and try again.');
+    if(c.uid===me.uid)throw new Error('That\'s your own code!');if(me.friends.includes(c.uid))throw new Error('You\'re already friends.');
+    try{await put(`requests/${me.uid}_${c.uid}`,{from:me.uid,to:c.uid,fromName:me.name,fromCode:me.code,status:'pending',t:Date.now()},{create:true});}
+    catch(e){throw new Error('You\'ve already sent them a request. They need to accept it.');}}
+  const KN='microbeast.friendNames',known=()=>{try{return JSON.parse(localStorage.getItem(KN)||'{}');}catch(e){return {};}},learn=(uid,n)=>{try{const k=known();if(n){k[uid]=n;localStorage.setItem(KN,JSON.stringify(k));}}catch(e){}};
+  async function accept(r){learn(r.from,r.fromName);await setFriends([...me.friends,r.from]);await put('requests/'+r._id,{status:'accepted'},{mask:['status']});}
+  async function decline(r){await del('requests/'+r._id);}
+  async function remove(uid){await setFriends(me.friends.filter(u=>u!==uid));}
+  async function refresh(){if(!F().uid)return;await ensureProfile();
+    // requests to me, and my requests that were accepted
+    reqs=(await query('requests',{to:me.uid,status:'pending'})).filter(r=>r.from!==me.uid);
+    for(const r of await query('requests',{from:me.uid,status:'accepted'})){if(!me.friends.includes(r.to))await setFriends([...me.friends,r.to]);await del('requests/'+r._id);}
+    // a friend you've just accepted shows up properly once their game adds you back (a few seconds)
+    const out=[];for(const uid of me.friends){const p=await get('profiles/'+uid);if(p)learn(uid,p.name);out.push(p?{uid,...p}:{uid,name:known()[uid]||'New friend',gone:true,pend:true});}
+    friends=out;lastPoll=Date.now();}
+  // --- the Friends screen ---
+  const esc=t=>String(t==null?'':t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  const ago=t=>{const s=(Date.now()-t)/1000;return s<90?'online now':s<3600?`seen ${s/60|0} min ago`:s<86400?`seen ${s/3600|0} hr ago`:`seen ${s/86400|0} days ago`;};
+  const online=p=>p&&p.seen&&Date.now()-p.seen<90e3;
+  function render(){const b=$('frBody');if(!b)return;
+    if(!F().ok){b.innerHTML=`<p class="sub">Friends work in the Android app, the PC app and the home-screen version.</p>`;return;}
+    if(!F().uid){b.innerHTML=`<p class="sub">Sign in to add friends and battle them live.</p><div class="btnrow"><button class="btn" id="frSign" type="button">Sign in</button></div>`;
+      $('frSign').onclick=()=>{$('friendsSheet').hidden=true;try{localStorage.removeItem('microbeast.noPrompt');}catch(e){}SYNC.prompt();};return;}
+    if(!myName()){b.innerHTML=`<p class="sub">Choose the name your friends will see. Don't use your full name or email.</p><input type="text" id="frName" maxlength="16" placeholder="Trainer name" autocomplete="nickname"><p class="err">${esc(err)}</p><div class="btnrow"><button class="btn" id="frNameGo" type="button">Save</button></div>`;
+      $('frNameGo').onclick=()=>{const n=$('frName').value.trim().slice(0,16);if(n.length<2){err='Use at least 2 letters.';render();return;}try{localStorage.setItem(NKEY,n);}catch(e){}if(me)me.name=n;err='';go(async()=>{me=null;await refresh();});};return;}
+    const fr=friends.slice().sort((a,b)=>(online(b)-online(a))||((b.seen||0)-(a.seen||0)));
+    b.innerHTML=`<div class="row"><span>Your code</span><span><b class="k frcode">${esc(me?me.code:'…')}</b> <button class="btn alt frmini" id="frCopy" type="button">Copy</button></span></div>
+      <div class="frrow"><input type="text" id="frAdd" placeholder="Friend's code, e.g. MB-7K3QXP" autocomplete="off" spellcheck="false" autocapitalize="characters"><button class="btn frmini" id="frAddGo" type="button" ${busy?'disabled':''}>Add</button></div>
+      ${err?`<p class="err">${esc(err)}</p>`:''}
+      ${reqs.map(r=>`<div class="frreq"><span><b>${esc(r.fromName||'Someone')}</b> wants to be friends</span><span><button class="btn frmini" data-acc="${r._id}" type="button">Accept</button> <button class="btn alt frmini" data-dec="${r._id}" type="button">No</button></span></div>`).join('')}
+      ${fr.length?'':`<p class="sub">No friends yet. Swap codes with someone you know, then tap a friend to challenge them.</p>`}
+      <div class="picks frlist" id="frList">${fr.map(p=>{let d=null;try{d=p.beast?decode(p.beast):null;}catch(e){}
+        return `<button class="pick" type="button" data-uid="${p.uid}" ${p.gone?'disabled':''}><canvas width="96" height="72" aria-hidden="true"></canvas><b>${esc(p.name||'Friend')}</b><small>${p.pend?'connecting…':online(p)?'● online now':p.seen?ago(p.seen):''}${d?' · '+esc(d.name):''}</small></button>`;}).join('')}</div>`;
+    $('frCopy').onclick=()=>{const c=me&&me.code;if(!c)return;(navigator.clipboard?navigator.clipboard.writeText(c):Promise.reject()).then(()=>toast('Friend code copied')).catch(()=>toast(c));};
+    $('frAddGo').onclick=()=>{const v=$('frAdd').value;go(async()=>{await addByCode(v);toast('Friend request sent');$('frAdd').value='';});};
+    b.querySelectorAll('[data-acc]').forEach(x=>x.onclick=()=>{const r=reqs.find(q=>q._id===x.dataset.acc);go(async()=>{await accept(r);toast(`You and ${r.fromName||'your friend'} are now friends`);await refresh();});});
+    b.querySelectorAll('[data-dec]').forEach(x=>x.onclick=()=>{const r=reqs.find(q=>q._id===x.dataset.dec);go(async()=>{await decline(r);await refresh();});});
+    b.querySelectorAll('#frList .pick').forEach(x=>{const p=friends.find(f=>f.uid===x.dataset.uid),c=x.querySelector('canvas').getContext('2d');let d=null;try{d=p.beast?decode(p.beast):null;}catch(e){}
+      drawScene(c,96,72,false,0,0,'meadow');if(d)drawPetAt(c,d,48,56,0,{pose:{mode:'idle',f:0},mood:'happy',noFx:true});
+      x.onclick=()=>{if(!online(p)){toast(`${p.name} isn't online right now`);return;}invite(p);};});
+    if(fr.length)carousel($('frList'),'friends');}
+  async function go(f){if(busy)return;busy=true;err='';render();try{await f();}catch(e){err=e.message&&!/^[A-Z_]+$/.test(e.message)?e.message:'Something went wrong. Check your connection and try again.';}busy=false;render();}
+  function open(){$('battleSheet').hidden=true;$('friendsSheet').hidden=false;err='';render();if(F().uid&&myName())go(refresh);}
+  $('frClose').onclick=()=>{$('friendsSheet').hidden=true;};
+  // --- invites ---
+  let M=null;   // the current match: {id, role, other, ...}
+  async function invite(p){if(M||B)return;let id;
+    try{id=`${me.uid.slice(0,8)}${Date.now().toString(36)}`;const seed=Math.floor(Math.random()*2**31);
+      await put('matches/'+id,{a:me.uid,b:p.uid,aName:me.name,bName:p.name,aBeast:encode(S),status:'invite',seed,t:Date.now(),seenA:Date.now()},{create:true});}
+    catch(e){toast('Couldn\'t send the challenge. Try again.');return;}
+    M={id,role:'a',other:p.name,t0:Date.now()};$('friendsSheet').hidden=true;
+    $('lwText').textContent=`Waiting for ${p.name} to accept…`;$('liveWait').hidden=false;SFX.play('notice');watchInvite();}
+  async function watchInvite(){while(M&&M.role==='a'&&!M.live){await sleepMs(1000);if(!M)return;
+      let m=null;try{m=await get('matches/'+M.id);}catch(e){}
+      if(!m||m.status==='declined'){toast(m?`${M.other} said not now`:`The challenge was cancelled`);closeWait();return;}
+      if(m.status==='live'&&m.bBeast){$('liveWait').hidden=true;begin(m);return;}
+      if(Date.now()-M.t0>45e3){toast(`${M.other} didn't answer`);put('matches/'+M.id,{status:'cancelled'},{mask:['status']}).catch(()=>{});closeWait();return;}}}
+  function closeWait(){$('liveWait').hidden=true;M=null;}
+  $('lwCancel').onclick=()=>{if(M&&M.role==='a'&&!M.live){put('matches/'+M.id,{status:'cancelled'},{mask:['status']}).catch(()=>{});SFX.play('swipe');}closeWait();};
+  let offer=null,seenInvites=new Set();
+  async function checkInvites(){if(!F().uid||!me||M||B||offer)return;let list=[];try{list=await query('matches',{b:me.uid,status:'invite'});}catch(e){return;}
+    const m=list.filter(x=>Date.now()-x.t<40e3&&!seenInvites.has(x._id)).sort((x,y)=>y.t-x.t)[0];if(!m)return;seenInvites.add(m._id);
+    offer=m;$('liText').textContent=`${m.aName||'A friend'} wants to battle!`;$('liveInvite').hidden=false;SFX.play('unlock');buzz([60,40,60]);
+    clearTimeout(offer.tm);offer.tm=setTimeout(()=>{if(offer===m){$('liveInvite').hidden=true;offer=null;}},30e3);}
+  $('liNo').onclick=()=>{const m=offer;offer=null;$('liveInvite').hidden=true;if(m)put('matches/'+m._id,{status:'declined'},{mask:['status']}).catch(()=>{});};
+  $('liYes').onclick=async()=>{const m=offer;offer=null;$('liveInvite').hidden=true;if(!m||B)return;
+    if(EVO||document.body.classList.contains('tv-off')){toast('Switch the monitor on first');return;}
+    try{const cur=await get('matches/'+m._id);if(!cur||cur.status!=='invite'){toast('That challenge has ended');return;}
+      await put('matches/'+m._id,{status:'live',bBeast:encode(S),seenB:Date.now()},{mask:['status','bBeast','seenB']});M={id:m._id,role:'b',other:m.aName};begin({...cur,bBeast:encode(S),status:'live'});}
+    catch(e){toast('Couldn\'t join the battle. Try again.');M=null;}};
+  // --- the battle itself ---
+  let poll=0,beat=0,tick=0;
+  function begin(m){const role=M.role,mine=decode(role==='a'?m.aBeast:m.bBeast),theirs=decode(role==='a'?m.bBeast:m.aBeast);
+    if(!mine||!theirs){toast('That battle couldn\'t start');M=null;return;}
+    theirs.name=role==='a'?(m.bName||theirs.name):(m.aName||theirs.name);
+    ['menuSheet','feedSheet','advSheet','officeSheet','friendsSheet'].forEach(i=>$(i)&&($(i).hidden=true));
+    startBattle(theirs,true,null,{...mine,name:S.name,mlv:mine.mlv});
+    M={...M,live:true,seed:m.seed|0,n:1,mine:null,sent:false,t0:Date.now()+1200,other:role==='a'?m.bName:m.aName,lastSeen:Date.now(),done:false};
+    B.live={role,id:M.id};$('lTimer').hidden=false;
+    clearInterval(poll);poll=setInterval(step,700);clearInterval(beat);beat=setInterval(()=>{if(M&&M.live)put('matches/'+M.id,{['seen'+role.toUpperCase()]:Date.now()},{mask:['seen'+role.toUpperCase()]}).catch(()=>{});},4000);
+    clearInterval(tick);tick=setInterval(showTimer,250);}
+  function showTimer(){const el=$('lTimer');if(!M||!M.live||!B){el.hidden=true;return;}
+    if(B.busy||B.over){el.textContent='';return;}
+    const left=Math.max(0,Math.ceil(TURN-(Date.now()-M.t0)/1000));
+    el.textContent=M.sent?`Waiting for ${M.other}…`:`Choose a move · ${left}s`;el.classList.toggle('low',!M.sent&&left<=5);
+    if(!M.sent&&left<=0)choose({kind:'guard'},true);}
+  function choose(m,auto){if(!M||!M.live||M.sent||!B||B.busy||B.over)return;M.sent=true;M.mine=m;SFX.play('click');
+    if(auto)toast('Out of time: guarding');log(`${S.name} is ready. Waiting for ${M.other}…`);showTimer();window.__bb&&window.__bb();
+    const k=`${M.role}${M.n}`;put('matches/'+M.id,{mv:{[k]:m}},{mask:['mv.'+k]}).catch(()=>{M.sent=false;toast('Connection hiccup. Pick again.');});}
+  async function step(){if(!M||!M.live||M.busyStep)return;M.busyStep=true;
+    try{let m=null;try{m=await get('matches/'+M.id);}catch(e){}
+      if(!M||!B)return;
+      if(m){const them=M.role==='a'?'b':'a',seen=m['seen'+them.toUpperCase()];if(seen)M.lastSeen=Math.max(M.lastSeen,seen);
+        if(m.status==='done'&&m.forfeit&&(m.winner===F().uid||(m.loser&&m.loser!==F().uid))&&!B.over){finish(true,`${M.other} gave up. ${S.name} wins!`);return;}
+        const theirs=m.mv&&m.mv[`${them}${M.n}`];
+        if(M.sent&&theirs&&!B.busy&&!B.over){const mine=M.mine;M.sent=false;M.mine=null;
+          B.rng=mulberry((M.seed^Math.imul(M.n,2654435761))>>>0);
+          await round(mine,theirs);
+          if(B)B.rng=null;if(!M)return;M.n++;M.t0=Date.now();
+          if(B&&B.over){M.done=true;if(M.role==='a'){const won=B.foe.hp<=0&&B.me.hp>0;put('matches/'+M.id,{status:'done',winner:won?F().uid:'other'},{mask:['status','winner']}).catch(()=>{});}stop();}
+          return;}}
+      // the other player has gone quiet: after a while, the battle is yours
+      const quiet=(Date.now()-M.lastSeen)/1000,waited=(Date.now()-M.t0)/1000;
+      if(!B.over&&(quiet>STALE||(M.sent&&waited>TURN+GRACE+20))){finish(true,`${M.other} left the battle. ${S.name} wins!`);put('matches/'+M.id,{status:'done',winner:F().uid,forfeit:true},{mask:['status','winner','forfeit']}).catch(()=>{});}
+    }finally{if(M)M.busyStep=false;}}
+  function finish(won,msg){if(!B)return;B.over=true;B.foe.hp=won?0:B.foe.hp;B.me.hp=won?B.me.hp:0;renderBattle();log(msg);SFX.play(won?'win':'lose');battleResult(won);
+    if(won){S.wins++;addCoins(20+S.stage*5);}else S.losses++;save();
+    ['mAtk','mSp0','mSp1','mSp2','mGrd','bFlee'].forEach(id=>$(id).hidden=true);$('bDone').hidden=false;window.__bb&&window.__bb();stop();}
+  function giveUp(){if(!M||!M.live||!B||B.over)return;put('matches/'+M.id,{status:'done',winner:'other',forfeit:true,loser:F().uid},{mask:['status','winner','forfeit','loser']}).catch(()=>{});
+    finish(false,`${S.name} gave up the battle.`);}
+  function stop(){clearInterval(poll);clearInterval(beat);clearInterval(tick);$('lTimer').hidden=true;if(M)M.live=false;}
+  // background: keep my profile fresh and look for friend invites
+  let n=0;setInterval(async()=>{if(!F().ok||!F().uid||document.hidden||!myName())return;n++;
+    try{if(!me)await ensureProfile();if(n%10===1)await heartbeat();await checkInvites();if(!$('friendsSheet').hidden&&Date.now()-lastPoll>8e3){await refresh();render();}}catch(e){}},5000);
+  // a finished battle clears the match when the player presses Done
+  addEventListener('battleend',()=>{if(M&&!M.live)M=null;});
+  return {open,choose,giveUp,render,get match(){return M;}};
 })();
 
 // ---------- desktop companion: no room, just the monitor and keyboard floating over your other windows ----------
