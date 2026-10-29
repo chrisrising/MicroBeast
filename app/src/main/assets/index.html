@@ -1371,6 +1371,16 @@ body:not(.v-kb) .crt>.sheet .box.vbox{height:100%!important;max-height:100%!impo
 .crt>#menuSheet .syncbox input{padding:3px 8px;font-size:17px}
 
 #syncSheet{z-index:40!important}
+
+#signSheet{z-index:41!important}
+.signbox{border-bottom:0;padding-bottom:0}
+#signSheet .btnrow .btn{flex:1 1 0}
+
+.crt>#signSheet .box{gap:6px;padding-top:8px;padding-bottom:10px}
+.crt>#signSheet .box>.sub{font-size:13px;line-height:1.1}
+.crt>#signSheet .syncbox{gap:5px}
+.crt>#signSheet input{padding:3px 8px;font-size:16px}
+.crt>#signSheet .btn{padding:3px 8px;font-size:15px}
 </style>
 
 <main class="desk" id="desk">
@@ -1558,6 +1568,14 @@ body:not(.v-kb) .crt>.sheet .box.vbox{height:100%!important;max-height:100%!impo
 </div>
 
 <!-- fully grown: offer a new egg -->
+<div class="sheet" id="signSheet" hidden>
+  <div class="box" role="dialog" aria-labelledby="sgTitle">
+    <h3 id="sgTitle">Sign in to MicroBeast</h3>
+    <p class="sub">Sign in to keep the same progress on your phone, PC and iPhone. You only need to do this once on each device.</p>
+    <div class="syncbox signbox" id="signBox"></div>
+    <div class="btnrow"><button class="btn alt" id="signLater" type="button">Not now</button><button class="btn alt" id="signNever" data-key="Never" type="button">Don't ask again</button></div>
+  </div>
+</div>
 <div class="sheet" id="syncSheet" hidden>
   <div class="box" role="dialog" aria-labelledby="syTitle">
     <h3 id="syTitle">Two saves found</h3>
@@ -4031,7 +4049,7 @@ const VIEW=(()=>{
     if(k.dataset.tab){showTab(k.dataset.tab);$('menuSheet').hidden=false;return;}
     const a=k.dataset.act;if(a==='power')$('pwrKey').click();else if(a==='pet')$('petBtn').click();else if(a==='snd'){$('sndBtn').click();syncKeys();}else if(a==='desk')set('desk');else if(a==='back')goBack();else if(a==='office')OFFICE.open();});
   // BACK closes whatever is open on screen, using its own close/cancel button where it has one
-  const BACKORDER=['syncSheet','advHintSheet','trainSheet','advSheet','eggSheet','officeSheet','resetSheet','pickSheet','giftSheet','unlockSheet','feedSheet','qrSheet','challengeSheet','evoSheet','battleSheet','menuSheet'];
+  const BACKORDER=['signSheet','syncSheet','advHintSheet','trainSheet','advSheet','eggSheet','officeSheet','resetSheet','pickSheet','giftSheet','unlockSheet','feedSheet','qrSheet','challengeSheet','evoSheet','battleSheet','menuSheet'];
   function goBack(){const id=BACKORDER.find(i=>$(i)&&!$(i).hidden);if(!id)return;if(id==='officeSheet'&&OFFICE.up())return;if(id==='menuSheet'&&curTab==='shop'&&shopPath){shopPath='';renderShop();return;}if(id==='menuSheet'&&curTab==='items'&&invPath){invPath='';renderItems();return;}const sh=$(id);
     const c=sh.querySelector('.x')||[...sh.querySelectorAll('button[id]')].find(b=>/(Close|No|Later|Keep|Cancel)$/.test(b.id));if(c)c.click();else sh.hidden=true;}
   const sheets=[...document.querySelectorAll('.sheet')];
@@ -4119,7 +4137,7 @@ const VIEW=(()=>{
     let items;
     if(PG.secs.length>1&&sh.id!=='menuSheet')items=PG.secs.slice(0,6).map((s,i)=>{const t=(s.querySelector('.k')||{}).textContent||'';const k=t.split(' ·')[0].trim();return {label:SHORT[k]||k.charAt(0)+k.slice(1).toLowerCase(),sec:i};});
     else if(sh.id==='menuSheet')items=[...sh.querySelectorAll('[role=tab]')].map(b=>({label:{INVENTORY:'Inventory',SYSTEM:'Settings'}[b.textContent.trim()]||b.textContent.trim(),tab:b.dataset.tab,on:b.dataset.tab===curTab}));
-    else items=selectables().slice(0,5).map(e=>({label:(e.querySelector('b,strong,.mv')||e).textContent.replace(/[>×]/g,'').trim()||e.placeholder||'Type',el:e}));
+    else items=selectables().slice(0,5).map(e=>({label:e.dataset.key||(e.querySelector('b,strong,.mv')||e).textContent.replace(/[>×]/g,'').trim()||(e.placeholder||'Type').replace(/\s*\(.*\)$/,''),el:e}));
     kb.classList.toggle('shopmode',sh.id==='officeSheet'||sh.id==='advSheet');
     const key=(sh.id+':'+(sh.id==='menuSheet'?'':(PG.tab&&PG.tab.id))+':'+items.map(i=>i.label).join('|'));if(key===catKey){[...navcat.querySelectorAll('.cat')].forEach((c,i)=>{if(items[i])c._on=items[i].on;});paintCatsOn();return;}catKey=key;
     navcat.innerHTML='';
@@ -4632,6 +4650,8 @@ $('eggLater').onclick=()=>{$('eggSheet').hidden=true;toast('You can hatch an egg
 function fitSheets(){const crt=$('crt');if(crt.clientWidth)crt.style.setProperty('--zc',(crt.clientWidth/340).toFixed(3));
   document.documentElement.style.setProperty('--sz',clamp(Math.min(innerWidth/600,innerHeight/760),1,1.8).toFixed(3));}
 addEventListener('resize',fitSheets);addEventListener('viewchange',()=>{fitSheets();setTimeout(fitSheets,700);});fitSheets();
+// the screen can change size without the window resizing (the PC app, a view change), so follow it directly
+if(window.ResizeObserver)new ResizeObserver(()=>fitSheets()).observe($('crt'));
 
 // ---------- carousels: one option in the middle, the next ones peeping in at the sides ----------
 // menus scroll downwards like the office site: the current option sits at the top, the next one peeps up from below
@@ -4876,7 +4896,7 @@ const SYNC=(()=>{
   const API=window.__mbFirebaseAPI||{auth:'https://identitytoolkit.googleapis.com/v1',token:'https://securetoken.googleapis.com/v1',store:'https://firestore.googleapis.com/v1'};
   const AKEY='microbeast.acct';
   // the claude.ai page can't reach outside servers, so sync only appears in the apps and the home-screen version
-  const OK=location.protocol==='file:'||/(^|\.)github\.io$|^localhost$|^127\.0\.0\.1$/.test(location.hostname)||!!window.__mbFirebaseAPI;
+  const OK=!!window.__mbFirebaseAPI||!/(^|\.)(claude\.ai|claudeusercontent\.com|anthropic\.com|claude\.site)$/.test(location.hostname);
   const DEVICE=window.mbDesktop?'Windows app':/iPhone|iPad|iPod/.test(navigator.userAgent)?'iPhone':/Android/.test(navigator.userAgent)?'Android phone':'web browser';
   let acct=null,idTok=null,idExp=0,busy=false,lastErr='',state='idle';
   // a fingerprint of the save that ignores things that change on their own (meters ticking down, timestamps),
@@ -4940,40 +4960,56 @@ const SYNC=(()=>{
   async function signIn(email,pw,create){
     const j=await authCall(create?'signUp':'signInWithPassword',{email,password:pw,returnSecureToken:true});
     acct={email:j.email||email,uid:j.localId,refresh:j.refreshToken,rev:null,syncedAt:0};idTok=j.idToken;idExp=Date.now()+(+j.expiresIn||3600)*1000;keep();
-    await check(true);toast(create?'Account created. Your progress is saved to the cloud':'Signed in. Your progress now syncs');}
-  // the Account part of Settings → System
-  function render(){const b=$('syncBox');if(!b)return;
+    $('signSheet').hidden=true;await check(true);toast(create?'Account created. Your progress is saved to the cloud':'Signed in. Your progress now syncs');}
+  // the sign-in form: drawn in Settings → System and in the pop-up at the start
+  const LKEY='microbeast.lastEmail',PKEY='microbeast.noPrompt';
+  const esc=t=>String(t).replace(/[<>&"]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]));
+  function form(b,head){
     // keep whatever has been typed when the box redraws (after an error, say)
-    const te=$('syncEmail'),tp=$('syncPw'),ve=te?te.value:'',vp=tp?tp.value:'',foc=document.activeElement&&document.activeElement.id;
-    if(!OK){b.innerHTML=`<span class="k">ACCOUNT & SYNC</span><p class="sub">Sign in from the Android app, the PC app or the home-screen version to sync your progress between devices.</p>`;return;}
+    const q=sel=>b.querySelector(sel),te=q('[data-f=email]'),tp=q('[data-f=pw]'),foc=document.activeElement&&b.contains(document.activeElement)?document.activeElement.dataset.f:null;
+    let ve=te?te.value:'',vp=tp?tp.value:'';if(!te){try{ve=localStorage.getItem(LKEY)||'';}catch(e){}}
     const err=lastErr?`<p class="err">${lastErr}</p>`:'';
-    if(!acct){b.innerHTML=`<span class="k">ACCOUNT & SYNC</span><p class="sub">Sign in to keep the same progress on your phone, PC and iPhone.</p>
-      <input type="email" id="syncEmail" placeholder="Email address" autocomplete="email" spellcheck="false">
-      <input type="password" id="syncPw" placeholder="Password (6+ characters)" autocomplete="current-password">
-      ${err}<div class="btnrow"><button class="btn" id="syncIn" type="button" ${busy?'disabled':''}>Sign in</button><button class="btn alt" id="syncNew" type="button" ${busy?'disabled':''}>Create account</button></div>
-      <button class="linkbtn" id="syncForgot" type="button">Forgot password?</button>`;
-      const go=create=>{const e=$('syncEmail').value.trim(),p=$('syncPw').value;if(!e||!p){lastErr=!e?'Type your email address.':'Type a password.';render();return;}run(()=>signIn(e,p,create));};
-      $('syncEmail').value=ve;$('syncPw').value=vp;if(foc==='syncEmail'||foc==='syncPw')$(foc).focus();
-      $('syncIn').onclick=()=>go(false);$('syncNew').onclick=()=>go(true);$('syncPw').onkeydown=e=>{if(e.key==='Enter')go(false);};
-      $('syncForgot').onclick=()=>{const e=$('syncEmail').value.trim();if(!e){lastErr='Type your email address first, then press Forgot password.';render();return;}
-        run(async()=>{await authCall('sendOobCode',{requestType:'PASSWORD_RESET',email:e});toast('Password reset email sent');lastErr='';});};
-      return;}
-    const when=busy?'Syncing…':acct.syncedAt?'Last synced '+ago(acct.syncedAt):'Not synced yet';
-    b.innerHTML=`<span class="k">ACCOUNT & SYNC</span><div class="row"><span>${acct.email.replace(/[<>&"]/g,'')}</span><span class="sub">${when}</span></div>${err}
-      <div class="btnrow"><button class="btn" id="syncNow" type="button" ${busy?'disabled':''}>Sync now</button><button class="btn alt" id="syncOut" type="button" ${busy?'disabled':''}>Sign out</button></div>`;
-    $('syncNow').onclick=()=>run(async()=>{await check(false);if(!$('syncSheet').hidden)return;toast('Synced');});
-    $('syncOut').onclick=()=>{acct=null;idTok=null;keep();lastErr='';render();toast('Signed out. Your progress stays on this device');};}
+    b.innerHTML=`${head}
+      <input type="email" data-f="email" id="${b.id}Email" placeholder="Email address" autocomplete="username" spellcheck="false" autocapitalize="off">
+      <input type="password" data-f="pw" id="${b.id}Pw" placeholder="Password (6+ characters)" autocomplete="current-password">
+      ${err}<div class="btnrow"><button class="btn" data-f="in" type="button" ${busy?'disabled':''}>${busy?'Signing in…':'Sign in'}</button><button class="btn alt" data-f="new" type="button" ${busy?'disabled':''}>Create account</button></div>
+      <button class="linkbtn" data-f="forgot" data-key="Forgot" type="button">Forgot password?</button>`;
+    q('[data-f=email]').value=ve;q('[data-f=pw]').value=vp;if(foc==='email'||foc==='pw')q(`[data-f=${foc}]`).focus();
+    const go=create=>{const e=q('[data-f=email]').value.trim(),p=q('[data-f=pw]').value;if(!e||!p){lastErr=!e?'Type your email address.':'Type a password.';render();return;}
+      try{localStorage.setItem(LKEY,e);}catch(x){}run(()=>signIn(e,p,create));};
+    q('[data-f=in]').onclick=()=>go(false);q('[data-f=new]').onclick=()=>go(true);q('[data-f=pw]').onkeydown=e=>{if(e.key==='Enter')go(false);};
+    q('[data-f=forgot]').onclick=()=>{const e=q('[data-f=email]').value.trim();if(!e){lastErr='Type your email address first, then press Forgot password.';render();return;}
+      run(async()=>{await authCall('sendOobCode',{requestType:'PASSWORD_RESET',email:e});toast('Password reset email sent');lastErr='Password reset email sent. Check your inbox.';});};
+  }
+  function render(){
+    const b=$('syncBox');
+    if(b){
+      if(!OK)b.innerHTML=`<span class="k">ACCOUNT & SYNC</span><p class="sub">Sign in from the Android app, the PC app or the home-screen version to sync your progress between devices.</p>`;
+      else if(!acct)form(b,`<span class="k">ACCOUNT & SYNC</span><p class="sub">Sign in to keep the same progress on your phone, PC and iPhone.</p>`);
+      else{const when=busy?'Syncing…':acct.syncedAt?'Last synced '+ago(acct.syncedAt):'Not synced yet';
+        b.innerHTML=`<span class="k">ACCOUNT & SYNC</span><div class="row"><span>${esc(acct.email)}</span><span class="sub">${when}</span></div>${lastErr?`<p class="err">${lastErr}</p>`:''}
+          <div class="btnrow"><button class="btn" id="syncNow" type="button" ${busy?'disabled':''}>Sync now</button><button class="btn alt" id="syncOut" type="button" ${busy?'disabled':''}>Sign out</button></div>`;
+        $('syncNow').onclick=()=>run(async()=>{await check(false);if(!$('syncSheet').hidden)return;toast('Synced');});
+        $('syncOut').onclick=()=>{acct=null;idTok=null;keep();lastErr='';render();toast('Signed out. Your progress stays on this device');};}}
+    const sb=$('signBox');if(sb&&!$('signSheet').hidden){if(acct)$('signSheet').hidden=true;else form(sb,'');}
+  }
+  // the pop-up when the game starts and nobody is signed in on this device
+  function prompt(){if(!OK||acct)return;try{if(localStorage.getItem(PKEY))return;}catch(e){}
+    lastErr='';$('signSheet').hidden=false;render();SFX.play('unlock');}
+  $('signLater').onclick=()=>{$('signSheet').hidden=true;lastErr='';render();};
+  $('signNever').onclick=()=>{$('signSheet').hidden=true;lastErr='';try{localStorage.setItem(PKEY,'1');}catch(e){}render();toast('You can sign in any time from Settings → System');};
   if(OK){
     // every 30 seconds: upload if something has changed here; every 2 minutes: look for newer progress from another device
     let n=0;setInterval(()=>{if(!acct||busy||document.hidden||navigator.onLine===false||!$('syncSheet').hidden)return;n++;
       if(isDirty())run(()=>push());else if(n%4===0)run(()=>check(false));},30e3);
     document.addEventListener('visibilitychange',()=>{if(!acct)return;if(document.hidden){if(isDirty())push().catch(()=>{});}else run(()=>check(false));});
-    addEventListener('online',()=>{if(acct)run(()=>check(false));});}
+    addEventListener('online',()=>{if(acct)run(()=>check(false));});
+    addEventListener('pagehide',()=>{if(acct&&isDirty())push().catch(()=>{});});}
   // a conflict on upload means another device saved meanwhile: check again, which loads theirs or asks
   const push0=push;push=async f=>{try{await push0(f);}catch(e){if(!f&&(e.status===409||e.fs==='FAILED_PRECONDITION'||e.fs==='ALREADY_EXISTS')){await check(false);return;}throw e;}};
   function start(){render();try{const m=sessionStorage.getItem('microbeast.msg');if(m){sessionStorage.removeItem('microbeast.msg');setTimeout(()=>toast(m),1500);}}catch(e){}
     if(OK&&acct)run(()=>check(false));}
-  return {start,render,get signedIn(){return !!acct;},get available(){return OK;}};
+  return {start,render,prompt,get signedIn(){return !!acct;},get available(){return OK;}};
 })();
 
 // ---------- desktop companion: no room, just the monitor and keyboard floating over your other windows ----------
@@ -5011,6 +5047,7 @@ const awayAtLoad=S.last?Date.now()-S.last:0, hm=(location.hash||'').match(/^#(fl
 tick();renderAll();requestAnimationFrame(frame);SYNC.start();
 // what happens when the monitor first comes on: a new player picks a pet, a returning one may find a gift or a battle link
 window.__startup=()=>{
+setTimeout(()=>SYNC.prompt(),firstRun?300:900);
 if(firstRun) openSpecies(false); else if(!S.sp) openSpecies(true);
 else{maybeGift(awayAtLoad);if(!S.asleep&&S.m.energy>50&&Date.now()-(S.lastBattle||0)>60*60e3&&Math.random()<.35)setTimeout(setRestless,awayAtLoad>30*60e3?6000:2500);}
 if(hm){const foe=decode(hm[1]);if(foe) challenge(foe,'You opened a battle link.');}
