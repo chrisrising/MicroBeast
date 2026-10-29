@@ -4928,8 +4928,8 @@ function migrateBosses(w){const b=w&&w.bosses;if(!b)return;
     const nn=BOSS_NAMES.find(n=>BOSSES[n].mat===m)||BOSS_NAMES[0],st=(r.look&&r.look.stage)||2;
     const cur=b[nn];b[nn]={n:(cur?cur.n:0)+(r.n|0),t:cur?Math.min(cur.t,r.t):r.t,look:{...bossLook(nn,st),stage:st}};}
   return true;}
-// (runs here, once the boss list exists; the save itself was loaded earlier)
-if(W&&W.bosses&&OLD_BOSSES.some(n=>W.bosses[n])){migrateBosses(W);save();}
+// the boss names changed, so the Book of Victories starts again from empty (once, on each save)
+if(W&&!W.bossesReset){W.bosses={};W.bossesReset=1;save();}
 function recordBoss(f){W.bosses=W.bosses||{};const b=W.bosses[f.name]||{n:0,t:Date.now()};b.n++;b.look={sp:f.sp,stage:f.stage,el:(f.el||[]).slice(),mat:f.mat||null};W.bosses[f.name]=b;save();}
 const ADV=(()=>{
   let A=null;
