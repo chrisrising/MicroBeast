@@ -1436,7 +1436,9 @@ body:not(.v-kb) .crt>.sheet .box.vbox{height:100%!important;max-height:100%!impo
 .frbody{display:flex;flex-direction:column;gap:8px;min-height:0}
 .frcode{font-size:1.15em;letter-spacing:.08em}
 .frmini{padding:2px 10px!important;font-size:16px!important}
-.frrow{display:flex;gap:6px}.frrow input{flex:1;min-width:0}
+.frrow{display:flex;gap:6px;align-items:stretch}.frrow input{flex:1;min-width:0}
+.frpre{display:flex;flex:1;min-width:0;align-items:center;gap:4px}.frpre>b{letter-spacing:.08em}.frpre input{text-transform:uppercase;letter-spacing:.08em}
+.frqr{background:#fff;padding:8px;display:flex;justify-content:center;margin:6px auto;width:max-content;max-width:100%}.frqr img{width:200px;height:200px;image-rendering:pixelated;display:block}
 .frreq{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;border:1px dashed var(--ph-dim);padding:5px 8px}
 .ltimer{position:absolute;left:50%;top:22%;transform:translateX(-50%);z-index:5;pointer-events:none;font-family:var(--term-font);font-size:clamp(14px,3.8cqw,20px);color:#F0FFF3;
   background:rgba(2,8,4,.72);padding:2px 10px;box-shadow:0 0 0 1px rgba(141,255,168,.35);white-space:nowrap}
@@ -1800,6 +1802,7 @@ body:not(.v-kb) .crt>.sheet .box.vbox{height:100%!important;max-height:100%!impo
     <div class="row"><span class="k" id="btWho"></span><span class="sub" id="record2"></span></div>
     <button class="btn" id="randBtn" type="button">&gt; Random battle</button>
     <button class="btn" id="liveBtn" type="button">&gt; Battle a friend live</button>
+    <button class="btn" id="liveQrBtn" type="button">&gt; Battle live: show my QR</button>
     <button class="btn alt" id="myCodeBtn" type="button">&gt; Battle a friend: show my QR</button>
     <p class="sub">Got a friend's code? Paste it here to battle their pet.</p>
     <input type="text" id="friendCode" placeholder="Paste a battle code or link" autocomplete="off" spellcheck="false">
@@ -3175,6 +3178,7 @@ function quickBattle(){
 }
 $('randBtn').onclick=quickBattle;
 $('liveBtn').onclick=()=>LIVE.open();
+$('liveQrBtn').onclick=()=>LIVE.openQr();
 $('battleBtn').onclick=()=>{$('btWho').textContent=`${S.name.toUpperCase()} · ${STAGES[S.stage].toUpperCase()}`;$('codeErr').textContent='';$('battleSheet').hidden=false;};
 $('btClose').onclick=()=>{$('battleSheet').hidden=true;};
 
@@ -4372,7 +4376,10 @@ const VIEW=(()=>{
   const hide=e=>e.setAttribute('data-pg','1'),unhide=e=>e.removeAttribute('data-pg');
   function gridOf(s){return [...s.children].reverse().find(c=>c.children.length>0&&!c.classList.contains('k')&&!c.matches('p,.sub'));}
   function hideAllBut(root,keep){[...root.children].forEach(c=>{if(c===keep||c.matches('.pager'))return;if(c.contains(keep))hideAllBut(c,keep);else hide(c);});}
+  const isTextBox=e=>!!e&&(e.tagName==='TEXTAREA'||(e.tagName==='INPUT'&&!/^(button|checkbox|radio|range|submit)$/.test(e.type)));
+  const typing=()=>{const a=document.activeElement,sh=openSheet();return isTextBox(a)&&!!sh&&sh.contains(a);};
   function layout(keepSel){
+    if(typing())return;
     const sh=openSheet();if(!sh)return;
     if(sh.id==='advSheet'){clearMarks(sh);const l=selectables();select((selEl&&l.includes(selEl))?selEl:l.find(e=>e.classList.contains('avail'))||l.find(e=>e.closest('.apanel'))||l[0]||null,true);return;}
     const box=boxOf(sh),root=rootOf(sh);if(!box||!root)return;
@@ -4464,8 +4471,10 @@ const VIEW=(()=>{
   new MutationObserver(()=>{cancelAnimationFrame(modeQ);modeQ=requestAnimationFrame(updateMode);}).observe(document.body,{attributes:true,subtree:true,attributeFilter:['hidden']});
   // when a page's contents are redrawn (equipping a hat, buying something) lay it out again on the same page
   sheets.forEach(s=>new MutationObserver(ms=>{if(openSheet()!==s)return;if(ms.every(m=>m.target.closest&&m.target.closest('.pager,.carwrap')))return;
-    cancelAnimationFrame(relayQ);relayQ=requestAnimationFrame(()=>{layout();if(menuMode)buildCats(false);});}).observe(s,{childList:true,subtree:true}));
-  addEventListener('resize',()=>{if(openSheet())layout();});
+    if(typing())return;cancelAnimationFrame(relayQ);relayQ=requestAnimationFrame(()=>{if(typing())return;layout();if(menuMode)buildCats(false);});}).observe(s,{childList:true,subtree:true}));
+  addEventListener('resize',()=>{if(openSheet()&&!typing())layout();});
+  // once typing finishes (keyboard closed), lay the page out again for the full-size screen
+  document.addEventListener('focusout',e=>{if(!isTextBox(e.target))return;setTimeout(()=>{if(openSheet()&&!typing()){layout();if(menuMode)buildCats(false);}},350);});
   addEventListener('viewchange',()=>setTimeout(()=>{if(openSheet())layout();},60));
   sheets.forEach(s=>$('crt').appendChild(s));if($('officeSheet'))$('crt').appendChild($('officeSheet'));
   // the little ◀ ▶ on each screen's page counter can be tapped too (that's how you turn pages in desk view)
@@ -5405,7 +5414,10 @@ const LIVE=(()=>{
     const j=await F().call(`${F().base()}:runQuery`,{method:'POST',headers:await H(),body:JSON.stringify({structuredQuery:{from:[{collectionId:col}],where:filters.length>1?{compositeFilter:{op:'AND',filters}}:filters[0]}})});
     return (Array.isArray(j)?j:[]).filter(r=>r.document).map(r=>({...fromF(r.document.fields),_id:r.document.name.split('/').pop(),_t:r.document.updateTime}));}
   // --- my profile ---
-  let me=null,friends=[],reqs=[],busy=false,err='',lastPoll=0;
+  let me=null,friends=[],reqs=[],busy=false,err='',lastPoll=0,qrOn=false,qrSince=0;
+  // the QR opens the web version straight to your code
+  const QR_URL=/github\.io$/.test(location.hostname)?location.origin+location.pathname:'https://chrisrising.github.io/MicroBeast/';
+  const QKEY='microbeast.qrFriend';
   const myName=()=>{try{return localStorage.getItem(NKEY)||'';}catch(e){return '';}};
   const CH='ABCDEFGHJKMNPQRSTUVWXYZ23456789',newCode=()=>'MB-'+Array.from({length:6},()=>CH[Math.floor(Math.random()*CH.length)]).join('');
   async function ensureProfile(){const uid=F().uid;if(!uid)return null;
@@ -5417,7 +5429,7 @@ const LIVE=(()=>{
   async function heartbeat(){if(!me)return;me.seen=Date.now();me.beast=encode(S);try{await put('profiles/'+me.uid,{seen:me.seen,beast:me.beast,name:me.name},{mask:['seen','beast','name']});}catch(e){}}
   async function setFriends(list){me.friends=[...new Set(list)];await put('profiles/'+me.uid,{friends:me.friends},{mask:['friends']});}
   // --- friends ---
-  async function addByCode(raw){const code=String(raw||'').toUpperCase().replace(/[^A-Z0-9]/g,'').replace(/^MB/,'');if(code.length!==6)throw new Error('That code should look like MB-7K3QXP.');
+  async function addByCode(raw){const code=String(raw||'').toUpperCase().replace(/[^A-Z0-9]/g,'').replace(/^MB(?=[A-Z0-9]{6}$)/,'');if(code.length!==6)throw new Error('Type the 6 letters and numbers after MB-, e.g. 7K3QXP.');
     const c=await get('codes/MB-'+code);if(!c||!c.uid)throw new Error('No one has that friend code. Check it and try again.');
     if(c.uid===me.uid)throw new Error('That\'s your own code!');if(me.friends.includes(c.uid))throw new Error('You\'re already friends.');
     try{await put(`requests/${me.uid}_${c.uid}`,{from:me.uid,to:c.uid,fromName:me.name,fromCode:me.code,status:'pending',t:Date.now()},{create:true});}
@@ -5429,6 +5441,8 @@ const LIVE=(()=>{
   async function refresh(){if(!F().uid)return;await ensureProfile();
     // requests to me, and my requests that were accepted
     reqs=(await query('requests',{to:me.uid,status:'pending'})).filter(r=>r.from!==me.uid);
+    if(qrOn&&!$('friendsSheet').hidden)for(const r of reqs.filter(r=>(r.t||0)>=qrSince-5e3)){await accept(r);qrOn=false;toast(`${r.fromName||'Your friend'} scanned your code. Get ready to battle!`);}
+    reqs=reqs.filter(r=>!me.friends.includes(r.from));
     for(const r of await query('requests',{from:me.uid,status:'accepted'})){if(!me.friends.includes(r.to))await setFriends([...me.friends,r.to]);await del('requests/'+r._id);}
     // a friend you've just accepted shows up properly once their game adds you back (a few seconds)
     const out=[];for(const uid of me.friends){const p=await get('profiles/'+uid);if(p)learn(uid,p.name);out.push(p?{uid,...p}:{uid,name:known()[uid]||'New friend',gone:true,pend:true});}
@@ -5437,30 +5451,48 @@ const LIVE=(()=>{
   const esc=t=>String(t==null?'':t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
   const ago=t=>{const s=(Date.now()-t)/1000;return s<90?'online now':s<3600?`seen ${s/60|0} min ago`:s<86400?`seen ${s/3600|0} hr ago`:`seen ${s/86400|0} days ago`;};
   const online=p=>p&&p.seen&&Date.now()-p.seen<90e3;
-  function render(){const b=$('frBody');if(!b)return;
+  function render(){const b=$('frBody');if(!b)return;const old=$('frAdd'),typed=old?old.value:'',had=old&&document.activeElement===old;
     if(!F().ok){b.innerHTML=`<p class="sub">Friends work in the Android app, the PC app and the home-screen version.</p>`;return;}
     if(!F().uid){b.innerHTML=`<p class="sub">Sign in to add friends and battle them live.</p><div class="btnrow"><button class="btn" id="frSign" type="button">Sign in</button></div>`;
       $('frSign').onclick=()=>{$('friendsSheet').hidden=true;try{localStorage.removeItem('microbeast.noPrompt');}catch(e){}SYNC.prompt();};return;}
     if(!myName()){b.innerHTML=`<p class="sub">Choose the name your friends will see. Don't use your full name or email.</p><input type="text" id="frName" maxlength="16" placeholder="Trainer name" autocomplete="nickname"><p class="err">${esc(err)}</p><div class="btnrow"><button class="btn" id="frNameGo" type="button">Save</button></div>`;
       $('frNameGo').onclick=()=>{const n=$('frName').value.trim().slice(0,16);if(n.length<2){err='Use at least 2 letters.';render();return;}try{localStorage.setItem(NKEY,n);}catch(e){}if(me)me.name=n;err='';go(async()=>{me=null;await refresh();});};return;}
     const fr=friends.slice().sort((a,b)=>(online(b)-online(a))||((b.seen||0)-(a.seen||0)));
-    b.innerHTML=`<div class="row"><span>Your code</span><span><b class="k frcode">${esc(me?me.code:'…')}</b> <button class="btn alt frmini" id="frCopy" type="button">Copy</button></span></div>
-      <div class="frrow"><input type="text" id="frAdd" placeholder="Friend's code, e.g. MB-7K3QXP" autocomplete="off" spellcheck="false" autocapitalize="characters"><button class="btn frmini" id="frAddGo" type="button" ${busy?'disabled':''}>Add</button></div>
+    b.innerHTML=`<div class="row"><span>Your code</span><span><b class="k frcode">${esc(me?me.code:'…')}</b> <button class="btn alt frmini" id="frCopy" type="button">Copy</button> <button class="btn alt frmini" id="frQr" type="button">QR</button></span></div>
+      ${qrOn&&me?`<div class="frqr" id="frQrBox"></div><p class="sub">Your friend scans this with their phone camera. You'll be friends straight away and the live battle starts.</p>`:''}
+      <div class="frrow"><label class="frpre"><b>MB-</b><input type="text" id="frAdd" placeholder="7K3QXP" maxlength="9" inputmode="text" autocomplete="off" spellcheck="false" autocapitalize="characters" aria-label="Friend's code, after MB-"></label><button class="btn frmini" id="frAddGo" type="button" ${busy?'disabled':''}>Add</button></div>
       ${err?`<p class="err">${esc(err)}</p>`:''}
       ${reqs.map(r=>`<div class="frreq"><span><b>${esc(r.fromName||'Someone')}</b> wants to be friends</span><span><button class="btn frmini" data-acc="${r._id}" type="button">Accept</button> <button class="btn alt frmini" data-dec="${r._id}" type="button">No</button></span></div>`).join('')}
       ${fr.length?'':`<p class="sub">No friends yet. Swap codes with someone you know, then tap a friend to challenge them.</p>`}
       <div class="picks frlist" id="frList">${fr.map(p=>{let d=null;try{d=p.beast?decode(p.beast):null;}catch(e){}
         return `<button class="pick" type="button" data-uid="${p.uid}" ${p.gone?'disabled':''}><canvas width="96" height="72" aria-hidden="true"></canvas><b>${esc(p.name||'Friend')}</b><small>${p.pend?'connecting…':online(p)?'● online now':p.seen?ago(p.seen):''}${d?' · '+esc(d.name):''}</small></button>`;}).join('')}</div>`;
     $('frCopy').onclick=()=>{const c=me&&me.code;if(!c)return;(navigator.clipboard?navigator.clipboard.writeText(c):Promise.reject()).then(()=>toast('Friend code copied')).catch(()=>toast(c));};
-    $('frAddGo').onclick=()=>{const v=$('frAdd').value;go(async()=>{await addByCode(v);toast('Friend request sent');$('frAdd').value='';});};
+    $('frAdd').oninput=e=>{const i=e.target;let v=i.value.toUpperCase().replace(/[^A-Z0-9]/g,'');if(v.length>6&&v.startsWith('MB'))v=v.slice(2);v=v.slice(0,6);if(i.value!==v)i.value=v;};
+    $('frAdd').onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();e.stopPropagation();$('frAddGo').click();}};
+    $('frQr').onclick=()=>{qrOn=!qrOn;qrSince=Date.now();render();};
+    if(qrOn&&me&&$('frQrBox')){try{const q=qrcode(0,'M');q.addData(QR_URL+'#'+me.code);q.make();$('frQrBox').innerHTML=`<img alt="QR code for your friend code" src="${q.createDataURL(6,2)}">`;}catch(e){$('frQrBox').innerHTML='<p class="sub" style="color:#333">The QR maker didn\'t load. Share your code instead.</p>';}}
+    $('frAddGo').onclick=()=>{const v=$('frAdd').value;go(async()=>{await addByCode(v);toast('Friend request sent');if($('frAdd'))$('frAdd').value='';});};
     b.querySelectorAll('[data-acc]').forEach(x=>x.onclick=()=>{const r=reqs.find(q=>q._id===x.dataset.acc);go(async()=>{await accept(r);toast(`You and ${r.fromName||'your friend'} are now friends`);await refresh();});});
     b.querySelectorAll('[data-dec]').forEach(x=>x.onclick=()=>{const r=reqs.find(q=>q._id===x.dataset.dec);go(async()=>{await decline(r);await refresh();});});
     b.querySelectorAll('#frList .pick').forEach(x=>{const p=friends.find(f=>f.uid===x.dataset.uid),c=x.querySelector('canvas').getContext('2d');let d=null;try{d=p.beast?decode(p.beast):null;}catch(e){}
       drawScene(c,96,72,false,0,0,'meadow');if(d)drawPetAt(c,d,48,56,0,{pose:{mode:'idle',f:0},mood:'happy',noFx:true});
       x.onclick=()=>{if(!online(p)){toast(`${p.name} isn't online right now`);return;}invite(p);};});
+    if(typed)$('frAdd').value=typed;if(had)$('frAdd').focus({preventScroll:true});
     if(fr.length)carousel($('frList'),'friends');}
   async function go(f){if(busy)return;busy=true;err='';render();try{await f();}catch(e){err=e.message&&!/^[A-Z_]+$/.test(e.message)?e.message:'Something went wrong. Check your connection and try again.';}busy=false;render();}
-  function open(){$('battleSheet').hidden=true;$('friendsSheet').hidden=false;err='';render();if(F().uid&&myName())go(refresh);}
+  async function scanned(){let q=null;try{q=JSON.parse(localStorage.getItem(QKEY)||'null');}catch(e){}
+    if(!q||Date.now()-q.t>15*60e3){try{localStorage.removeItem(QKEY);}catch(e){}return;}
+    if(M||B)return;try{localStorage.removeItem(QKEY);}catch(e){}
+    await ensureProfile();const code=q.code.toUpperCase().replace(/[^A-Z0-9]/g,'').replace(/^MB(?=[A-Z0-9]{6}$)/,'');
+    const c=await get('codes/MB-'+code);if(!c||!c.uid){toast('That QR code didn\'t work. Ask them to show it again.');return;}
+    if(c.uid===me.uid){toast('That\'s your own code!');return;}
+    if(!me.friends.includes(c.uid)){try{await addByCode(code);}catch(e){}}
+    $('friendsSheet').hidden=true;$('lwText').textContent='Connecting to your friend…';$('liveWait').hidden=false;
+    for(let i=0;i<30;i++){await refresh();const p=friends.find(f=>f.uid===c.uid);
+      if(p&&!p.pend&&online(p)){$('liveWait').hidden=true;invite(p);return;}
+      await sleepMs(2000);if($('liveWait').hidden)return;}
+    $('liveWait').hidden=true;toast('Friend request sent. Battle them from Friends once they accept.');}
+  function open(){$('battleSheet').hidden=true;$('friendsSheet').hidden=false;err='';qrOn=false;render();if(F().uid&&myName())go(refresh);}
   $('frClose').onclick=()=>{$('friendsSheet').hidden=true;};
   // --- invites ---
   let M=null;   // the current match: {id, role, other, ...}
@@ -5530,11 +5562,17 @@ const LIVE=(()=>{
     finish(false,`${S.name} gave up the battle.`);}
   function stop(){clearInterval(poll);clearInterval(beat);clearInterval(tick);$('lTimer').hidden=true;if(M)M.live=false;}
   // background: keep my profile fresh and look for friend invites
+  let qbusy=false;setInterval(async()=>{if(!qrOn||qbusy||$('friendsSheet').hidden||!F().uid||!me||document.activeElement===$('frAdd'))return;qbusy=true;
+    try{await refresh();if(document.activeElement!==$('frAdd'))render();}catch(e){}qbusy=false;},2500);
+  // opened someone's QR: once signed in with a trainer name, add them and challenge them (asks you to sign in first if needed)
+  let qprompted=false,qrun=false;setInterval(()=>{let has=false;try{has=!!localStorage.getItem(QKEY);}catch(e){}if(!has||qrun||document.body.classList.contains('tv-off'))return;
+    if(F().ok&&F().uid&&myName()){qrun=true;scanned().catch(()=>{}).finally(()=>{qrun=false;});}else if(!qprompted&&F().ok){qprompted=true;setTimeout(open,2500);}},1500);
   let n=0;setInterval(async()=>{if(!F().ok||!F().uid||document.hidden||!myName())return;n++;
-    try{if(!me)await ensureProfile();if(n%10===1)await heartbeat();await checkInvites();if(!$('friendsSheet').hidden&&Date.now()-lastPoll>8e3){await refresh();render();}}catch(e){}},5000);
+    try{if(!me)await ensureProfile();if(n%10===1)await heartbeat();await checkInvites();if(!$('friendsSheet').hidden&&Date.now()-lastPoll>8e3&&document.activeElement!==$('frAdd')){await refresh();if(document.activeElement!==$('frAdd'))render();}}catch(e){}},5000);
   // a finished battle clears the match when the player presses Done
   addEventListener('battleend',()=>{if(M&&!M.live)M=null;});
-  return {open,choose,giveUp,render,get match(){return M;}};
+  function openQr(){open();qrOn=true;qrSince=Date.now();render();}
+  return {open,openQr,choose,giveUp,render,get match(){return M;}};
 })();
 
 // ---------- desktop companion: no room, just the monitor and keyboard floating over your other windows ----------
@@ -5569,6 +5607,7 @@ if(DESKTOP){document.documentElement.classList.add('dtop');try{if(!localStorage.
   addEventListener('mouseleave',()=>{if(!sizing&&!pass){pass=true;D.passThrough(true);}});
 }
 const awayAtLoad=S.last?Date.now()-S.last:0, hm=(location.hash||'').match(/^#(fl[A-Za-z0-9_-]+)$/);
+{const fm=(location.hash||'').match(/^#MB-?([A-Za-z0-9]{6})$/i);if(fm){try{localStorage.setItem('microbeast.qrFriend',JSON.stringify({code:fm[1],t:Date.now()}));history.replaceState(null,'',location.pathname+location.search);}catch(e){}}}
 tick();renderAll();requestAnimationFrame(frame);SYNC.start();
 if(SYNC.adopted)setTimeout(()=>VIEW.power(true),60);
 // what happens when the monitor first comes on: a new player picks a pet, a returning one may find a gift or a battle link
