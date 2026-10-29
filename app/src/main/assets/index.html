@@ -1421,6 +1421,13 @@ body:not(.v-kb) .crt>.sheet .box.vbox{height:100%!important;max-height:100%!impo
 @media (prefers-reduced-motion: reduce){.bossfx.named .bfxname,.bossfx.defeated .bfxdef{transition:none}}
 
 .bfxname span{display:inline-block;white-space:nowrap}
+
+/* Phoenix Cap */
+.shroomic{float:right;width:34px;height:34px;margin:0 0 4px 8px;image-rendering:pixelated;
+  background:radial-gradient(circle at 50% 42%,rgba(255,200,90,.55),transparent 62%),
+  linear-gradient(#F2E6CC,#F2E6CC) 50% 82%/18% 34% no-repeat,
+  radial-gradient(ellipse 50% 34% at 50% 44%,#FF6A3A 0 70%,#B8302A 71% 100%,transparent 101%);filter:drop-shadow(0 0 4px rgba(255,170,60,.8))}
+.phoenixflash{position:absolute;inset:0;z-index:8;pointer-events:none;background:radial-gradient(circle at 30% 70%,rgba(255,190,80,.5),rgba(255,90,40,.15) 45%,transparent 70%);animation:koflash .85s ease-out forwards}
 </style>
 
 <main class="desk" id="desk">
@@ -2561,7 +2568,7 @@ function buildSprite(p,pose){
   const backTops=tops.filter(([x,y])=>!headCol(x)&&y<midY+4);
   const bellyBots=bots.filter(([x,y])=>OY-y>=4&&!inHead(x,y));
   const backEdge=edge.filter(([x,y])=>y<midY&&!inHead(x,y)), bellyEdge=edge.filter(([x,y])=>y>=midY&&OY-y>=3&&!inHead(x,y));
-  const drips=bellyBots.filter(([x])=>x%3===0&&hash(x,5,1)>.45).slice(0,10);
+  const dc=bellyBots.filter(([x])=>x%3===0&&hash(x,5,1)>.3),dn=Math.min(10,dc.length),drips=Array.from({length:dn},(_,i)=>dc[Math.floor((i+.5)*dc.length/dn)]);
   const blooms=backTops.filter(([x])=>x%4===0&&hash(x,9,3)>.62).slice(0,6);
   const backMid=backTops.length?backTops[Math.floor(backTops.length/2)]:null;
   let gmc=null,gmf=null;
@@ -2664,7 +2671,8 @@ const FX={
       for(let i=0;i<6;i++){const tp=pickPt(T,i,5);if(tp&&Math.sin(t*4+i*1.7)>.3){px(c,X(tp[0]),Y(tp[1])-1,1,3,'#FFFFFF');px(c,X(tp[0])-1,Y(tp[1]),3,1,'#FFFFFF');}}
     }else{
       if(pass==='back'){for(let i=0;i<8;i++){const d=S.drips[i%Math.max(1,S.drips.length)];if(!d)continue;const ph=(t*.4+i/8)%1;px(c,X(d[0])+(i%2?1:-1)*ph*14,Y(d[1])+ph*8,3,2,`rgba(215,242,255,${.75*(1-ph)})`);}return;}
-      S.drips.forEach(([x,y])=>{const h=3+Math.floor(hash(x,7,3)*4*sc);px(c,X(x),Y(y)+1,2,Math.ceil(h/2),'#9FDDF5');px(c,X(x),Y(y)+1,1,h,'#CFF3FF');px(c,X(x),Y(y)+h,1,1,'#FFFFFF');});
+      S.drips.forEach(([x,y])=>{const h=3+Math.floor(hash(x,7,3)*4*sc),bx=X(x),by=Y(y)+1;
+        px(c,bx-1,by,3,1,'#8FD3F0');px(c,bx,by,2,Math.ceil(h*.55),'#9FDDF5');px(c,bx,by,1,h,'#CFF3FF');px(c,bx,by+h-1,1,1,'#FFFFFF');});
     }
   },
   plant(c,S,X,Y,t,pass,g,sc,z,dir){
@@ -2725,7 +2733,8 @@ const CHESTF={
   earth:(ch,bl)=>[{shapes:[E(ch[0],ch[1],3.8,3.2),...bl.map(([x,y],i)=>E(x,y+1.4,3-i%2,2.2))],col:'#9A6B3F',tex:'scale'}],
   wind:(ch,bl)=>[{shapes:[E(ch[0],ch[1],5,4),...bl.map(([x,y])=>E(x,y+1.4,3.4,1.8))],col:'#9ED9CB',tex:'fur',edge:false},{shapes:[Bz([ch[0]-3,ch[1]],[ch[0],ch[1]+3.5],[ch[0]+2.5,ch[1]-1],1,.6)],col:'#E8FFF8',tex:'smooth',edge:false}],
   lightning:(ch,bl)=>[{shapes:[Pg(ch[0]-4,ch[1]+3,ch[0]+1,ch[1]+1,ch[0]-1,ch[1],ch[0]+4,ch[1]-3,ch[0]-1,ch[1]-1,ch[0]+1,ch[1])],col:'#F2C230',tex:'gloss'},{shapes:bl.map(([x,y])=>Pg(x-2,y+2.5,x+.5,y+.5,x-.5,y,x+2,y-1.5,x-.5,y+.8,x+.5,y+1.2)),flat:'#F2C230',edge:false}],
-  ice:(ch,bl)=>[{shapes:[E(ch[0],ch[1],5,4)],col:'#BFE8F5',tex:'gloss',edge:false},{shapes:bl.map(([x,y])=>Pg(x-1.8,y+1.5,x,y-3.5,x+1.8,y+1.5)),col:'#8FD3F0',tex:'gloss'}],
+  // (the icicles themselves hang from the real underside: see the ice effect, which follows the body's outline)
+  ice:(ch,bl)=>[{shapes:[E(ch[0],ch[1],5,4)],col:'#BFE8F5',tex:'gloss',edge:false}],
   plant:(ch,bl)=>[{shapes:[E(ch[0],ch[1],5,4),...bl.map(([x,y])=>E(x,y+1.2,3.6,1.9))],col:'#3F8A38',tex:'fur',edge:false}],
   light:(ch,bl)=>[{shapes:[E(ch[0],ch[1],3,3)],col:'#F3DF8A',tex:'gloss'},{shapes:[E(ch[0],ch[1],1.3,1.3),...bl.map(([x,y])=>E(x,y+1.8,1.2,1.2))],flat:'#FFF6C8',edge:false}],
   shadow:(ch,bl)=>[{shapes:[E(ch[0],ch[1],5.5,4.5),...bl.map(([x,y])=>E(x,y+1.4,3.6,2.1))],col:'#3B2D57',tex:'smooth',edge:false}],
@@ -3147,7 +3156,7 @@ function startBattle(foe,friendly,opt){
   $('bMeName').textContent=S.name;$('bFoeName').textContent=foe.name;
   $('mAtk').innerHTML=`<span class="mv">${moveNames(B.me.p)[0]}</span><small>attack</small>`;
   const e1=effectiveness(B.me.p.el,foe.el);
-  log(`${opt?(opt.boss?'BOSS BATTLE!':'Adventure battle!'):friendly?'Friend battle!':'A wild challenger!'} ${foe.name} the ${fullName(foe)} ${STAGES[foe.stage].toLowerCase()} appears.`);
+  log(`${opt?(opt.boss?'BOSS BATTLE!':'Adventure battle!'):friendly?'Friend battle!':'A wild challenger!'} ${foe.name} the ${fullName(foe)} ${STAGES[foe.stage].toLowerCase()} appears.${opt&&ADV.state&&ADV.state.shroom?' (Phoenix Cap ready)':''}`);
   SFX.play('round');battleIntro();B.busy=true;const BB=B;setTimeout(()=>{if(B===BB){B.busy=false;renderBattle();}},1050);
   setTimeout(()=>{if(B&&!B.busy)log(e1>1.2?'You have the type advantage.':e1<.9?'Careful: type disadvantage.':'An even match-up.');},1400);
   renderBattle();
@@ -3183,7 +3192,12 @@ function calc(att,def,pow,el){
   if(def.guard) dmg=Math.max(1,Math.round(dmg*.4));
   return {dmg,eff,crit};
 }
-function hurt(f,dmg,col){const was=f.hp;f.hp=Math.max(0,f.hp-dmg);if(B&&!f.isMe&&was>0&&f.hp<=0&&B.me.hp>0){rigFx('rock');koImpact();buzz([120,50,90,40,160]);B.shake=2.4;}f.hit=1;buzz(f.isMe?(dmg>f.st.hp*.2?[60,40,90]:45):(dmg>f.st.hp*.2?35:18));pop(f,'-'+dmg,col||'#FFFFFF');renderBattle();}
+function hurt(f,dmg,col){const was=f.hp;f.hp=Math.max(0,f.hp-dmg);
+  if(f.isMe&&f.hp<=0&&was>0&&B&&B.adv&&typeof ADV!=='undefined'&&ADV.state&&ADV.state.shroom){ADV.state.shroom=false;
+    f.hit=1;pop(f,'-'+dmg,col||'#FFFFFF');renderBattle();
+    setTimeout(()=>{if(!B)return;const h=Math.round(f.st.hp*.5);addFx('thaw',f,f,.8);heal(f,h);SFX.play('evolve');buzz([40,30,40,30,120]);
+      log(`${f.name} eats the Phoenix Cap and rises again!`);toast('Phoenix Cap used!');const crt=$('crt'),x=document.createElement('i');x.className='phoenixflash';crt.appendChild(x);setTimeout(()=>x.remove(),900);},0);
+    f.hp=1;return;}if(B&&!f.isMe&&was>0&&f.hp<=0&&B.me.hp>0){rigFx('rock');koImpact();buzz([120,50,90,40,160]);B.shake=2.4;}f.hit=1;buzz(f.isMe?(dmg>f.st.hp*.2?[60,40,90]:45):(dmg>f.st.hp*.2?35:18));pop(f,'-'+dmg,col||'#FFFFFF');renderBattle();}
 function heal(f,n){SFX.play('heal');f.hp=Math.min(f.st.hp,f.hp+n);pop(f,'+'+n,'#8DFFA8');renderBattle();}
 // a beast can shake off a bad status each turn it has it: 30% the first turn, 50% the second, 75% the third, then 90%
 const SHAKE=[.3,.5,.75,.9];
@@ -4967,7 +4981,7 @@ const ADV=(()=>{
     if(W.pets.length<2)go();else choosePet('play',go);
   }
   const hpBar=()=>{const p=A.hp/A.max;return `<span class="ahp"><i style="width:${Math.round(p*100)}%" class="${p<.25?'low':p<.55?'mid':''}"></i></span><span>${A.hp}/${A.max}</span>`;};
-  function boosts(){const b=[];if(A.atk>1)b.push(`ATK +${Math.round((A.atk-1)*100)}%`);if(A.def>1)b.push(`DEF +${Math.round((A.def-1)*100)}%`);if(A.extra)b.push(A.extra.n);if(A.buddy)b.push('Buddy: '+A.buddy.name);return b.join(' · ');}
+  function boosts(){const b=[];if(A.atk>1)b.push(`ATK +${Math.round((A.atk-1)*100)}%`);if(A.def>1)b.push(`DEF +${Math.round((A.def-1)*100)}%`);if(A.extra)b.push(A.extra.n);if(A.buddy)b.push('Buddy: '+A.buddy.name);if(A.shroom)b.push('Phoenix Cap ✦');return b.join(' · ');}
   function render(){
     const box=$('advBody'),cur=A.map[A.at[0]][A.at[1]];
     $('advHead').innerHTML=`<span class="k">LEG ${A.leg} · ${Math.min(5,A.at[0])}/5</span><span class="apot">● ${A.coins} · ${A.xp} XP</span><span class="ahprow">HP ${hpBar()}</span>`;
@@ -4991,7 +5005,12 @@ const ADV=(()=>{
       else if(r<.75){A.atk+=.1;msg=`a <b>power charm</b>! Attack +10% for this adventure.`;SFX.play('unlock');}
       else{A.def+=.1;msg=`an <b>iron shell</b>! Defence +10% for this adventure.`;SFX.play('unlock');}
       const c=5+A.leg*3;A.coins+=c;panel(`${me().name} found ${msg}<p class="sub">…and ${c} coins.</p>`,[['map','Onward']]);}
-    else if(nd.t==='heal'){const h=Math.round(A.max*.5);A.hp=Math.min(A.max,A.hp+h);SFX.play('heal');panel(`A quiet spring. ${me().name} rests and recovers <b>${h} HP</b>.`,[['map','Onward']]);}
+    else if(nd.t==='heal'){
+      if(A.hp>=A.max){
+        // already at full health: the spring offers a Phoenix Cap instead (you can only ever carry one)
+        if(A.shroom){SFX.play('meh');panel(`A quiet spring. ${me().name} is already at full health, and the <b>Phoenix Cap</b> in its bag is still glowing. It can only carry one.`,[['map','Onward']]);}
+        else{A.shroom=true;SFX.play('unlock');panel(`<span class="shroomic" aria-hidden="true"></span>${me().name} is already at full health, so it finds a <b>Phoenix Cap</b> growing by the spring instead!<p class="sub">If ${me().name} faints in a battle on this adventure, it eats the cap and gets back up with half its health. Works once.</p>`,[['map','Onward']]);}}
+      else{const h=Math.round(A.max*.5);A.hp=Math.min(A.max,A.hp+h);SFX.play('heal');panel(`A quiet spring. ${me().name} rests and recovers <b>${h} HP</b>.`,[['map','Onward']]);}}
     else{const r=pick(RISKS);pending={risk:r};panel(r.t,[['riskgo',r.go,'warn'],['map',r.stay,'alt']]);}
   }
   function makeFoe(boss){const p=me(),stage=boss?Math.min(3,p.stage+(A.leg>1?1:0)):Math.max(0,Math.min(3,p.stage+(Math.random()<.2*A.leg?1:0)-(Math.random()<.25?1:0))),el=[];
