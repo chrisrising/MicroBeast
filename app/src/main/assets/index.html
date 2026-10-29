@@ -2536,9 +2536,13 @@ function buildSprite(p,pose){
     return {...l,tips:p.mat?tipsOf(l):null};
   };
   const bodyL=R.L.map(l=>({...forge(l),g:'body',fin:!l.flat})), headL=R.H.map(l=>({...forge(l),g:'head',fin:!l.flat}));
-  if(p.mat&&k!=='turtle'&&!(R.tailBz&&k==='lizard')) stripLayers(p.mat,A.back,R.spine).forEach(l=>bodyL.push({...l,g:'body'}));
+  const surfBack=st>=1||p.mat?(()=>{const s0=[.52,.66,.83,1][st],bm0=layerMask(R.L.flatMap(l=>l.shapes).map(sh=>xfShape(sh,s0,0,0)));
+    const on=p=>{const px=Math.round(OX+p[0]*s0);if(px<0||px>=SW)return p;let ty=-1;for(let yy=0;yy<SH;yy++)if(bm0[yy*SW+px]){ty=yy;break;}return ty<0?p:[p[0],(OY-ty)/s0-.4/s0,p[2]];};
+    return {back:A.back.map(on),spine:R.spine&&pose.mode==='sit'?R.spine.map(on):R.spine};})():{back:A.back,spine:R.spine};
+  if(p.mat&&k!=='turtle'&&!(R.tailBz&&k==='lizard')) stripLayers(p.mat,surfBack.back,surfBack.spine).forEach(l=>bodyL.push({...l,g:'body'}));
   if(p.mat&&k==='lizard'&&R.tailBz) tailMatLayers(R.tailBz,p.mat,col.body).forEach(l=>bodyL.push({...l,g:'body'}));
-  if(st>=1&&el[0]) BACKF[el[0]](A.back,f,A).forEach(l=>bodyL.push({...l,g:'body'}));
+  // back features (flames, spikes, leaves...) sit on the body's real top edge in every pose, sitting included
+  if(st>=1&&el[0]) BACKF[el[0]](surfBack.back,f,A).forEach(l=>bodyL.push({...l,g:'body'}));
   if(st>=2&&el[1]) CHESTF[el[1]](A.chest,A.belly).forEach(l=>bodyL.push({...l,g:'body'}));
   const layers=bodyL.concat(headL);
   const hs=[1.5,1.3,1.12,1][st], s=[.52,.66,.83,1][st], pv=R.pivot;
@@ -2565,7 +2569,9 @@ function buildSprite(p,pose){
   for(let y=1;y<SH-1;y++)for(let x=1;x<SW-1;x++){const i=(y*SW+x)*4;if(out[i+3]&&(!out[i-1]||!out[i+7]||!out[i+3-SW*4]||!out[i+3+SW*4])&&hash(x,y,2)>.72)edge.push([x,y]);}
   const headCol=x=>x>=hb.x0-3&&x<=hb.x1+3, inHead=(x,y)=>headCol(x)&&y<=hb.y1+3;
   const midY=(tp+OY)/2;
-  const backTops=tops.filter(([x,y])=>!headCol(x)&&y<midY+4);
+  // the back is the top outline from the tail end to the neck: high spots and the slope down to a sitting tail alike,
+  // but not the tail tip lying flat on the ground or anything under the head
+  const tailX=Math.min(...tops.map(([x])=>x)),backTops=tops.filter(([x,y])=>!headCol(x)&&(y<midY+4||(OY-y>5&&x>tailX+3&&y<OY-(OY-tp)*.22)));
   const bellyBots=bots.filter(([x,y])=>OY-y>=4&&!inHead(x,y));
   const backEdge=edge.filter(([x,y])=>y<midY&&!inHead(x,y)), bellyEdge=edge.filter(([x,y])=>y>=midY&&OY-y>=3&&!inHead(x,y));
   const dc=bellyBots.filter(([x])=>x%3===0&&hash(x,5,1)>.3),dn=Math.min(10,dc.length),drips=Array.from({length:dn},(_,i)=>dc[Math.floor((i+.5)*dc.length/dn)]);
@@ -2908,12 +2914,16 @@ function renderStats(){
 }
 function renderHead(){
   $('petName').textContent=S.name;
-  $('petStage').textContent=`${fullName(S)} · ${STAGES[S.stage]}`;$('stName').textContent=`${S.name.toUpperCase()} · ${fullName(S)} ${STAGES[S.stage].toLowerCase()}`;
+  $('petStage').textContent=S.stage>=3?fullName(S):`${fullName(S)} · ${STAGES[S.stage]}`;fitHud();$('stName').textContent=`${S.name.toUpperCase()} · ${fullName(S)} ${STAGES[S.stage].toLowerCase()}`;
   $('sleepLab').textContent=S.asleep?'Wake':'Sleep';$('led').classList.toggle('sleep',S.asleep);
   ['aFeed','aPlay','aClean'].forEach(id=>$(id).disabled=S.asleep);
   $('aPlay').classList.toggle('locked',W.pets.every(p=>p.stage===0));
   $('battleBtn').classList.toggle('glow',isRestless()&&!S.asleep);$('battleBtn').setAttribute('aria-label',isRestless()?'Battle. Your pet is restless and wants to fight':'Battle');
 }
+// the type line shares the top row with the name: shrink it a little rather than let it drop onto a second line
+function fitHud(){const a=$('petName'),b=$('petStage');if(!a||!b)return;b.style.removeProperty('font-size');if(!b.offsetParent)return;
+  let fs=parseFloat(getComputedStyle(b).fontSize);const min=fs*.68;for(let i=0;i<12&&Math.abs(b.getBoundingClientRect().top-a.getBoundingClientRect().top)>2&&fs>min;i++){fs*=.95;b.style.fontSize=fs.toFixed(2)+'px';}}
+addEventListener('resize',()=>requestAnimationFrame(fitHud));addEventListener('viewchange',()=>setTimeout(fitHud,450));addEventListener('poweron',()=>setTimeout(fitHud,50));
 function renderAll(){renderHead();renderMeters();renderEvo();renderStats();renderItems();renderShop();$('eggBtn').hidden=!canHatch();$('petBtn').hidden=W.pets.length<2;}
 
 // actions
