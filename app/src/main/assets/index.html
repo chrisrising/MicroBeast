@@ -4614,7 +4614,7 @@ const BOOK=(()=>{
     else{V.i=n;leaf.classList.add('over','back');leaf.innerHTML=`<div class="face fr">${pageHTML(n)}</div><div class="face bkf">${inside()}</div>`;paint(leaf,n);bk.appendChild(leaf);
       requestAnimationFrame(()=>requestAnimationFrame(()=>leaf.classList.remove('over')));}
     setTimeout(()=>{if(!V)return;if(d<0)setRight(V.i);leaf.remove();V.busy=false;nav();},620);}
-  function openBook(){if(V)return;SFX.play('swipe');
+  function openBook(){if(V)return;SFX.play('swipe');if(window.mbDesktop&&window.mbDesktop.passThrough)window.mbDesktop.passThrough(false);
     const onDesk=!el.hidden&&el.offsetParent!==null&&el.getBoundingClientRect().width>0;
     const L=list(),r=onDesk?el.getBoundingClientRect():{left:innerWidth/2-30,top:innerHeight*.62,width:60,height:36},root=document.createElement('div');root.className='bkview';root.setAttribute('role','dialog');root.setAttribute('aria-label','Book of Victories');
     root.style.setProperty('--bk',lastC);
@@ -5323,8 +5323,8 @@ if(DESKTOP){document.documentElement.classList.add('dtop');try{if(!localStorage.
   const stop=()=>{if(!sizing)return;sizing=false;grip.classList.remove('on');D.resizeEnd&&D.resizeEnd();};
   ['pointerup','pointercancel','lostpointercapture'].forEach(ev=>grip.addEventListener(ev,stop));addEventListener('blur',stop);
   // let clicks through the see-through parts, catch them over the monitor, keyboard, the grip and any pop-ups
-  let pass=true;const solid='.rig,.kbwrap .kb:not([hidden]),.bboard,.tutnote,.mug,.spill,.dtgrip,.dtctl';
-  addEventListener('mousemove',e=>{if(sizing)return;const el=document.elementFromPoint(e.clientX,e.clientY),want=!(el&&el.closest(solid));if(want!==pass){pass=want;D.passThrough(want);}});
+  let pass=true;const solid='.rig,.kbwrap .kb:not([hidden]),.bboard,.tutnote,.mug,.spill,.dtgrip,.dtctl,.bkview,.sheet:not([hidden]),.bossfx';
+  addEventListener('mousemove',e=>{if(sizing)return;const el=document.elementFromPoint(e.clientX,e.clientY),want=!(el&&el.closest(solid))&&!document.querySelector('.bkview');if(want!==pass){pass=want;D.passThrough(want);}});
   addEventListener('mouseleave',()=>{if(!sizing&&!pass){pass=true;D.passThrough(true);}});
 }
 const awayAtLoad=S.last?Date.now()-S.last:0, hm=(location.hash||'').match(/^#(fl[A-Za-z0-9_-]+)$/);
