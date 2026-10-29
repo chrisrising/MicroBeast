@@ -2217,8 +2217,8 @@ function texAt(kind,x,y,seed){
 const QUAD={
   capybara:{len:50,h:27,leg:11,lw:4.6,fx:.32,bx:.3,tex:'fur',tail:null,hr:9.6,hw:1.2,hh:.88,hox:.55,hoy:.32,sx:.95,sy:.12,sl:.72,sh:.72,ex:.28,ey:.3,ear:'tiny'},
   bear:{len:52,h:30,leg:16,lw:6.2,legStyle:'bear',fx:.3,bx:.3,tex:'fur',tail:'stub',hump:true,hr:12,hw:1,hh:.95,hox:.42,hoy:.12,sx:.78,sy:.3,sl:.6,sh:.48,ex:.46,ey:.14,ear:'round',muzzle:true,claws:true},
-  wolf:{len:46,h:19,leg:21,lw:4.2,fx:.34,bx:.32,tex:'fur',tail:'bushy',chest:true,hr:10,hw:1.05,hh:.9,hox:.3,hoy:.8,sx:.95,sy:.3,sl:.88,sh:.42,ex:.3,ey:.25,ear:'point',earIn:'#4A3C3C',muzzle:true,claws:true},
-  serval:{len:40,h:15,leg:23,lw:3.2,fx:.35,bx:.33,tex:'servalspots',tail:'short',chest:true,hr:8.5,hw:1.05,hh:.92,hox:.28,hoy:1.0,sx:.72,sy:.3,sl:.45,sh:.38,ex:.36,ey:.16,ear:'big',muzzle:true},
+  wolf:{len:46,h:19,leg:21,lw:4.2,fx:.34,bx:.32,tex:'fur',tail:'bushy',chest:true,knees:true,hr:10,hw:1.05,hh:.9,hox:.3,hoy:.8,sx:.95,sy:.3,sl:.88,sh:.42,ex:.3,ey:.25,ear:'point',earIn:'#4A3C3C',muzzle:true,claws:true},
+  serval:{len:40,h:15,leg:23,lw:3.2,fx:.35,bx:.33,tex:'servalspots',tail:'short',chest:true,knees:true,hr:8.5,hw:1.05,hh:.92,hox:.28,hoy:1.0,sx:.72,sy:.3,sl:.45,sh:.38,ex:.36,ey:.16,ear:'big',muzzle:true},
   lizard:{len:38,h:11,leg:7,lw:2.8,fx:.33,bx:.33,tex:'scale',tail:'long',hr:7.5,hw:1.3,hh:.72,hox:.7,hoy:.3,sx:.9,sy:.12,sl:.62,sh:.46,ex:.35,ey:.35,spines:true,claws:true},
   turtle:{len:42,h:22,leg:7,lw:5,fx:.34,bx:.34,tex:'scale',tail:'stub',hr:7.5,hw:1.2,hh:.85,hox:1.05,hoy:-.12,sx:.7,sy:.1,sl:.5,sh:.62,ex:.38,ey:.3,shell:true},
 };
@@ -2235,7 +2235,8 @@ function quadBuild(k,st,pose,col){
   const legs=(dx,a,b,claws)=>{const out=[];for(const [x,ph] of [[bl*q.fx+dx,a],[-bl*q.bx+dx,b]]){
     if(sleep){out.push(E(x+lw*.5,lw*.7,lw*1.4,lw*.7));continue;}
     if(sit){if(x>0){out.push(Cp(x,by,lw*1.2,x+lw*.4,lw*.9,lw*.85));out.push(E(x+lw*.9,lw*.62,lw*1.1,lw*.62));if(claws&&q.claws)A.claws.push([x+lw*1.7,1.3,'body']);}
-      else{out.push(E(x+bl*.05,lw*1.2+bh*.18,bl*.19,bh*.4,.3));out.push(E(x+bl*.1+lw,lw*.62,lw*1.35,lw*.62));}continue;}
+      else{const hy=Math.max(lw*1.2+bh*.18,by*.5+lw*.4),hry=Math.max(bh*.4,by*.5+lw*.6);out.push(E(x+bl*.07,hy,Math.max(bl*.19,hry*.62),hry,.3));
+        if(q.knees)out.push(Cp(x+bl*.12,lw*1.6,lw*1.05,x+bl*.1+lw*1.2,lw*.7,lw*.75));out.push(E(x+bl*.1+lw,lw*.62,lw*1.35,lw*.62));}continue;}
     const top=by-bh*.08;
     if(q.legStyle==='bear'){
       if(x>0){out.push(Cp(x,top,lw*1.32,x+ph*.85,lw*1.6,lw*1.1));out.push(E(x+ph*.85,lw*2.2,lw*1.18,lw*1.3));out.push(E(x+ph+lw*.55,lw*.7,lw*1.5,lw*.72));}
@@ -2243,7 +2244,16 @@ function quadBuild(k,st,pose,col){
       if(claws&&q.claws) A.claws.push([x+ph+lw*1.75,1.3,'body']);
       continue;
     }
-    out.push(Cp(x,top,lw*1.25,x+ph,lw*.9,lw*.85));
+    if(q.knees){
+      if(x>0){const el=[x-lw*.25+ph*.25,top*.62],wr=[x+ph*.8+lw*.1,lw*1.5];
+        out.push(Cp(x,top,lw*1.3,el[0],el[1],lw*.95));out.push(E(el[0],el[1],lw*.92,lw*.98));
+        out.push(Cp(el[0],el[1],lw*.88,wr[0],wr[1],lw*.68));out.push(Cp(wr[0],wr[1],lw*.7,x+ph+lw*.15,lw*.75,lw*.8));}
+      else{const kn=[x+lw*1.1+ph*.3,top*.6],hk=[x-lw*.75+ph*.65,top*.3];
+        out.push(E(x+lw*.35,top-lw*.2,lw*1.85,lw*2.3,-.35));
+        out.push(Cp(x,top,lw*1.55,kn[0],kn[1],lw*1.05));out.push(E(kn[0],kn[1],lw*1,lw*1.05));
+        out.push(Cp(kn[0],kn[1],lw*.95,hk[0],hk[1],lw*.66));out.push(E(hk[0],hk[1],lw*.72,lw*.72));
+        out.push(Cp(hk[0],hk[1],lw*.66,x+ph,lw*.75,lw*.78));}
+    }else out.push(Cp(x,top,lw*1.25,x+ph,lw*.9,lw*.85));
     out.push(E(x+ph+lw*.5,lw*.62,lw*1.1,lw*.62));
     if(claws&&q.claws) A.claws.push([x+ph+lw*1.25,1.3,'body']);
   }return out;};
